@@ -260,3 +260,178 @@ body.bl-route-transition main{animation:routeGlitch .38s steps(2,end)}
   .bl-access{width:94%;padding:14px}
   .bl-node{min-height:70px;padding:10px}
 }
+
+/* ============ ISLAND 3D MAP ============ */
+.map-weather-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.bl-pill.is-on{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#02030a;border-color:transparent}
+
+.island3d-stage{
+  position:relative;margin-top:24px;border-radius:24px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 30%,#0a1428 0%,#03030a 70%);
+  border:1px solid rgba(0,229,255,.18);
+  perspective:1400px;perspective-origin:50% 45%;
+  height:min(72vh,720px);
+  cursor:grab;
+}
+.island3d-scene{
+  position:absolute;inset:0;
+  transform-style:preserve-3d;
+  transform:rotateX(-18deg);
+  transition:none;
+  will-change:transform;
+}
+.i3d-layer{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
+.i3d-island{pointer-events:auto}
+.i3d-island img{
+  position:absolute;left:50%;top:50%;width:92%;max-width:1100px;
+  transform:translate(-50%,-50%) translateZ(20px);
+  filter:drop-shadow(0 60px 80px rgba(0,0,0,.7)) drop-shadow(0 0 40px rgba(0,229,255,.08));
+  user-select:none;-webkit-user-drag:none;
+}
+.i3d-shadow{
+  position:absolute;left:50%;bottom:6%;width:80%;height:60px;
+  transform:translateX(-50%) translateZ(-30px) rotateX(80deg);
+  background:radial-gradient(ellipse,rgba(0,0,0,.75),transparent 70%);
+  filter:blur(18px);
+}
+
+/* Clouds */
+.i3d-cloud{
+  position:absolute;left:-30%;width:220px;height:60px;border-radius:60px;
+  background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,.55),transparent 60%),
+             radial-gradient(ellipse at 60% 60%,rgba(255,255,255,.45),transparent 65%),
+             radial-gradient(ellipse at 80% 45%,rgba(255,255,255,.4),transparent 60%);
+  filter:blur(6px);
+  animation:i3dCloud linear infinite;
+}
+@keyframes i3dCloud{from{left:-30%}to{left:130%}}
+
+/* Birds */
+.i3d-bird{
+  position:absolute;left:-5%;width:14px;height:6px;
+  background:
+    radial-gradient(circle at 25% 50%,rgba(255,255,255,.85) 1px,transparent 2px),
+    radial-gradient(circle at 75% 50%,rgba(255,255,255,.85) 1px,transparent 2px);
+  animation:i3dBird linear infinite;
+}
+.i3d-bird::before,.i3d-bird::after{content:"";position:absolute;top:50%;width:6px;height:1px;background:rgba(255,255,255,.8);transform-origin:right center;animation:wing 0.4s ease-in-out infinite alternate}
+.i3d-bird::before{left:0;transform:rotate(-25deg)}
+.i3d-bird::after{right:0;transform-origin:left center;transform:rotate(25deg)}
+@keyframes wing{to{transform:rotate(15deg)}}
+@keyframes i3dBird{from{left:-5%}to{left:105%}}
+
+/* Volcano smoke + embers */
+.i3d-volcano{position:absolute;left:50%;top:24%;width:0;height:0;transform:translateZ(80px)}
+.i3d-smoke{
+  position:absolute;left:-30px;bottom:0;width:60px;height:60px;border-radius:50%;
+  background:radial-gradient(circle,rgba(160,160,180,.55),transparent 70%);
+  filter:blur(8px);
+  animation:smokeRise 6s ease-out infinite;
+}
+.i3d-smoke.s2{animation-delay:-2s;left:-10px;background:radial-gradient(circle,rgba(255,140,60,.35),transparent 70%)}
+.i3d-smoke.s3{animation-delay:-4s;left:-50px}
+@keyframes smokeRise{
+  0%{transform:translateY(0) scale(.4);opacity:0}
+  20%{opacity:.9}
+  100%{transform:translateY(-260px) scale(2.4);opacity:0}
+}
+.i3d-ember{
+  position:absolute;left:-2px;bottom:0;width:3px;height:3px;border-radius:50%;
+  background:#ffb347;box-shadow:0 0 8px #ff5a00,0 0 16px #ff7a00;
+  animation:emberRise 3s ease-out infinite;
+}
+.i3d-ember.e2{animation-delay:-1s;left:-8px}
+.i3d-ember.e3{animation-delay:-2s;left:6px}
+@keyframes emberRise{
+  0%{transform:translate(0,0);opacity:1}
+  100%{transform:translate(var(--dx,10px),-180px);opacity:0}
+}
+
+/* Boats */
+.i3d-boat{
+  position:absolute;left:-10%;font-size:18px;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
+  animation:i3dBoat linear infinite;
+  transform:translateZ(10px);
+}
+@keyframes i3dBoat{
+  0%{left:-10%;transform:translateZ(10px) translateY(0)}
+  50%{transform:translateZ(10px) translateY(-3px)}
+  100%{left:110%;transform:translateZ(10px) translateY(0)}
+}
+
+/* Hotspots */
+.i3d-hotspot{
+  position:absolute;width:14px;height:14px;border:0;padding:0;background:transparent;cursor:pointer;
+  transform:translate(-50%,-50%) translateZ(60px);
+}
+.i3d-pin{
+  position:absolute;inset:0;border-radius:50%;background:var(--c);
+  box-shadow:0 0 12px var(--c),0 0 24px var(--c);
+}
+.i3d-pulse{
+  position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--c);
+  animation:i3dPulse 2s ease-out infinite;opacity:.7;
+}
+@keyframes i3dPulse{0%{transform:scale(.6);opacity:.9}100%{transform:scale(3);opacity:0}}
+.i3d-label{
+  position:absolute;left:20px;top:50%;transform:translateY(-50%);
+  padding:6px 10px;border-radius:999px;background:rgba(0,0,0,.7);
+  color:#fff;font-size:10px;white-space:nowrap;letter-spacing:.14em;
+  font-family:var(--font-display);opacity:0;transition:opacity .2s;
+  border:1px solid var(--c);
+}
+.i3d-hotspot:hover .i3d-label,.i3d-hotspot.is-on .i3d-label{opacity:1}
+.i3d-hotspot.is-on .i3d-pin{transform:scale(1.6)}
+
+/* Weather */
+.i3d-weather{transform:translateZ(120px);overflow:hidden}
+.i3d-drop{
+  position:absolute;top:-10%;width:1px;height:18px;
+  background:linear-gradient(to bottom,transparent,rgba(180,220,255,.7));
+  animation:i3dDrop linear infinite;
+}
+@keyframes i3dDrop{from{transform:translateY(0)}to{transform:translateY(120vh)}}
+.weather-storm .i3d-drop{height:24px;background:linear-gradient(to bottom,transparent,rgba(200,230,255,.9))}
+.i3d-lightning{
+  position:absolute;inset:0;background:rgba(220,240,255,.0);
+  animation:i3dFlash 5.5s steps(1,end) infinite;
+  pointer-events:none;
+}
+@keyframes i3dFlash{
+  0%,92%,100%{background:rgba(220,240,255,0)}
+  93%{background:rgba(220,240,255,.6)}
+  94%{background:rgba(220,240,255,0)}
+  95%{background:rgba(220,240,255,.8)}
+  96%{background:rgba(220,240,255,0)}
+}
+.i3d-fog{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 30% 60%,rgba(200,210,230,.25),transparent 50%),
+    radial-gradient(ellipse at 70% 40%,rgba(200,210,230,.22),transparent 55%),
+    linear-gradient(180deg,rgba(150,160,180,.15),transparent 60%);
+  animation:i3dFog 30s ease-in-out infinite alternate;
+}
+@keyframes i3dFog{from{transform:translateX(-5%)}to{transform:translateX(5%)}}
+
+.weather-storm{background:radial-gradient(ellipse at 50% 30%,#05080f 0%,#020205 70%)}
+.weather-clear{background:radial-gradient(ellipse at 50% 30%,#0d1a30 0%,#03060e 70%)}
+.weather-fog{background:radial-gradient(ellipse at 50% 30%,#0e1018 0%,#040508 70%)}
+
+.i3d-info{
+  margin-top:18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:14px 18px;border-radius:18px;
+  background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.2);
+}
+.i3d-info h3{margin:0;font-family:var(--font-display);letter-spacing:.06em}
+
+.i3d-placeholder{
+  position:absolute;inset:0;display:grid;place-content:center;
+  color:rgba(255,255,255,.4);font-family:var(--font-display);letter-spacing:.2em;font-size:12px;
+}
+
+@media(max-width:780px){
+  .island3d-stage{height:60vh}
+  .i3d-island img{width:115%}
+}
