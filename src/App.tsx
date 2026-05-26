@@ -16,7 +16,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/blacklace-echo">
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/map" element={<Map />} />
