@@ -49,11 +49,11 @@ export const scriptedLines: [string, string][] = [
 ];
 
 export const videoSources = [
-  "/assets/videos/natasha-live.mp4",
-  "/assets/videos/nat2.mp4",
-  "/assets/videos/nat3.mp4",
-  "/assets/videos/nat4.mp4",
-  "/assets/videos/nat5.mp4",
-  "/assets/videos/nat6.mp4",
-  "/assets/videos/nat7.mp4",
+  `${import.meta.env.BASE_URL}assets/videos/natasha-live.mp4`,
+  `${import.meta.env.BASE_URL}assets/videos/nat2.mp4`,
+  `${import.meta.env.BASE_URL}assets/videos/nat3.mp4`,
+  `${import.meta.env.BASE_URL}assets/videos/nat4.mp4`,
+  `${import.meta.env.BASE_URL}assets/videos/nat5.mp4`,
+  `${import.meta.env.BASE_URL}assets/videos/nat6.mp4`,
+  `${import.meta.env.BASE_URL}assets/videos/nat7.mp4`,
 ];
