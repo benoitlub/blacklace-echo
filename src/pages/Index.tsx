@@ -119,7 +119,7 @@ const Index = () => {
 
         <section className="bl-hero">
           <div className="bl-hero-copy">
-            <p className="bl-kicker">UNE ÎLE OUBLIÉE QUELQUE PART DANS LE WEB</p>
+            <p className="bl-kicker">UNE ÎLE OUBLIÉE QUELQUE PART SUR LE WEB</p>
             <h1>
               Natasha est en direct.
               <br />
