@@ -175,7 +175,7 @@ const Map = () => {
               <div className="i3d-layer i3d-island" ref={islandRef}>
                 {imgOk ? (
                   <img
-                    src="/assets/img/island-cutout.png"
+                    src="public/assets/img/island-cutout.png"
                     alt="Blacklace Island"
                     onError={() => setImgOk(false)}
                     draggable={false}
