@@ -57,3 +57,11 @@ export const videoSources = [
   `${import.meta.env.BASE_URL}assets/videos/nat6.mp4`,
   `${import.meta.env.BASE_URL}assets/videos/nat7.mp4`,
 ];
+export const youtubeSignals = [
+  {
+    type: "moscomiul",
+    label: "MOSCOMIUL BREAK",
+    phase: "phase-signal",
+    id: "6gu4GrZlt1g",
+  },
+];
