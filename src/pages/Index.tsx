@@ -117,25 +117,7 @@ const Index = () => {
           </nav>
         </header>
 
-        <section className="bl-hero">
-          <div className="bl-hero-copy">
-            <p className="bl-kicker">UNE ÎLE OUBLIÉE QUELQUE PART SUR LE WEB</p>
-            <h1>
-              Natasha est en direct.
-              <br />
-              La brume répond.
-            </h1>
-            <p className="bl-lead">
-              Blacklace Island n'explique pas tout. Elle ouvre des chemins, laisse passer des voix,
-              puis change légèrement quand personne ne regarde.
-            </p>
-            <div className="bl-cta-row">
-              <button className="bl-cta" type="button" onClick={() => openZone("port")}>
-                Traverser la brume
-              </button>
-              <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
-            </div>
-          </div>
+       
 
           <div className="bl-card bl-floating-video">
             <div className="bl-card-head">
@@ -168,7 +150,25 @@ const Index = () => {
               <div className="bl-video-label">LIVE // ROTAS</div>
             </div>
           </div>
-
+ <section className="bl-hero">
+          <div className="bl-hero-copy">
+            <p className="bl-kicker">UNE ÎLE OUBLIÉE QUELQUE PART SUR LE WEB</p>
+            <h1>
+              Natasha est en direct.
+              <br />
+              La brume répond.
+            </h1>
+            <p className="bl-lead">
+              Blacklace Island n'explique pas tout. Elle ouvre des chemins, laisse passer des voix,
+              puis change légèrement quand personne ne regarde.
+            </p>
+            <div className="bl-cta-row">
+              <button className="bl-cta" type="button" onClick={() => openZone("port")}>
+                Traverser la brume
+              </button>
+              <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
+            </div>
+          </div>
           <aside className="bl-card bl-signal-console">
             <div className="bl-card-head">
               <span>ISLAND CHAT</span>
