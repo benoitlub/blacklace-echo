@@ -117,8 +117,6 @@ const Index = () => {
           </nav>
         </header>
 
-       
-
           <div className="bl-card bl-floating-video">
             <div className="bl-card-head">
               <span>NATASHA // ROTAS SIGNAL</span>
@@ -143,7 +141,7 @@ const Index = () => {
                   <Radio size={28} />
                   <span>EN ATTENTE DU SIGNAL</span>
                   <small style={{ opacity: 0.6, letterSpacing: ".1em" }}>
-                    place /public/assets/videos/natasha-live.mp4
+                    place natasha-live.mp4
                   </small>
                 </div>
               )}
