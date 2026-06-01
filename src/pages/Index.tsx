@@ -118,28 +118,7 @@ const Index = () => {
             <span className="bl-pill bl-status">LIVE</span>
           </nav>
         </header>
-
-        <section className="bl-hero">
-          <div className="bl-hero-copy">
-            <p className="bl-kicker">UNE ÎLE OUBLIÉE QUELQUE PART SUR LE WEB</p>
-            <h1>
-              Natasha est en direct.
-              <br />
-              La brume répond.
-            </h1>
-            <p className="bl-lead">
-              Blacklace Island n'explique pas tout. Elle ouvre des chemins, laisse passer des voix,
-              puis change légèrement quand personne ne regarde.
-            </p>
-            <div className="bl-cta-row">
-              <button className="bl-cta" type="button" onClick={() => openZone("port")}>
-                Traverser la brume
-              </button>
-              <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
-            </div>
-          </div>
-
-          <div className="bl-stage-row">
+ <div className="bl-stage-row">
             <div className="bl-card bl-floating-video">
               <div className="bl-card-head">
                 <span>NATASHA // ROTAS SIGNAL</span>
@@ -208,6 +187,27 @@ const Index = () => {
           <span>◉ Aloisia en veille</span>
           <span>◯ Pro.Hibited Network</span>
         </div>
+        <section className="bl-hero">
+          <div className="bl-hero-copy">
+            <p className="bl-kicker">UNE ÎLE OUBLIÉE QUELQUE PART SUR LE WEB</p>
+            <h1>
+              Natasha est en direct.
+              <br />
+              La brume répond.
+            </h1>
+            <p className="bl-lead">
+              Blacklace Island n'explique pas tout. Elle ouvre des chemins, laisse passer des voix,
+              puis change légèrement quand personne ne regarde.
+            </p>
+            <div className="bl-cta-row">
+              <button className="bl-cta" type="button" onClick={() => openZone("port")}>
+                Traverser la brume
+              </button>
+              <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
+            </div>
+          </div>
+
+         
 
         <section className="bl-access">
           <p className="bl-section-title">ACCÈS AUX ZONES</p>
