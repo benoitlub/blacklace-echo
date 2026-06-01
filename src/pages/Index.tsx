@@ -7,14 +7,16 @@ import { zones, scriptedLines, videoSources, ZoneKey } from "@/blacklace/data";
 type ChatItem = { name: string; text: string };
 type Phase = "phase-signal" | "phase-feuch" | "phase-reboot";
 
-const phaseButtons: { phase: Phase; label: string }[] = [
+type Phase2 = Phase | "phase-sator";
+const phaseButtons: { phase: Phase2; label: string }[] = [
   { phase: "phase-signal", label: "SIGNAL" },
   { phase: "phase-feuch", label: "FEUCH" },
   { phase: "phase-reboot", label: "REBOOT" },
+  { phase: "phase-sator", label: "SATOR" },
 ];
 
 const Index = () => {
-  const [phase, setPhase] = useState<Phase>("phase-signal");
+  const [phase, setPhase] = useState<Phase2>("phase-signal");
   const [chat, setChat] = useState<ChatItem[]>([{ name: "SYSTEM", text: "Connexion au signal Blacklace..." }]);
   const [viewerCount, setViewerCount] = useState(128);
   const [signalHealth, setSignalHealth] = useState(97);
@@ -28,7 +30,7 @@ const Index = () => {
 
   // phase class on <body>
   useEffect(() => {
-    document.body.classList.remove("phase-signal", "phase-feuch", "phase-reboot");
+    document.body.classList.remove("phase-signal", "phase-feuch", "phase-reboot", "phase-sator");
     document.body.classList.add(phase);
   }, [phase]);
 
@@ -62,7 +64,7 @@ const Index = () => {
     return () => clearInterval(id);
   }, [videoIdx]);
 
-  function handleChange(p: Phase) {
+  function handleChange(p: Phase2) {
     setPhase(p);
     setChat((c) => [...c, { name: "SYSTEM", text: `Phase ${p.replace("phase-", "").toUpperCase()} active.` }]);
     glitch();
@@ -257,8 +259,30 @@ const Index = () => {
             <h2>{zone.title}</h2>
             <p className="bl-modal-text">{zone.text}</p>
             <div className="bl-modal-fragment">{zone.fragment}</div>
-            <div className="bl-modal-actions">
-              <button onClick={() => { glitch(); setChat((c) => [...c, { name: "SYSTEM", text: "Signal marqué : " + zone.title }]); }}>
+            <div className={"bl-modal-actions" + (zone.mood ? " bl-modal-actions--" + zone.mood : "")}>
+              {(zone.actions ?? []).map((a, i) => {
+                const cls = "bl-modal-action " + (a.intent === "ghost" ? "is-ghost" : a.intent === "warn" ? "is-warn" : "is-primary");
+                const onClick = () => {
+                  if (a.phase) handleChange(a.phase);
+                  if (a.signal) setChat((c) => [...c, { name: "SYSTEM", text: a.signal! }]);
+                  glitch();
+                };
+                if (a.href) {
+                  return (
+                    <a key={i} className={cls} href={a.href} target="_blank" rel="noreferrer" onClick={onClick} title={a.hint}>
+                      {a.label}
+                      {a.hint && <em className="bl-modal-action-hint">{a.hint}</em>}
+                    </a>
+                  );
+                }
+                return (
+                  <button key={i} className={cls} type="button" onClick={onClick} title={a.hint}>
+                    {a.label}
+                    {a.hint && <em className="bl-modal-action-hint">{a.hint}</em>}
+                  </button>
+                );
+              })}
+              <button className="bl-modal-action is-ghost" type="button" onClick={() => { glitch(); setChat((c) => [...c, { name: "SYSTEM", text: "Signal marqué : " + zone.title }]); }}>
                 Marquer le signal
               </button>
             </div>
