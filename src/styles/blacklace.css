@@ -123,7 +123,6 @@ body.phase-signal .bl-brand-eye{color:var(--red)}
   flex-direction:column;
   align-self:start;
 }
-}
 .bl-floating-video .bl-video-frame{flex:1;max-width:none;aspect-ratio:16/10}
 .bl-signal-console{display:flex;flex-direction:column;width:100%;min-height:0;max-height:560px}
 .bl-signal-console .bl-log-list{flex:1 1 auto;min-height:0;max-height:380px;overflow-y:auto}
