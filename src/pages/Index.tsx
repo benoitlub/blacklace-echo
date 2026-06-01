@@ -117,38 +117,7 @@ const Index = () => {
           </nav>
         </header>
 
-          <div className="bl-card bl-floating-video">
-            <div className="bl-card-head">
-              <span>NATASHA // ROTAS SIGNAL</span>
-              <span>SIGNAL {signalHealth}%</span>
-            </div>
-            <div className="bl-video-frame">
-              {videoOk ? (
-                <video
-                  ref={videoRef}
-                  key={videoIdx}
-                  className="bl-media"
-                  autoPlay
-                  muted
-                  playsInline
-                  loop
-                  onError={() => setVideoOk(false)}
-                >
-                  <source src={videoSources[videoIdx]} type="video/mp4" />
-                </video>
-              ) : (
-                <div className="bl-waiting">
-                  <Radio size={28} />
-                  <span>EN ATTENTE DU SIGNAL</span>
-                  <small style={{ opacity: 0.6, letterSpacing: ".1em" }}>
-                    place natasha-live.mp4
-                  </small>
-                </div>
-              )}
-              <div className="bl-video-label">LIVE // ROTAS</div>
-            </div>
-          </div>
- <section className="bl-hero">
+        <section className="bl-hero">
           <div className="bl-hero-copy">
             <p className="bl-kicker">UNE ÎLE OUBLIÉE QUELQUE PART SUR LE WEB</p>
             <h1>
@@ -167,34 +136,69 @@ const Index = () => {
               <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
             </div>
           </div>
-          <aside className="bl-card bl-signal-console">
-            <div className="bl-card-head">
-              <span>ISLAND CHAT</span>
-              <span>{viewerCount} viewers</span>
+
+          <div className="bl-stage-row">
+            <div className="bl-card bl-floating-video">
+              <div className="bl-card-head">
+                <span>NATASHA // ROTAS SIGNAL</span>
+                <span>SIGNAL {signalHealth}%</span>
+              </div>
+              <div className="bl-video-frame">
+                {videoOk ? (
+                  <video
+                    ref={videoRef}
+                    key={videoIdx}
+                    className="bl-media"
+                    autoPlay
+                    muted
+                    playsInline
+                    loop
+                    onError={() => setVideoOk(false)}
+                  >
+                    <source src={videoSources[videoIdx]} type="video/mp4" />
+                  </video>
+                ) : (
+                  <div className="bl-waiting">
+                    <Radio size={28} />
+                    <span>EN ATTENTE DU SIGNAL</span>
+                    <small style={{ opacity: 0.6, letterSpacing: ".1em" }}>
+                      place natasha-live.mp4
+                    </small>
+                  </div>
+                )}
+                <div className="bl-video-label">LIVE // ROTAS</div>
+              </div>
             </div>
-            <div className="bl-log-list" ref={chatRef}>
-              {chat.map((l, i) => (
-                <div className="bl-log" key={i}>
-                  <strong>{l.name}</strong>
-                  <span>{l.text}</span>
-                </div>
-              ))}
-            </div>
-            <form className="bl-mini-form" onSubmit={submitChat}>
-              <textarea
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Écris au signal..."
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    submitChat(e as unknown as FormEvent);
-                  }
-                }}
-              />
-              <button type="submit" aria-label="Envoyer">↵</button>
-            </form>
-          </aside>
+
+            <aside className="bl-card bl-signal-console">
+              <div className="bl-card-head">
+                <span>ISLAND CHAT</span>
+                <span>{viewerCount} viewers</span>
+              </div>
+              <div className="bl-log-list" ref={chatRef}>
+                {chat.map((l, i) => (
+                  <div className="bl-log" key={i}>
+                    <strong>{l.name}</strong>
+                    <span>{l.text}</span>
+                  </div>
+                ))}
+              </div>
+              <form className="bl-mini-form" onSubmit={submitChat}>
+                <textarea
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Écris au signal..."
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      submitChat(e as unknown as FormEvent);
+                    }
+                  }}
+                />
+                <button type="submit" aria-label="Envoyer">↵</button>
+              </form>
+            </aside>
+          </div>
         </section>
 
         <div className="bl-side-status">
