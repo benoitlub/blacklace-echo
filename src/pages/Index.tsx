@@ -182,11 +182,7 @@ const Index = () => {
           </div>
         
 
-        <div className="bl-side-status">
-          <span>● {phase.replace("phase-", "").toUpperCase()} ACTIVE</span>
-          <span>◉ Aloisia en veille</span>
-          <span>◯ Pro.Hibited Network</span>
-        </div>
+       
         <section className="bl-hero">
           <div className="bl-hero-copy">
             <p className="bl-kicker">UNE ÎLE OUBLIÉE QUELQUE PART SUR LE WEB</p>
@@ -207,6 +203,11 @@ const Index = () => {
             </div>
           </div>  
 </section>
+         <div className="bl-side-status">
+          <span>● {phase.replace("phase-", "").toUpperCase()} ACTIVE</span>
+          <span>◉ Aloisia en veille</span>
+          <span>◯ Pro.Hibited Network</span>
+        </div>
         <section className="bl-access">
           <p className="bl-section-title">ACCÈS AUX ZONES</p>
           <div className="bl-card-grid">
