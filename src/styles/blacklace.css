@@ -119,8 +119,8 @@ body.phase-signal .bl-brand-eye{color:var(--orange)}
 }
 .bl-floating-video{display:flex;flex-direction:column}
 .bl-floating-video .bl-video-frame{flex:1;max-width:none;aspect-ratio:16/10}
-.bl-signal-console{display:flex;flex-direction:column;width:100%;min-height:0}
-.bl-signal-console .bl-log-list{flex:1;max-height:none}
+.bl-signal-console{display:flex;flex-direction:column;width:100%;min-height:0;max-height:560px}
+.bl-signal-console .bl-log-list{flex:1 1 auto;min-height:0;max-height:380px;overflow-y:auto}
 
 .bl-kicker,.bl-section-title{color:var(--cyan);font-family:var(--font-display);
   font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase}
