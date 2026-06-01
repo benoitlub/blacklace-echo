@@ -98,15 +98,29 @@ export const scriptedLines: [string, string][] = [
   ["SLOBODANE", "Je ne dis pas que c'est cosmique. Je dis que ça regarde dans notre direction."],
 ];
 
-export const videoSources = [
-  `${import.meta.env.BASE_URL}assets/videos/natasha-live.mp4`,
-  `${import.meta.env.BASE_URL}assets/videos/nat2.mp4`,
-  `${import.meta.env.BASE_URL}assets/videos/nat3.mp4`,
-  `${import.meta.env.BASE_URL}assets/videos/nat4.mp4`,
-  `${import.meta.env.BASE_URL}assets/videos/nat5.mp4`,
-  `${import.meta.env.BASE_URL}assets/videos/nat6.mp4`,
-  `${import.meta.env.BASE_URL}assets/videos/nat7.mp4`,
+export type VideoSource =
+  | { type: "local"; label: string; src: string }
+  | { type: "youtube"; label: string; id: string };
+
+const localVideo = (label: string, file: string): VideoSource => ({
+  type: "local",
+  label,
+  src: `${import.meta.env.BASE_URL}assets/videos/${file}`,
+});
+
+export const videoSources: VideoSource[] = [
+  localVideo("ROTAS // SIGNAL PRINCIPAL", "natasha-live.mp4"),
+  localVideo("MARTY // SIGNAL LOCAL", "marty.mov"),
+  localVideo("FEUCH // SIGNAL LOCAL", "feuch.mov"),
+  localVideo("NATASHA // FRAGMENT 02", "nat2.mp4"),
+  localVideo("NATASHA // FRAGMENT 03", "nat3.mp4"),
+  localVideo("NATASHA // FRAGMENT 04", "nat4.mp4"),
+  localVideo("NATASHA // FRAGMENT 05", "nat5.mp4"),
+  localVideo("NATASHA // FRAGMENT 06", "nat6.mp4"),
+  localVideo("NATASHA // FRAGMENT 07", "nat7.mp4"),
+  { type: "youtube", label: "MOSCOMIUL BREAK // YOUTUBE", id: "6gu4GrZlt1g" },
 ];
+
 export const youtubeSignals = [
   {
     type: "moscomiul",
