@@ -88,7 +88,7 @@ body.bl-glitch .bl-glitch-layer{animation:blGlitch .42s steps(2,end)}
 body.phase-feuch{filter:saturate(1.15)}
 body.phase-feuch .bl-brand-eye{color:var(--orange)}
 body.phase-reboot .bl-brand-eye{color:var(--cyan)}
-body.phase-signal .bl-brand-eye{color:var(--orange)}
+body.phase-signal .bl-brand-eye{color:var(--red)}
 
 /* HOME */
 .bl-home{position:relative;z-index:2;width:min(1180px,92vw);margin:0 auto;padding:28px 0 72px}
@@ -115,10 +115,15 @@ body.phase-signal .bl-brand-eye{color:var(--orange)}
    display:grid;
    grid-template-columns:minmax(0,1.35fr) minmax(320px,.85fr);
    gap:clamp(18px,3vw,32px);
-  align-items:stretch;
+  align-items:start;
  }
 
-.bl-floating-video{display:flex;flex-direction:column}
+.bl-floating-video{
+  display:flex;
+  flex-direction:column;
+  align-self:start;
+}
+}
 .bl-floating-video .bl-video-frame{flex:1;max-width:none;aspect-ratio:16/10}
 .bl-signal-console{display:flex;flex-direction:column;width:100%;min-height:0;max-height:560px}
 .bl-signal-console .bl-log-list{flex:1 1 auto;min-height:0;max-height:380px;overflow-y:auto}
@@ -161,7 +166,6 @@ body.phase-signal .bl-brand-eye{color:var(--orange)}
   color:rgba(255,255,255,.82);background:rgba(0,0,0,.48);border:1px solid rgba(255,255,255,.12);
   font-family:var(--font-display);font-size:10px;letter-spacing:.10em;text-transform:uppercase}
 
-.bl-log-list{max-height:260px;overflow-y:auto;padding:12px;display:grid;gap:9px}
 .bl-log{padding:11px 13px;border-radius:14px;
   background:linear-gradient(135deg,rgba(0,229,255,.08),rgba(168,85,247,.055));
   border:1px solid rgba(0,229,255,.12);color:rgba(248,248,255,.82);font-size:13px;line-height:1.38}
