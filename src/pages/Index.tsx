@@ -206,7 +206,7 @@ const Index = () => {
               <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
             </div>
           </div>  
-
+</section>
         <section className="bl-access">
           <p className="bl-section-title">ACCÈS AUX ZONES</p>
           <div className="bl-card-grid">
