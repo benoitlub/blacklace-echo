@@ -258,8 +258,10 @@ body.bl-route-transition main{animation:routeGlitch .38s steps(2,end)}
 @media(max-width:980px){
   .bl-topbar{align-items:flex-start;flex-direction:column;margin-bottom:42px}
   .bl-nav{justify-content:flex-start}
-  .bl-hero{grid-template-columns:1fr;grid-template-areas:"copy" "video" "chat";gap:24px}
+  .bl-stage-row{grid-template-columns:1fr}
   .bl-floating-video,.bl-signal-console{width:min(620px,100%);margin:0 auto}
+  .bl-floating-video .bl-video-frame{aspect-ratio:16/10}
+  .bl-signal-console .bl-log-list{max-height:300px}
   .bl-side-status{width:min(620px,100%)}
   .bl-access{width:min(620px,100%)}
   .bl-card-grid{grid-template-columns:1fr}
