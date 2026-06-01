@@ -15,6 +15,9 @@ const phaseButtons: { phase: Phase2; label: string }[] = [
   { phase: "phase-sator", label: "SATOR" },
 ];
 
+const youtubeEmbed = (id: string) =>
+  `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&controls=0&modestbranding=1`;
+
 const Index = () => {
   const [phase, setPhase] = useState<Phase2>("phase-signal");
   const [chat, setChat] = useState<ChatItem[]>([{ name: "SYSTEM", text: "Connexion au signal Blacklace..." }]);
@@ -23,10 +26,13 @@ const Index = () => {
   const [videoIdx, setVideoIdx] = useState(0);
   const [zoneOpen, setZoneOpen] = useState<ZoneKey | null>(null);
   const [chatInput, setChatInput] = useState("");
-  const [videoOk, setVideoOk] = useState(true);
+  const [signalLost, setSignalLost] = useState(false);
 
   const chatRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const currentSource = videoSources[videoIdx % videoSources.length];
+  const isLocalSource = currentSource.type === "local";
 
   // phase class on <body>
   useEffect(() => {
@@ -49,20 +55,41 @@ const Index = () => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [chat]);
 
-  // video rotation
+  // video rotation timer
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.load();
-    v.play().catch(() => {});
-    setSignalHealth(92 + Math.floor(Math.random() * 7));
     const id = setInterval(() => {
       setVideoIdx((i) => (i + 1) % videoSources.length);
       setChat((c) => [...c, { name: "SYSTEM", text: "Le signal vidéo vient de glisser." }]);
       glitch();
     }, 32000);
     return () => clearInterval(id);
-  }, [videoIdx]);
+  }, []);
+
+  // local video loader
+  useEffect(() => {
+    setSignalLost(false);
+    setSignalHealth(92 + Math.floor(Math.random() * 7));
+
+    if (!isLocalSource) return;
+
+    const v = videoRef.current;
+    if (!v) return;
+
+    v.load();
+    v.play().catch(() => {
+      // Autoplay can be blocked briefly; keep the cockpit alive instead of killing the signal.
+    });
+  }, [videoIdx, isLocalSource]);
+
+  function skipBrokenSignal() {
+    setSignalLost(true);
+    setChat((c) => [...c, { name: "SYSTEM", text: "Signal instable : bascule vers la source suivante." }]);
+    window.setTimeout(() => {
+      setSignalLost(false);
+      setVideoIdx((i) => (i + 1) % videoSources.length);
+      glitch();
+    }, 900);
+  }
 
   function handleChange(p: Phase2) {
     setPhase(p);
@@ -118,71 +145,88 @@ const Index = () => {
             <span className="bl-pill bl-status">LIVE</span>
           </nav>
         </header>
- <div className="bl-stage-row">
-            <div className="bl-card bl-floating-video">
-              <div className="bl-card-head">
-                <span>NATASHA // ROTAS SIGNAL</span>
-                <span>SIGNAL {signalHealth}%</span>
-              </div>
-              <div className="bl-video-frame">
-                {videoOk ? (
-                  <video
-                    ref={videoRef}
-                    key={videoIdx}
-                    className="bl-media"
-                    autoPlay
-                    muted
-                    playsInline
-                    loop
-                    onError={() => setVideoOk(false)}
-                  >
-                    <source src={videoSources[videoIdx]} type="video/mp4" />
-                  </video>
-                ) : (
-                  <div className="bl-waiting">
-                    <Radio size={28} />
-                    <span>EN ATTENTE DU SIGNAL</span>
-                    <small style={{ opacity: 0.6, letterSpacing: ".1em" }}>
-                      place natasha-live.mp4
-                    </small>
-                  </div>
-                )}
-                <div className="bl-video-label">LIVE // ROTAS</div>
+
+        <div className="bl-stage-row">
+          <div className="bl-card bl-floating-video">
+            <div className="bl-card-head">
+              <span>NATASHA // ROTAS SIGNAL</span>
+              <span>SIGNAL {signalHealth}%</span>
+            </div>
+            <div className="bl-video-frame" id="liveScreen">
+              <video
+                ref={videoRef}
+                key={isLocalSource ? currentSource.src : "local-standby"}
+                className="bl-media"
+                autoPlay
+                muted
+                playsInline
+                loop
+                onError={skipBrokenSignal}
+                style={{ display: isLocalSource ? "block" : "none" }}
+              >
+                {isLocalSource && <source src={currentSource.src} />}
+              </video>
+
+              <iframe
+                key={!isLocalSource ? currentSource.id : "youtube-standby"}
+                className="bl-media"
+                src={!isLocalSource ? youtubeEmbed(currentSource.id) : ""}
+                title="Blacklace Signal"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                style={{ display: !isLocalSource ? "block" : "none" }}
+              />
+
+              <div className="live-screen-glow" />
+              <div className="live-screen-grid" />
+
+              {signalLost && (
+                <div className="bl-waiting">
+                  <Radio size={28} />
+                  <span>SIGNAL LOST</span>
+                  <small style={{ opacity: 0.6, letterSpacing: ".1em" }}>
+                    bascule vers la source suivante
+                  </small>
+                </div>
+              )}
+
+              <div className="bl-video-label">
+                <span>{currentSource.label}</span>
+                <span>SYNC {signalHealth}%</span>
               </div>
             </div>
-
-            <aside className="bl-card bl-signal-console">
-              <div className="bl-card-head">
-                <span>ISLAND CHAT</span>
-                <span>{viewerCount} viewers</span>
-              </div>
-              <div className="bl-log-list" ref={chatRef}>
-                {chat.map((l, i) => (
-                  <div className="bl-log" key={i}>
-                    <strong>{l.name}</strong>
-                    <span>{l.text}</span>
-                  </div>
-                ))}
-              </div>
-              <form className="bl-mini-form" onSubmit={submitChat}>
-                <textarea
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Écris au signal..."
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      submitChat(e as unknown as FormEvent);
-                    }
-                  }}
-                />
-                <button type="submit" aria-label="Envoyer">↵</button>
-              </form>
-            </aside>
           </div>
-        
 
-       
+          <aside className="bl-card bl-signal-console">
+            <div className="bl-card-head">
+              <span>ISLAND CHAT</span>
+              <span>{viewerCount} viewers</span>
+            </div>
+            <div className="bl-log-list" ref={chatRef}>
+              {chat.map((l, i) => (
+                <div className="bl-log" key={i}>
+                  <strong>{l.name}</strong>
+                  <span>{l.text}</span>
+                </div>
+              ))}
+            </div>
+            <form className="bl-mini-form" onSubmit={submitChat}>
+              <textarea
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Écris au signal..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    submitChat(e as unknown as FormEvent);
+                  }
+                }}
+              />
+              <button type="submit" aria-label="Envoyer">↵</button>
+            </form>
+          </aside>
+        </div>
+
         <section className="bl-hero">
           <div className="bl-hero-copy">
             <p className="bl-kicker">UNE ÎLE OUBLIÉE QUELQUE PART SUR LE WEB</p>
@@ -201,9 +245,10 @@ const Index = () => {
               </button>
               <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
             </div>
-          </div>  
-</section>
-         <div className="bl-side-status">
+          </div>
+        </section>
+
+        <div className="bl-side-status">
           <span>● {phase.replace("phase-", "").toUpperCase()} ACTIVE</span>
           <span>◉ Aloisia en veille</span>
           <span>◯ Pro.Hibited Network</span>
