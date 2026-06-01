@@ -180,7 +180,7 @@ const Index = () => {
               </form>
             </aside>
           </div>
-        </section>
+        
 
         <div className="bl-side-status">
           <span>● {phase.replace("phase-", "").toUpperCase()} ACTIVE</span>
@@ -206,7 +206,7 @@ const Index = () => {
               <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
             </div>
           </div>
-
+</section>
          
 
         <section className="bl-access">
