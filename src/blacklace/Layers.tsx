@@ -33,6 +33,21 @@ export function BackgroundLayers() {
 }
 
 export function glitch() {
-  document.body.classList.add("bl-glitch", "bl-route-transition");
-  setTimeout(() => document.body.classList.remove("bl-glitch", "bl-route-transition"), 460);
+  const b = document.body;
+  b.classList.add("bl-glitch", "bl-route-transition", "bl-glitch-pro");
+  // brief flash
+  const flash = document.createElement("div");
+  flash.className = "bl-flash";
+  b.appendChild(flash);
+  // chromatic tearing slices
+  const tear = document.createElement("div");
+  tear.className = "bl-tear";
+  tear.innerHTML = '<i style="--ty:18%;--tx:-12px;--d:60ms"></i><i style="--ty:42%;--tx:14px;--d:120ms"></i><i style="--ty:71%;--tx:-8px;--d:200ms"></i>';
+  b.appendChild(tear);
+  const dur = 520;
+  setTimeout(() => {
+    b.classList.remove("bl-glitch", "bl-route-transition", "bl-glitch-pro");
+    flash.remove();
+    tear.remove();
+  }, dur);
 }
