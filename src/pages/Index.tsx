@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Anchor, Beer, Triangle, Hexagon, Eye, Radio } from "lucide-react";
 import { BackgroundLayers, glitch } from "@/blacklace/Layers";
-import { zones, scriptedLines, videoSources, ZoneKey } from "@/blacklace/data";
+import { zones, scriptedLines, videoSources, ZoneKey, appLinks } from "@/blacklace/data";
 
 type ChatItem = { name: string; text: string };
 type Phase = "phase-signal" | "phase-feuch" | "phase-reboot";
@@ -286,6 +286,32 @@ const Index = () => {
               <strong>Pro.Hibited Network</strong>
               <small>BNN24, Moscomiul Break.</small>
             </button>
+          </div>
+        </section>
+
+        <section className="bl-access">
+          <p className="bl-section-title">MODULES CONNECTÉS</p>
+          <div className="bl-card-grid">
+            <a className="bl-node" href={appLinks.blacklaceDice} target="_blank" rel="noreferrer">
+              <span className="bl-icon">🎲</span>
+              <strong>Blacklace Dice</strong>
+              <small>Missions anti-procrastination.</small>
+            </a>
+            <a className="bl-node" href={appLinks.feebeletteReboot} target="_blank" rel="noreferrer" onClick={() => handleChange("phase-reboot")}>
+              <span className="bl-icon">🧚</span>
+              <strong>Fée Belette Reboot</strong>
+              <small>Reset doux, fébeltenetlébien.</small>
+            </a>
+            <a className="bl-node" href={appLinks.creatureSync} target="_blank" rel="noreferrer">
+              <span className="bl-icon">🐾</span>
+              <strong>Creature-Sync</strong>
+              <small>Traducteur animalier instable.</small>
+            </a>
+            <a className="bl-node" href={appLinks.spectrl} target="_blank" rel="noreferrer">
+              <span className="bl-icon">👻</span>
+              <strong>SpecTRL</strong>
+              <small>Signaux fantômes & SLS.</small>
+            </a>
           </div>
         </section>
 
