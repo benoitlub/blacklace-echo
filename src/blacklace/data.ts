@@ -19,6 +19,13 @@ export type Zone = {
   actions?: ZoneAction[];
 };
 
+export const appLinks = {
+  blacklaceDice: "https://benoitlub.github.io/blacklace-dice/",
+  feebeletteReboot: "https://benoitlub.github.io/FeebeletteRBS/",
+  creatureSync: "https://benoitlub.github.io/Creature-sync/",
+  spectrl: "https://benoitlub.github.io/SpecTRL/",
+};
+
 export const zones: Record<ZoneKey, Zone> = {
   port: {
     kicker: "Accès // Porsa Rotas",
@@ -38,6 +45,7 @@ export const zones: Record<ZoneKey, Zone> = {
     actions: [
       { label: "S'accouder au comptoir", intent: "primary", signal: "Max te sert quelque chose de fort." },
       { label: "Demander une rumeur", intent: "ghost", signal: "Max murmure une rumeur de la nuit." },
+      { label: "Moscomiul Break ↗", href: "https://www.youtube.com/watch?v=6gu4GrZlt1g", intent: "ghost", hint: "Le cocktail parle parfois avant le barman." },
     ],
   },
   sator: {
@@ -70,9 +78,11 @@ export const zones: Record<ZoneKey, Zone> = {
     fragment: "Une idée abandonnée peut devenir une zone entière.",
     mood: "feuch",
     actions: [
-      { label: "Blacklace Dice ↗", href: "https://benoitlub.github.io/blacklace-dice/", intent: "primary", hint: "Le dé choisit la mission. Tu exécutes." },
-      { label: "Fée Belette Reboot ↗", href: "#", intent: "ghost", hint: "Module de reset — accès instable.", phase: "phase-reboot" },
-      { label: "Pro.Hibited Network", intent: "ghost", hint: "Réseau de signaux & transmissions." },
+      { label: "Blacklace Dice ↗", href: appLinks.blacklaceDice, intent: "primary", hint: "Le dé choisit la mission. Tu exécutes." },
+      { label: "Fée Belette Reboot ↗", href: appLinks.feebeletteReboot, intent: "ghost", hint: "Module de reset — accès fébeltenetlébien.", phase: "phase-reboot", signal: "Fée Belette Reboot System : protocole de réharmonisation ouvert." },
+      { label: "Creature-Sync ↗", href: appLinks.creatureSync, intent: "ghost", hint: "Traduction animalière approximative, donc probablement sincère." },
+      { label: "SpecTRL ↗", href: appLinks.spectrl, intent: "ghost", hint: "Détecteur de signaux fantômes et de mauvaises ondes élégantes." },
+      { label: "Pro.Hibited Network", intent: "ghost", hint: "Réseau de signaux & transmissions.", signal: "Pro.Hibited Network : signaux disponibles dans la zone Broadcast." },
     ],
   },
   network: {
@@ -82,8 +92,11 @@ export const zones: Record<ZoneKey, Zone> = {
     fragment: "Les signaux faibles sont souvent les plus vrais.",
     actions: [
       { label: "Moscomiul Break ↗", href: "https://www.youtube.com/watch?v=6gu4GrZlt1g", intent: "primary" },
+      { label: "Blacklace Dice ↗", href: appLinks.blacklaceDice, intent: "ghost" },
+      { label: "Fée Belette Reboot ↗", href: appLinks.feebeletteReboot, intent: "ghost", phase: "phase-reboot" },
+      { label: "Creature-Sync ↗", href: appLinks.creatureSync, intent: "ghost", hint: "Animal translator / forêt, ville, zoo." },
+      { label: "SpecTRL ↗", href: appLinks.spectrl, intent: "ghost", hint: "Ghost translator / SLS, ondes, fragments." },
       { label: "GitHub ↗", href: "https://github.com/benoitlub", intent: "ghost" },
-      { label: "Blacklace Dice ↗", href: "https://benoitlub.github.io/blacklace-dice/", intent: "ghost" },
       { label: "Archive transmissions", intent: "ghost", signal: "Archive ouverte : transmissions fragmentaires." },
     ],
   },
