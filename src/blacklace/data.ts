@@ -21,7 +21,7 @@ export type Zone = {
 
 export const appLinks = {
   blacklaceDice: "https://benoitlub.github.io/blacklace-dice/",
-  feebeletteReboot: "https://benoitlub.github.io/FeebeletteRBS/",
+  feebeletteReboot: "https://blacklace-relax-system.replit.app/",
   creatureSync: "https://benoitlub.github.io/Creature-sync/",
   spectrl: "https://benoitlub.github.io/SpecTRL/",
 };
