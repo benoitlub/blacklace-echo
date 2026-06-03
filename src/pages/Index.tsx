@@ -6,8 +6,8 @@ import { zones, scriptedLines, videoSources, ZoneKey, appLinks } from "@/blackla
 
 type ChatItem = { name: string; text: string };
 type Phase = "phase-signal" | "phase-feuch" | "phase-reboot";
-
 type Phase2 = Phase | "phase-sator";
+
 const phaseButtons: { phase: Phase2; label: string }[] = [
   { phase: "phase-signal", label: "SIGNAL" },
   { phase: "phase-feuch", label: "FEUCH" },
@@ -15,8 +15,19 @@ const phaseButtons: { phase: Phase2; label: string }[] = [
   { phase: "phase-sator", label: "SATOR" },
 ];
 
+const zoneCards: { key: ZoneKey; icon: JSX.Element; subtitle: string }[] = [
+  { key: "port", icon: <Anchor size={18} />, subtitle: "Arriver par Porsa Rotas." },
+  { key: "max", icon: <Beer size={18} />, subtitle: "Le bar garde les lumières." },
+  { key: "sator", icon: <Triangle size={18} />, subtitle: "Marty parle aux pierres." },
+  { key: "ludmila", icon: <Eye size={18} />, subtitle: "Perceptions altérées." },
+  { key: "institute", icon: <Hexagon size={18} />, subtitle: "Prototypes et inventions." },
+  { key: "network", icon: <Radio size={18} />, subtitle: "BNN24, Moscomiul Break." },
+];
+
 const youtubeEmbed = (id: string) =>
   `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&controls=0&modestbranding=1`;
+
+const statusClass = (status: string) => status.toLowerCase().replace(/\s+/g, "-");
 
 const Index = () => {
   const [phase, setPhase] = useState<Phase2>("phase-signal");
@@ -34,13 +45,11 @@ const Index = () => {
   const currentSource = videoSources[videoIdx % videoSources.length];
   const isLocalSource = currentSource.type === "local";
 
-  // phase class on <body>
   useEffect(() => {
     document.body.classList.remove("phase-signal", "phase-feuch", "phase-reboot", "phase-sator");
     document.body.classList.add(phase);
   }, [phase]);
 
-  // scripted chat + viewer count
   useEffect(() => {
     const id = setInterval(() => {
       const [name, text] = scriptedLines[Math.floor(Math.random() * scriptedLines.length)];
@@ -50,12 +59,10 @@ const Index = () => {
     return () => clearInterval(id);
   }, []);
 
-  // auto-scroll chat
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [chat]);
 
-  // video rotation timer
   useEffect(() => {
     const id = setInterval(() => {
       setVideoIdx((i) => (i + 1) % videoSources.length);
@@ -65,7 +72,6 @@ const Index = () => {
     return () => clearInterval(id);
   }, []);
 
-  // local video loader
   useEffect(() => {
     setSignalLost(false);
     setSignalHealth(92 + Math.floor(Math.random() * 7));
@@ -91,9 +97,14 @@ const Index = () => {
     }, 900);
   }
 
+  function requestLockedPhase(label: string) {
+    setChat((c) => [...c, { name: "ALOISIA", text: `${label} n'est pas un interrupteur public. Je l'activerai quand l'île sera prête.` }]);
+    glitch();
+  }
+
   function handleChange(p: Phase2) {
     setPhase(p);
-    setChat((c) => [...c, { name: "SYSTEM", text: `Phase ${p.replace("phase-", "").toUpperCase()} active.` }]);
+    setChat((c) => [...c, { name: "ALOISIA", text: `Phase ${p.replace("phase-", "").toUpperCase()} activée depuis le noyau.` }]);
     glitch();
   }
 
@@ -133,9 +144,10 @@ const Index = () => {
             {phaseButtons.map((b) => (
               <button
                 key={b.phase}
-                className={"bl-pill" + (phase === b.phase ? " bl-pill-active" : "")}
-                onClick={() => handleChange(b.phase)}
+                className={"bl-pill bl-phase-locked" + (phase === b.phase ? " bl-pill-active" : "")}
+                onClick={() => requestLockedPhase(b.label)}
                 type="button"
+                title="Mode réservé à Aloisia"
               >
                 {b.label}
               </button>
@@ -253,39 +265,21 @@ const Index = () => {
           <span>◉ Aloisia en veille</span>
           <span>◯ Pro.Hibited Network</span>
         </div>
+
         <section className="bl-access">
           <p className="bl-section-title">ACCÈS AUX ZONES</p>
           <div className="bl-card-grid">
-            <button className="bl-node" onClick={() => openZone("port")}>
-              <span className="bl-icon"><Anchor size={18} /></span>
-              <strong>Le Port</strong>
-              <small>Arriver par Porsa Rotas.</small>
-            </button>
-            <button className="bl-node" onClick={() => openZone("max")}>
-              <span className="bl-icon"><Beer size={18} /></span>
-              <strong>Max Liberty</strong>
-              <small>Le bar garde les lumières.</small>
-            </button>
-            <button className="bl-node" onClick={() => openZone("sator")}>
-              <span className="bl-icon"><Triangle size={18} /></span>
-              <strong>Clairière SATOR</strong>
-              <small>Marty parle aux pierres.</small>
-            </button>
-            <button className="bl-node" onClick={() => openZone("ludmila")}>
-              <span className="bl-icon"><Eye size={18} /></span>
-              <strong>Club Ludmila</strong>
-              <small>Perceptions altérées.</small>
-            </button>
-            <button className="bl-node" onClick={() => openZone("institute")}>
-              <span className="bl-icon"><Hexagon size={18} /></span>
-              <strong>Feuch Institute</strong>
-              <small>Prototypes et inventions.</small>
-            </button>
-            <button className="bl-node" onClick={() => openZone("network")}>
-              <span className="bl-icon"><Radio size={18} /></span>
-              <strong>Pro.Hibited Network</strong>
-              <small>BNN24, Moscomiul Break.</small>
-            </button>
+            {zoneCards.map(({ key, icon, subtitle }) => {
+              const z = zones[key];
+              return (
+                <button className="bl-node" key={key} onClick={() => openZone(key)}>
+                  <span className="bl-icon">{icon}</span>
+                  <strong>{z.title}</strong>
+                  <small>{subtitle}</small>
+                  <span className={`bl-zone-status bl-zone-status--${statusClass(z.status)}`}>{z.status}</span>
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -297,7 +291,7 @@ const Index = () => {
               <strong>Blacklace Dice</strong>
               <small>Missions anti-procrastination.</small>
             </a>
-            <a className="bl-node" href={appLinks.feebeletteReboot} target="_blank" rel="noreferrer" onClick={() => handleChange("phase-reboot")}>
+            <a className="bl-node" href={appLinks.feebeletteReboot} target="_blank" rel="noreferrer">
               <span className="bl-icon">🧚</span>
               <strong>Fée Belette Reboot</strong>
               <small>Reset doux, fébeltenetlébien.</small>
@@ -327,6 +321,7 @@ const Index = () => {
             <button className="bl-modal-close" onClick={() => setZoneOpen(null)} aria-label="Fermer">×</button>
             <p className="bl-modal-kicker">{zone.kicker}</p>
             <h2>{zone.title}</h2>
+            <span className={`bl-zone-status bl-modal-status bl-zone-status--${statusClass(zone.status)}`}>{zone.status}</span>
             <p className="bl-modal-text">{zone.text}</p>
             <div className="bl-modal-fragment">{zone.fragment}</div>
             <div className={"bl-modal-actions" + (zone.mood ? " bl-modal-actions--" + zone.mood : "")}>
