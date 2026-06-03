@@ -58,10 +58,86 @@
   color:var(--orange);
 }
 
+/* The chat used to grow after load because its height depended on incoming messages. */
+.bl-signal-console{
+  height:100%;
+  min-height:360px;
+}
+
+.bl-signal-console .bl-log-list{
+  height:300px;
+  max-height:300px;
+  overflow-y:auto;
+}
+
+.bl-phase-locked{
+  opacity:.42;
+  cursor:not-allowed;
+  filter:saturate(.65);
+}
+
+.bl-phase-locked::after{
+  content:"AL";
+  margin-left:6px;
+  font-size:9px;
+  opacity:.65;
+}
+
+.bl-zone-status{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  margin-top:6px;
+  padding:4px 7px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.24);
+  color:rgba(255,255,255,.66);
+  font-family:var(--font-display);
+  font-size:9px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+
+.bl-zone-status::before{
+  content:"";
+  width:6px;
+  height:6px;
+  margin-right:6px;
+  border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 10px var(--cyan);
+}
+
+.bl-zone-status--instable::before,
+.bl-zone-status--signal-faible::before{
+  background:var(--orange);
+  box-shadow:0 0 10px var(--orange);
+}
+
+.bl-zone-status--fermé::before{
+  background:rgba(255,255,255,.32);
+  box-shadow:none;
+}
+
+.bl-modal-status{
+  margin:0 0 12px;
+}
+
 @media(max-width:980px){
   .bl-floating-video .bl-video-frame,
   .bl-video-frame{
     min-height:clamp(260px,58vw,420px);
+  }
+
+  .bl-signal-console,
+  .bl-signal-console .bl-log-list{
+    height:auto;
+  }
+
+  .bl-signal-console .bl-log-list{
+    min-height:260px;
+    max-height:300px;
   }
 }
 
