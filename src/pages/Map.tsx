@@ -3,18 +3,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BackgroundLayers } from "@/blacklace/Layers";
 
 const HOTSPOTS = [
-  { id: "port", label: "Port Porsa Rotas", x: 22, y: 72, color: "#3b82f6" },
-  { id: "rotas", label: "Village de Rotas", x: 35, y: 52, color: "#22c55e" },
-  { id: "max", label: "Max Liberty", x: 62, y: 82, color: "#ff003c" },
-  { id: "ludmila", label: "Club Ludmila", x: 56, y: 65, color: "#ec4899" },
-  { id: "sator", label: "Clairière SATOR", x: 73, y: 40, color: "#a855f7" },
-  { id: "institute", label: "Feuch Institute", x: 48, y: 35, color: "#ff7a00" },
-  { id: "fournaise", label: "Fournaise", x: 52, y: 22, color: "#ff7a00" },
-  { id: "reboot", label: "Reboot System", x: 78, y: 58, color: "#00e5ff" },
-  { id: "observatoire", label: "Observatoire", x: 42, y: 76, color: "#00e5ff" },
+  { id: "port", label: "Port Porsa Rotas", status: "stable", x: 22, y: 72, color: "#3b82f6" },
+  { id: "rotas", label: "Village de Rotas", status: "stable", x: 35, y: 52, color: "#22c55e" },
+  { id: "max", label: "Max Liberty", status: "stable", x: 62, y: 82, color: "#ff003c" },
+  { id: "ludmila", label: "Club Ludmila", status: "signal faible", x: 56, y: 65, color: "#ec4899" },
+  { id: "sator", label: "Clairière SATOR", status: "instable", x: 73, y: 40, color: "#a855f7" },
+  { id: "institute", label: "Feuch Institute", status: "instable", x: 48, y: 35, color: "#ff7a00" },
+  { id: "fournaise", label: "Fournaise de Feuch", status: "fermé", x: 52, y: 22, color: "#ff7a00" },
+  { id: "reboot", label: "Cascade Reboot", status: "signal faible", x: 78, y: 58, color: "#00e5ff" },
+  { id: "observatoire", label: "Observatoire", status: "fermé", x: 42, y: 76, color: "#00e5ff" },
 ];
 
-const HOLOWALL_LABELS = ["CARTE", "SIGNAL", "ARCHIVES", "MODULE", "ZONE", "BRUME"];
+const HOLOWALL_LABELS = ["ROTAS", "SATOR", "FEUCH", "ALOISIA", "SIGNAL", "BRUME"];
 
 type Weather = "clear" | "rain" | "storm" | "fog";
 type Time = "dawn" | "day" | "dusk" | "night";
@@ -28,7 +28,6 @@ const Map = () => {
   const sceneRef = useRef<HTMLDivElement>(null);
   const islandRef = useRef<HTMLDivElement>(null);
 
-  // 3D parallax tilt
   useEffect(() => {
     const stage = stageRef.current;
     const scene = sceneRef.current;
@@ -65,7 +64,6 @@ const Map = () => {
     };
   }, []);
 
-  // Subtle autonomous atmosphere. No manual buttons on the public map.
   useEffect(() => {
     const wOrder: Weather[] = ["clear", "fog", "rain", "clear"];
     const tOrder: Time[] = ["day", "dusk", "night", "dawn"];
@@ -91,6 +89,7 @@ const Map = () => {
   const boats = useMemo(() => Array.from({ length: 3 }), []);
   const tiles = useMemo(() => Array.from({ length: 24 }), []);
   const stars = useMemo(() => Array.from({ length: 60 }), []);
+  const activeZone = HOTSPOTS.find(h => h.id === active);
 
   return (
     <>
@@ -106,7 +105,6 @@ const Map = () => {
 
         <section className="holo-map-stage holo-map-stage--bare">
           <div className={`island3d-stage time-${time} weather-${weather}`} ref={stageRef}>
-            {/* Holographic video wall background */}
             <div className="holowall" aria-hidden>
               {tiles.map((_, i) => (
                 <div key={i} className={`holowall-tile tile-${i % 6}`} style={{ animationDelay: `${(i * 0.37) % 4}s` }}>
@@ -118,7 +116,6 @@ const Map = () => {
               <div className="holowall-vignette" />
             </div>
 
-            {/* Night stars */}
             <div className="i3d-stars" aria-hidden>
               {stars.map((_, i) => (
                 <span key={i} style={{ left: `${(i * 17) % 100}%`, top: `${(i * 29) % 70}%`, animationDelay: `${(i % 9) * 0.4}s` }} />
@@ -126,7 +123,6 @@ const Map = () => {
             </div>
 
             <div className="island3d-scene" ref={sceneRef}>
-              {/* sky layer */}
               <div className="i3d-layer i3d-sky">
                 {clouds.map((_, i) => (
                   <span key={i} className="i3d-cloud" style={{
@@ -147,7 +143,6 @@ const Map = () => {
                 ))}
               </div>
 
-              {/* island image (cutout, no frame) */}
               <div className="i3d-layer i3d-island" ref={islandRef}>
                 {imgOk ? (
                   <img
@@ -160,7 +155,6 @@ const Map = () => {
                   <div className="i3d-placeholder">CARTE EN ATTENTE</div>
                 )}
 
-                {/* volcano effects */}
                 <div className="i3d-volcano">
                   <span className="i3d-smoke" />
                   <span className="i3d-smoke s2" />
@@ -170,7 +164,6 @@ const Map = () => {
                   <span className="i3d-ember e3" />
                 </div>
 
-                {/* boats */}
                 {boats.map((_, i) => (
                   <span key={i} className="i3d-boat" style={{
                     top: `${60 + i * 9}%`,
@@ -179,14 +172,13 @@ const Map = () => {
                   }}>⛵</span>
                 ))}
 
-                {/* hotspots */}
                 {HOTSPOTS.map(h => (
                   <button
                     key={h.id}
                     className={`i3d-hotspot ${active === h.id ? "is-on" : ""}`}
                     style={{ left: `${h.x}%`, top: `${h.y}%`, ["--c" as any]: h.color }}
                     onClick={() => setActive(active === h.id ? null : h.id)}
-                    title={h.label}
+                    title={`${h.label} — ${h.status}`}
                   >
                     <span className="i3d-pulse" />
                     <span className="i3d-pin" />
@@ -195,7 +187,6 @@ const Map = () => {
                 ))}
               </div>
 
-              {/* weather overlay */}
               <div className="i3d-layer i3d-weather">
                 {(weather === "rain" || weather === "storm") && drops.map((_, i) => (
                   <span key={i} className="i3d-drop" style={{
@@ -208,18 +199,17 @@ const Map = () => {
                 {weather === "fog" && <span className="i3d-fog" />}
               </div>
 
-              {/* base shadow */}
               <div className="i3d-shadow" />
             </div>
 
-            {/* Time-of-day tint overlay (above everything) */}
             <div className="i3d-tint" aria-hidden />
           </div>
 
-          {active && (
+          {activeZone && (
             <div className="i3d-info">
               <span className="section-kicker">ZONE</span>
-              <h3>{HOTSPOTS.find(h => h.id === active)?.label}</h3>
+              <h3>{activeZone.label}</h3>
+              <span className={`bl-zone-status bl-zone-status--${activeZone.status.replace(/\s+/g, "-")}`}>{activeZone.status}</span>
               <button className="bl-pill" onClick={() => setActive(null)}>FERMER</button>
             </div>
           )}
