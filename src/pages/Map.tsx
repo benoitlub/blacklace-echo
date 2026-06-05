@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BackgroundLayers } from "@/blacklace/Layers";
+import RotasPlaza from "@/components/world/RotasPlaza";
+import "@/styles/rotas.css";
 
 const HOTSPOTS = [
   { id: "port", label: "Port Porsa Rotas", status: "stable", x: 22, y: 72, color: "#3b82f6" },
@@ -18,10 +20,12 @@ const HOLOWALL_LABELS = ["ROTAS", "SATOR", "FEUCH", "ALOISIA", "SIGNAL", "BRUME"
 
 type Weather = "clear" | "rain" | "storm" | "fog";
 type Time = "dawn" | "day" | "dusk" | "night";
+type MapView = "map" | "zooming-rotas" | "rotas";
 
 const Map = () => {
   const [imgOk, setImgOk] = useState(true);
   const [active, setActive] = useState<string | null>(null);
+  const [view, setView] = useState<MapView>("map");
   const [weather, setWeather] = useState<Weather>("clear");
   const [time, setTime] = useState<Time>("day");
   const stageRef = useRef<HTMLDivElement>(null);
@@ -38,6 +42,7 @@ const Map = () => {
     let try_ = 0;
     let raf = 0;
     const onMove = (e: MouseEvent) => {
+      if (view !== "map") return;
       const r = stage.getBoundingClientRect();
       const px = (e.clientX - r.left) / r.width - 0.5;
       const py = (e.clientY - r.top) / r.height - 0.5;
@@ -62,7 +67,7 @@ const Map = () => {
       stage.removeEventListener("mouseleave", onLeave);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [view]);
 
   useEffect(() => {
     const wOrder: Weather[] = ["clear", "fog", "rain", "clear"];
@@ -83,6 +88,21 @@ const Map = () => {
     };
   }, []);
 
+  function enterZone(id: string) {
+    if (id === "rotas") {
+      setActive(null);
+      setView("zooming-rotas");
+      window.setTimeout(() => setView("rotas"), 1200);
+      return;
+    }
+    setActive(active === id ? null : id);
+  }
+
+  function backToMap() {
+    setView("map");
+    setActive(null);
+  }
+
   const drops = useMemo(() => Array.from({ length: 90 }), []);
   const clouds = useMemo(() => Array.from({ length: 6 }), []);
   const birds = useMemo(() => Array.from({ length: 4 }), []);
@@ -94,7 +114,7 @@ const Map = () => {
   return (
     <>
       <BackgroundLayers />
-      <main className="map-page map-page--full">
+      <main className={`map-page map-page--full ${view === "zooming-rotas" ? "map-entering-rotas" : ""}`}>
         <header className="map-topbar">
           <Link className="bl-brand" to="/">
             <span className="bl-brand-eye">◉</span>
@@ -177,7 +197,7 @@ const Map = () => {
                     key={h.id}
                     className={`i3d-hotspot ${active === h.id ? "is-on" : ""}`}
                     style={{ left: `${h.x}%`, top: `${h.y}%`, ["--c" as any]: h.color }}
-                    onClick={() => setActive(active === h.id ? null : h.id)}
+                    onClick={() => enterZone(h.id)}
                     title={`${h.label} — ${h.status}`}
                   >
                     <span className="i3d-pulse" />
@@ -205,7 +225,7 @@ const Map = () => {
             <div className="i3d-tint" aria-hidden />
           </div>
 
-          {activeZone && (
+          {activeZone && view === "map" && (
             <div className="i3d-info">
               <span className="section-kicker">ZONE</span>
               <h3>{activeZone.label}</h3>
@@ -215,6 +235,10 @@ const Map = () => {
           )}
         </section>
       </main>
+
+      {(view === "zooming-rotas" || view === "rotas") && (
+        <RotasPlaza entering={view === "zooming-rotas"} onBack={backToMap} />
+      )}
     </>
   );
 };
