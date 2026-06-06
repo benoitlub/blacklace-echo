@@ -1,11 +1,8 @@
 import { useState } from "react";
 import "@/styles/rotas.css";
 
-type RotasPlazaProps = {
-  entering: boolean;
-  onBack: () => void;
-};
+type Props = { entering: boolean; onBack: () => void };
 
 const spots = [
-  { id: "tea", label: "Salon de thé", x: 22, y: 52, title: "Salon de thé", text: "Un refuge calme et parfumé. On y vient pour ralentir et écouter les rumeurs de Rotas." },
-  { id: "eye", label: "Maison de l’Œil", x: 49, y: 36, title: "Maison de l’Œil", text: "Le bâtiment
+  { id: "tea", label: "Salon de the", x: 22, y: 52, title: "Salon de the", text: "Un refuge calme au bord de la place." },
+  { id: "eye", label: "Maison de l oeil", x: 49, y: 36, title: "Maison de l oeil", text: "Le batiment signature observe la
