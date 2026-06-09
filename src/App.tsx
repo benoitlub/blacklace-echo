@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "./styles/blacklace.css";
 import "./styles/blacklace-video-fix.css";
 import "./styles/feuch-modal-fix.css";
+import "./styles/rotas-real-fix.css";
 import Index from "./pages/Index.tsx";
 import Map from "./pages/Map.tsx";
 import Aloisia from "./pages/Aloisia.tsx";
