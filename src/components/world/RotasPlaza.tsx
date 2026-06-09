@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 
 type Props = { entering: boolean; onBack: () => void };
-type RotasSpotId = "eye" | "tea" | "boutique" | "market" | "stalls" | "coast" | "fountain";
+type RotasSpotId = "eye" | "tea" | "prohibited" | "market" | "stalls" | "coast" | "fountain";
 
 type RotasSpot = {
   id: RotasSpotId;
@@ -53,18 +53,18 @@ const ROTAS_SPOTS: RotasSpot[] = [
     detail: "Façade Tea, terrasse, première rencontre PNJ, menu des infusions absurdes.",
   },
   {
-    id: "boutique",
-    label: "Boutique",
-    kind: "objets & jeux",
+    id: "prohibited",
+    label: "Pro.Hibited",
+    kind: "boutique de Natasha",
     x: 73,
     y: 43,
     w: 24,
     z: 5,
     depth: .82,
     asset: asset("file_00000000b9d071f49659651dc56b7ad9.png"),
-    note: "Vitrine Pro.Hibited, cartes, avatars et contrebande narrative homologuée à moitié.",
-    mood: "enseigne dorée, rideaux rayés, néons discrets",
-    detail: "Lien Pro.Hibited, objets à examiner, rayon avatars, posters Blacklace Dice.",
+    note: "La boutique Pro.Hibited de Natasha : cartes, objets interdits à moitié, avatars et souvenirs qui refusent d’être seulement des souvenirs.",
+    mood: "enseigne dorée, rideaux turquoise, vitrines fumées, rire bleu derrière le comptoir",
+    detail: "Cartes Pro.Hibited, objets à examiner, avatars, posters Blacklace Dice, accès vers le loft de Natasha.",
   },
   {
     id: "market",
@@ -230,7 +230,7 @@ export default function RotasPlaza({ entering, onBack }: Props) {
           <>
             <span className="section-kicker">PROMENADE</span>
             <h2>Rotas respire</h2>
-            <p>Les calques bougent, l’eau scintille, les lanternes clignotent et la fontaine pulse. C’est encore une maquette, mais elle a commencé à mentir comme une vraie île.</p>
+            <p>La boutique Pro.Hibited de Natasha est à droite de la place, au niveau du calque boutique. Clique le dôme côté droit.</p>
           </>
         )}
       </aside>
