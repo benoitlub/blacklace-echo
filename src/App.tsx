@@ -18,6 +18,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter basename="/blacklace-echo">
+        <div className="bl-build-marker">FEUCH INSTITUTE // BLACKLACE ECHO // ROTAS v0.1</div>
+        <div className="bl-build-footer">BUILD VISIBLE // 2026-06-09</div>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/map" element={<Map />} />
