@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { ROTAS_BOARD_IMAGE } from "@/assets/rotasBoardImage";
 
 type Props = { entering: boolean; onBack: () => void };
 type RotasSpotId = "eye" | "tea" | "boutique" | "market" | "stalls" | "coast" | "fountain";
@@ -10,18 +9,30 @@ type RotasSpot = {
   kind: string;
   x: number;
   y: number;
+  w: number;
+  z: number;
+  depth: number;
+  asset?: string;
   note: string;
   mood: string;
   detail: string;
 };
+
+const asset = (name: string) => `${import.meta.env.BASE_URL}assets/img/${name}`;
+
+const ROTAS_PLATEAU = asset("file_00000000d6a871f499f027123cd0f875.png");
 
 const ROTAS_SPOTS: RotasSpot[] = [
   {
     id: "eye",
     label: "Maison de l’Œil",
     kind: "archives vivantes",
-    x: 43,
-    y: 24,
+    x: 50,
+    y: 26,
+    w: 34,
+    z: 7,
+    depth: 1.15,
+    asset: asset("file_0000000081b0720ab104c27def46b870.png"),
     note: "La grande porte du Feuch Institut local. Tout ce qui observe finit ici.",
     mood: "verre turquoise, cuivre patiné, silence qui prend des notes",
     detail: "Hall, terminal Aloisia, bibliothèque-ruche, registre des anomalies.",
@@ -30,8 +41,12 @@ const ROTAS_SPOTS: RotasSpot[] = [
     id: "tea",
     label: "Salon de thé",
     kind: "ruelle chaude",
-    x: 25,
-    y: 34,
+    x: 27,
+    y: 43,
+    w: 24,
+    z: 5,
+    depth: .82,
+    asset: asset("file_000000006c98720a9bf32582800c86c3.png"),
     note: "Tables basses, thé trop lucide, plantes qui ont probablement un avis.",
     mood: "ombre douce, vapeur, conversations minuscules",
     detail: "Façade Tea, terrasse, première rencontre PNJ, menu des infusions absurdes.",
@@ -40,8 +55,12 @@ const ROTAS_SPOTS: RotasSpot[] = [
     id: "boutique",
     label: "Boutique",
     kind: "objets & jeux",
-    x: 65,
-    y: 42,
+    x: 73,
+    y: 43,
+    w: 24,
+    z: 5,
+    depth: .82,
+    asset: asset("file_00000000b9d071f49659651dc56b7ad9.png"),
     note: "Vitrine Pro.Hibited, cartes, avatars et contrebande narrative homologuée à moitié.",
     mood: "enseigne dorée, rideaux rayés, néons discrets",
     detail: "Lien Pro.Hibited, objets à examiner, rayon avatars, posters Blacklace Dice.",
@@ -50,8 +69,12 @@ const ROTAS_SPOTS: RotasSpot[] = [
     id: "market",
     label: "Marché",
     kind: "place marchande",
-    x: 27,
-    y: 58,
+    x: 33,
+    y: 69,
+    w: 22,
+    z: 8,
+    depth: 1.35,
+    asset: asset("file_000000002ed471f4872072e0f90a5861.png"),
     note: "Épices, fruits bleus, fausses cartes et rumeurs vendues sans garantie.",
     mood: "voix, tissus turquoise, paniers, odeur de mer",
     detail: "Stands, vendeurs, annonces du jour, mini-quêtes de collecte.",
@@ -60,8 +83,12 @@ const ROTAS_SPOTS: RotasSpot[] = [
     id: "stalls",
     label: "Échoppes",
     kind: "passages secondaires",
-    x: 46,
-    y: 68,
+    x: 66,
+    y: 69,
+    w: 22,
+    z: 8,
+    depth: 1.35,
+    asset: asset("file_00000000278871f49834d39d1e42d50f.png"),
     note: "Des petites portes, des lanternes, des raccourcis et un chat fiscalement douteux.",
     mood: "ruelle étroite, pierres claires, secrets dans les angles",
     detail: "Ruelles verticales, escaliers, portes fermées, indices SATOR.",
@@ -70,8 +97,11 @@ const ROTAS_SPOTS: RotasSpot[] = [
     id: "coast",
     label: "Accès côte",
     kind: "sortie vers la mer",
-    x: 53,
-    y: 85,
+    x: 50,
+    y: 87,
+    w: 12,
+    z: 9,
+    depth: 1.55,
     note: "Escaliers vers le ponton, embruns, mouettes et promesses de départ.",
     mood: "lumière basse, eau turquoise, bois humide",
     detail: "Ponton, Port Porsa Rotas, transition vers la côte et la mangrove.",
@@ -80,8 +110,11 @@ const ROTAS_SPOTS: RotasSpot[] = [
     id: "fountain",
     label: "Fontaine centrale",
     kind: "carrefour",
-    x: 47,
-    y: 48,
+    x: 50,
+    y: 52,
+    w: 13,
+    z: 6,
+    depth: .55,
     note: "Le cœur de la place. Les chemins tournent autour comme s’ils hésitaient.",
     mood: "mosaïque spirale, eau claire, bancs et murmures",
     detail: "Point de spawn, journal de lieu, choix des directions.",
@@ -90,8 +123,16 @@ const ROTAS_SPOTS: RotasSpot[] = [
 
 export default function RotasPlaza({ entering, onBack }: Props) {
   const [selectedSpot, setSelectedSpot] = useState<RotasSpot | null>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const sparks = useMemo(() => Array.from({ length: 18 }), []);
   const birds = useMemo(() => Array.from({ length: 5 }), []);
+
+  const updateTilt = (clientX: number, clientY: number, target: HTMLElement) => {
+    const rect = target.getBoundingClientRect();
+    const nx = ((clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((clientY - rect.top) / rect.height - 0.5) * 2;
+    setTilt({ x: Math.max(-1, Math.min(1, nx)), y: Math.max(-1, Math.min(1, ny)) });
+  };
 
   return (
     <section className={entering ? "rotas-plaza is-entering" : "rotas-plaza is-ready"}>
@@ -107,53 +148,44 @@ export default function RotasPlaza({ entering, onBack }: Props) {
       <div className="rotas-ui rotas-title">
         <span>FEUCH INSTITUTE // ZONE TESTABLE</span>
         <strong>Rotas</strong>
-        <small>Plateau rues & chemins — v0.4</small>
+        <small>Parallaxe couches PNG — v0.6</small>
       </div>
 
       <button className="rotas-back" onClick={onBack}>Retour carte</button>
 
-      <div className="rotas-board-shell rotas-board-shell--streets" aria-label="Plateau flottant de Rotas">
+      <div
+        className="rotas-board-shell rotas-board-shell--parallax"
+        aria-label="Plateau flottant de Rotas en parallaxe"
+        style={{ "--rx": tilt.x, "--ry": tilt.y } as React.CSSProperties}
+        onPointerMove={(event) => updateTilt(event.clientX, event.clientY, event.currentTarget)}
+        onPointerLeave={() => setTilt({ x: 0, y: 0 })}
+      >
         <div className="rotas-board-shadow" />
-        <div className="rotas-board rotas-board--streets">
-          <img
-            className="rotas-board-img"
-            src={ROTAS_BOARD_IMAGE}
-            alt="Carte des rues de Rotas"
-            draggable={false}
-          />
-          <div className="rotas-board-vignette" />
-          <div className="rotas-board-scan" />
-          <div className="rotas-board-route route-a" />
-          <div className="rotas-board-route route-b" />
-          <div className="rotas-board-route route-c" />
+        <div className="rotas-board rotas-board--parallax">
+          <img className="rotas-layer rotas-layer--base" src={ROTAS_PLATEAU} alt="Plateau vide de Rotas" draggable={false} />
+          <div className="rotas-depth-haze" aria-hidden />
 
           {ROTAS_SPOTS.map((spot) => (
             <button
               key={spot.id}
-              className={`rotas-hotspot rotas-hotspot--image ${selectedSpot?.id === spot.id ? "is-selected" : ""}`}
-              style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
+              className={`rotas-building-layer rotas-building-layer--${spot.id} ${selectedSpot?.id === spot.id ? "is-selected" : ""}`}
+              style={{ left: `${spot.x}%`, top: `${spot.y}%`, width: `${spot.w}%`, zIndex: spot.z, "--depth": spot.depth } as React.CSSProperties}
               type="button"
               title={spot.note}
               onClick={() => setSelectedSpot(spot)}
             >
-              <span />
-              {spot.label}
+              {spot.asset ? <img src={spot.asset} alt={spot.label} draggable={false} /> : <span className="rotas-ghost-hotspot" />}
+              <strong>{spot.label}</strong>
             </button>
           ))}
         </div>
-      </div>
-
-      <div className="rotas-ui rotas-sound">
-        <span>AMBIANCE</span>
-        <div><b /><b /><b /><b /><b /></div>
-        <small>rues, marché, fontaine, brume administrative</small>
       </div>
 
       <aside className={`rotas-street-panel ${selectedSpot ? "is-open" : ""}`} aria-live="polite">
         {selectedSpot ? (
           <>
             <button className="rotas-panel-close" onClick={() => setSelectedSpot(null)}>×</button>
-            <span className="section-kicker">VUE DE RUE À HABILLER</span>
+            <span className="section-kicker">CALQUE ACTIF</span>
             <h2>{selectedSpot.label}</h2>
             <p className="rotas-kind">{selectedSpot.kind}</p>
             <div className={`rotas-street-preview street-${selectedSpot.id}`}>
@@ -174,13 +206,13 @@ export default function RotasPlaza({ entering, onBack }: Props) {
         ) : (
           <>
             <span className="section-kicker">PROMENADE</span>
-            <h2>Choisis une pastille</h2>
-            <p>Chaque hotspot prépare une future vue verticale de rue : façade, ruelle, ambiance, PNJ et sortie retour place.</p>
+            <h2>Touche le plateau</h2>
+            <p>Le fond et les bâtiments sont maintenant séparés. Les calques bougent doucement en profondeur, comme un petit théâtre de gobelins sérieux.</p>
           </>
         )}
       </aside>
 
-      <p className="rotas-tip">Prototype hybride : le plateau utilise maintenant la carte Rotas “Rues et chemins”.</p>
+      <p className="rotas-tip">Prototype parallaxe : plateau vide + bâtiments détourés superposés.</p>
     </section>
   );
 }
