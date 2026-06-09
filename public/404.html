@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blacklace Echo — redirection</title>
+    <script>
+      (function () {
+        var base = "/blacklace-echo";
+        var path = window.location.pathname;
+        var route = path.indexOf(base) === 0 ? path.slice(base.length) : path;
+        if (!route || route === "/") route = "/";
+        var target = base + "/?route=" + encodeURIComponent(route + window.location.search + window.location.hash);
+        window.location.replace(target);
+      })();
+    </script>
+  </head>
+  <body>
+    Redirection vers Blacklace Echo…
+  </body>
+</html>
