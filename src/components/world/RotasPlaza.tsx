@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 
 type Props = { entering: boolean; onBack: () => void };
 type RotasSpotId = "eye" | "tea" | "boutique" | "market" | "stalls" | "coast" | "fountain";
@@ -121,11 +122,23 @@ const ROTAS_SPOTS: RotasSpot[] = [
   },
 ];
 
+const ROTAS_LANTERNS = [
+  { x: 43, y: 31 }, { x: 57, y: 31 }, { x: 23, y: 46 }, { x: 77, y: 46 },
+  { x: 31, y: 65 }, { x: 69, y: 65 }, { x: 39, y: 80 }, { x: 61, y: 80 },
+  { x: 50, y: 90 }, { x: 18, y: 58 }, { x: 82, y: 58 },
+];
+
 export default function RotasPlaza({ entering, onBack }: Props) {
   const [selectedSpot, setSelectedSpot] = useState<RotasSpot | null>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const sparks = useMemo(() => Array.from({ length: 18 }), []);
   const birds = useMemo(() => Array.from({ length: 5 }), []);
+  const motes = useMemo(() => Array.from({ length: 24 }, (_, i) => ({
+    left: 15 + ((i * 17) % 72),
+    top: 22 + ((i * 29) % 58),
+    delay: -(i * .43),
+    duration: 5.5 + (i % 6) * .6,
+  })), []);
 
   const updateTilt = (clientX: number, clientY: number, target: HTMLElement) => {
     const rect = target.getBoundingClientRect();
@@ -148,7 +161,7 @@ export default function RotasPlaza({ entering, onBack }: Props) {
       <div className="rotas-ui rotas-title">
         <span>FEUCH INSTITUTE // ZONE TESTABLE</span>
         <strong>Rotas</strong>
-        <small>Parallaxe couches PNG — v0.6</small>
+        <small>Parallaxe vivante — v0.7</small>
       </div>
 
       <button className="rotas-back" onClick={onBack}>Retour carte</button>
@@ -156,20 +169,30 @@ export default function RotasPlaza({ entering, onBack }: Props) {
       <div
         className="rotas-board-shell rotas-board-shell--parallax"
         aria-label="Plateau flottant de Rotas en parallaxe"
-        style={{ "--rx": tilt.x, "--ry": tilt.y } as React.CSSProperties}
+        style={{ "--rx": tilt.x, "--ry": tilt.y } as CSSProperties}
         onPointerMove={(event) => updateTilt(event.clientX, event.clientY, event.currentTarget)}
         onPointerLeave={() => setTilt({ x: 0, y: 0 })}
       >
         <div className="rotas-board-shadow" />
         <div className="rotas-board rotas-board--parallax">
           <img className="rotas-layer rotas-layer--base" src={ROTAS_PLATEAU} alt="Plateau vide de Rotas" draggable={false} />
+          <div className="rotas-water-shimmer" aria-hidden><span /><span /><span /></div>
           <div className="rotas-depth-haze" aria-hidden />
+          <div className="rotas-fountain-aura" aria-hidden><span /><span /><span /></div>
+          <div className="rotas-lanterns" aria-hidden>
+            {ROTAS_LANTERNS.map((lamp, i) => <span key={i} style={{ left: `${lamp.x}%`, top: `${lamp.y}%`, animationDelay: `${-i * .31}s` }} />)}
+          </div>
+          <div className="rotas-life-motes" aria-hidden>
+            {motes.map((mote, i) => (
+              <span key={i} style={{ left: `${mote.left}%`, top: `${mote.top}%`, animationDelay: `${mote.delay}s`, animationDuration: `${mote.duration}s` }} />
+            ))}
+          </div>
 
           {ROTAS_SPOTS.map((spot) => (
             <button
               key={spot.id}
               className={`rotas-building-layer rotas-building-layer--${spot.id} ${selectedSpot?.id === spot.id ? "is-selected" : ""}`}
-              style={{ left: `${spot.x}%`, top: `${spot.y}%`, width: `${spot.w}%`, zIndex: spot.z, "--depth": spot.depth } as React.CSSProperties}
+              style={{ left: `${spot.x}%`, top: `${spot.y}%`, width: `${spot.w}%`, zIndex: spot.z, "--depth": spot.depth } as CSSProperties}
               type="button"
               title={spot.note}
               onClick={() => setSelectedSpot(spot)}
@@ -206,13 +229,13 @@ export default function RotasPlaza({ entering, onBack }: Props) {
         ) : (
           <>
             <span className="section-kicker">PROMENADE</span>
-            <h2>Touche le plateau</h2>
-            <p>Le fond et les bâtiments sont maintenant séparés. Les calques bougent doucement en profondeur, comme un petit théâtre de gobelins sérieux.</p>
+            <h2>Rotas respire</h2>
+            <p>Les calques bougent, l’eau scintille, les lanternes clignotent et la fontaine pulse. C’est encore une maquette, mais elle a commencé à mentir comme une vraie île.</p>
           </>
         )}
       </aside>
 
-      <p className="rotas-tip">Prototype parallaxe : plateau vide + bâtiments détourés superposés.</p>
+      <p className="rotas-tip">Prototype vivant : plateau, bâtiments, eau, lanternes et poussières en couches.</p>
     </section>
   );
 }
