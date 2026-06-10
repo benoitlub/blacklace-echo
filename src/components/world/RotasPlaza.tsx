@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
-import { ROTAS_BOARD_IMAGE } from "@/assets/rotasBoardImage";
+import TransparentAsset from "./TransparentAsset";
 
 type Props = { entering: boolean; onBack: () => void };
 type RotasSpotId = "eye" | "tea" | "prohibited" | "market" | "stalls" | "coast" | "fountain";
@@ -11,19 +11,26 @@ type RotasSpot = {
   kind: string;
   x: number;
   y: number;
+  w: number;
+  z: number;
+  depth: number;
+  asset?: string;
   note: string;
   mood: string;
   detail: string;
 };
 
+const asset = (name: string) => `${import.meta.env.BASE_URL}assets/img/${name}`;
+const ROTAS_EMPTY_PLATEAU = asset("file_00000000d6a871f499f027123cd0f875.png");
+
 const ROTAS_SPOTS: RotasSpot[] = [
-  { id: "eye", label: "Maison de l’Œil", kind: "archives vivantes", x: 50, y: 23, note: "La grande porte du Feuch Institut local. Tout ce qui observe finit ici.", mood: "verre turquoise, cuivre patiné, silence qui prend des notes", detail: "Hall, terminal Aloisia, bibliothèque-ruche, registre des anomalies." },
-  { id: "tea", label: "Salon de thé", kind: "ruelle chaude", x: 27, y: 39, note: "Tables basses, thé trop lucide, plantes qui ont probablement un avis.", mood: "ombre douce, vapeur, conversations minuscules", detail: "Façade Tea, terrasse, première rencontre PNJ, menu des infusions absurdes." },
-  { id: "prohibited", label: "Pro.Hibited", kind: "boutique de Natasha", x: 73, y: 40, note: "La boutique Pro.Hibited de Natasha : cartes, objets interdits à moitié, avatars et souvenirs qui refusent d’être seulement des souvenirs.", mood: "enseigne dorée, rideaux turquoise, vitrines fumées, rire bleu derrière le comptoir", detail: "Cartes Pro.Hibited, objets à examiner, avatars, posters Blacklace Dice, accès vers le loft de Natasha." },
-  { id: "market", label: "Marché", kind: "place marchande", x: 31, y: 63, note: "Épices, fruits bleus, fausses cartes et rumeurs vendues sans garantie.", mood: "voix, tissus turquoise, paniers, odeur de mer", detail: "Stands, vendeurs, annonces du jour, mini-quêtes de collecte." },
-  { id: "stalls", label: "Échoppes", kind: "passages secondaires", x: 50, y: 68, note: "Des petites portes, des lanternes, des raccourcis et un chat fiscalement douteux.", mood: "ruelle étroite, pierres claires, secrets dans les angles", detail: "Ruelles verticales, escaliers, portes fermées, indices SATOR." },
-  { id: "coast", label: "Accès côte", kind: "sortie vers la mer", x: 50, y: 86, note: "Escaliers vers le ponton, embruns, mouettes et promesses de départ.", mood: "lumière basse, eau turquoise, bois humide", detail: "Ponton, Port Porsa Rotas, transition vers la côte et la mangrove." },
-  { id: "fountain", label: "Fontaine centrale", kind: "carrefour", x: 50, y: 52, note: "Le cœur de la place. Les chemins tournent autour comme s’ils hésitaient.", mood: "mosaïque spirale, eau claire, bancs et murmures", detail: "Point de spawn, journal de lieu, choix des directions." },
+  { id: "eye", label: "Maison de l’Œil", kind: "archives vivantes", x: 50, y: 28, w: 25, z: 7, depth: 1.05, asset: asset("file_0000000081b0720ab104c27def46b870.png"), note: "La grande porte du Feuch Institut local. Tout ce qui observe finit ici.", mood: "verre turquoise, cuivre patiné, silence qui prend des notes", detail: "Hall, terminal Aloisia, bibliothèque-ruche, registre des anomalies." },
+  { id: "tea", label: "Salon de thé", kind: "ruelle chaude", x: 31, y: 46, w: 15, z: 6, depth: .8, asset: asset("file_000000006c98720a9bf32582800c86c3.png"), note: "Tables basses, thé trop lucide, plantes qui ont probablement un avis.", mood: "ombre douce, vapeur, conversations minuscules", detail: "Façade Tea, terrasse, première rencontre PNJ, menu des infusions absurdes." },
+  { id: "prohibited", label: "Pro.Hibited", kind: "boutique de Natasha", x: 69, y: 47, w: 15, z: 6, depth: .8, asset: asset("file_00000000b9d071f49659651dc56b7ad9.png"), note: "La boutique Pro.Hibited de Natasha : cartes, objets interdits à moitié, avatars et souvenirs qui refusent d’être seulement des souvenirs.", mood: "enseigne dorée, rideaux turquoise, vitrines fumées, rire bleu derrière le comptoir", detail: "Cartes Pro.Hibited, objets à examiner, avatars, posters Blacklace Dice, accès vers le loft de Natasha." },
+  { id: "market", label: "Marché", kind: "place marchande", x: 36, y: 68, w: 12, z: 8, depth: 1.2, asset: asset("file_000000002ed471f4872072e0f90a5861.png"), note: "Épices, fruits bleus, fausses cartes et rumeurs vendues sans garantie.", mood: "voix, tissus turquoise, paniers, odeur de mer", detail: "Stands, vendeurs, annonces du jour, mini-quêtes de collecte." },
+  { id: "stalls", label: "Échoppes", kind: "passages secondaires", x: 62, y: 68, w: 12, z: 8, depth: 1.2, asset: asset("file_00000000278871f49834d39d1e42d50f.png"), note: "Des petites portes, des lanternes, des raccourcis et un chat fiscalement douteux.", mood: "ruelle étroite, pierres claires, secrets dans les angles", detail: "Ruelles verticales, escaliers, portes fermées, indices SATOR." },
+  { id: "coast", label: "Accès côte", kind: "sortie vers la mer", x: 50, y: 86, w: 10, z: 9, depth: 1.45, note: "Escaliers vers le ponton, embruns, mouettes et promesses de départ.", mood: "lumière basse, eau turquoise, bois humide", detail: "Ponton, Port Porsa Rotas, transition vers la côte et la mangrove." },
+  { id: "fountain", label: "Fontaine centrale", kind: "carrefour", x: 50, y: 53, w: 11, z: 5, depth: .55, note: "Le cœur de la place. Les chemins tournent autour comme s’ils hésitaient.", mood: "mosaïque spirale, eau claire, bancs et murmures", detail: "Point de spawn, journal de lieu, choix des directions." },
 ];
 
 const ROTAS_LANTERNS = [
@@ -60,21 +67,21 @@ export default function RotasPlaza({ entering, onBack }: Props) {
       <div className="rotas-ui rotas-title">
         <span>FEUCH INSTITUTE // ZONE TESTABLE</span>
         <strong>Rotas</strong>
-        <small>Plateau vivant propre — v0.8</small>
+        <small>Calques alignés — v0.9</small>
       </div>
 
       <button className="rotas-back" onClick={onBack}>Retour carte</button>
 
       <div
-        className="rotas-board-shell rotas-board-shell--clean"
+        className="rotas-board-shell rotas-board-shell--aligned"
         aria-label="Plateau flottant de Rotas"
         style={{ "--rx": tilt.x, "--ry": tilt.y } as CSSProperties}
         onPointerMove={(event) => updateTilt(event.clientX, event.clientY, event.currentTarget)}
         onPointerLeave={() => setTilt({ x: 0, y: 0 })}
       >
         <div className="rotas-board-shadow" />
-        <div className="rotas-board rotas-board--clean">
-          <img className="rotas-layer rotas-layer--clean-base" src={ROTAS_BOARD_IMAGE} alt="Plateau vivant de Rotas" draggable={false} />
+        <div className="rotas-board rotas-board--aligned">
+          <img className="rotas-layer rotas-layer--aligned-base" src={ROTAS_EMPTY_PLATEAU} alt="Plateau vide de Rotas" draggable={false} />
           <div className="rotas-water-shimmer" aria-hidden><span /><span /><span /></div>
           <div className="rotas-depth-haze" aria-hidden />
           <div className="rotas-fountain-aura" aria-hidden><span /><span /><span /></div>
@@ -88,13 +95,13 @@ export default function RotasPlaza({ entering, onBack }: Props) {
           {ROTAS_SPOTS.map((spot) => (
             <button
               key={spot.id}
-              className={`rotas-clean-hotspot rotas-clean-hotspot--${spot.id} ${selectedSpot?.id === spot.id ? "is-selected" : ""}`}
-              style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
+              className={`rotas-aligned-layer rotas-aligned-layer--${spot.id} ${selectedSpot?.id === spot.id ? "is-selected" : ""}`}
+              style={{ left: `${spot.x}%`, top: `${spot.y}%`, width: `${spot.w}%`, zIndex: spot.z, "--depth": spot.depth } as CSSProperties}
               type="button"
               title={spot.note}
               onClick={() => setSelectedSpot(spot)}
             >
-              <span />
+              {spot.asset ? <TransparentAsset className="rotas-aligned-img" src={spot.asset} alt={spot.label} /> : <span className="rotas-ghost-hotspot" />}
               <strong>{spot.label}</strong>
             </button>
           ))}
@@ -117,12 +124,12 @@ export default function RotasPlaza({ entering, onBack }: Props) {
           <>
             <span className="section-kicker">PROMENADE</span>
             <h2>Rotas respire</h2>
-            <p>Le plateau est revenu en version propre. Les vues verticales 9/16 pourront s’ouvrir au clic dès qu’on branche les écrans de rue.</p>
+            <p>Les bâtiments sont à nouveau en calques, nettoyés au chargement et replacés dans l’axe du plateau.</p>
           </>
         )}
       </aside>
 
-      <p className="rotas-tip">Prototype vivant : plateau propre, hotspots, eau, lanternes et poussières.</p>
+      <p className="rotas-tip">Prototype vivant : calques nettoyés, alignés, eau, lanternes et poussières.</p>
     </section>
   );
 }
