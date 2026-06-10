@@ -34,8 +34,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter basename="/blacklace-echo">
         <RouteRestorer />
-        <div className="bl-build-marker">FEUCH INSTITUTE // BLACKLACE ECHO // ROTAS v0.1</div>
-        <div className="bl-build-footer">BUILD VISIBLE // 2026-06-09</div>
+        <div className="bl-build-marker">ROTAS v0.9 // CALQUES NETTOYÉS // HEADER OK</div>
+        <div className="bl-build-footer">BUILD 2026-06-10 // TRANSPARENCE + AXE CAMÉRA</div>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/map" element={<Map />} />
