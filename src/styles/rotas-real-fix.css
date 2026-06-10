@@ -1,5 +1,15 @@
-.rotas-board-shell--streets,.rotas-board-shell--parallax,.rotas-board-shell--clean{display:none}
-.rotas-board-shell--aligned{top:48%;width:min(1060px,94vw);perspective:none;touch-action:none}
-.rotas-board--aligned{position:relative;aspect-ratio:4/3;border-radius:0;transform:none;transition:none;overflow:visible;background:transparent;border:0;box-shadow:none}
-.rotas-board--aligned::before{display:none}
-.rotas-layer--aligned-base{position:absolute;left
+.rotas-board-shell--streets,.rotas-board-shell--parallax,.rotas-board-shell--clean,.rotas-board-shell--aligned{display:none}
+.rotas-board-shell--final{top:47%;width:min(1080px,96vw);perspective:none;touch-action:none}
+.rotas-board--final{position:relative;aspect-ratio:4/3;border-radius:0;overflow:visible;background:transparent;border:0;box-shadow:none;transform:translate3d(calc(var(--rx) * 4px),calc(var(--ry) * 3px),0);transition:transform .18s ease}
+.rotas-board--final::before{display:none}
+.rotas-final-board-img{position:absolute;left:50%;top:50%;width:100%;height:100%;object-fit:contain;transform:translate(-50%,-50%);filter:drop-shadow(0 34px 70px rgba(0,0,0,.62)) saturate(1.04) contrast(1.03);user-select:none;-webkit-user-drag:none;pointer-events:none}
+.rotas-final-glow{position:absolute;inset:5% 0 0;pointer-events:none;background:radial-gradient(ellipse at 50% 60%,rgba(0,229,255,.16),transparent 64%);mix-blend-mode:screen;opacity:.58;animation:rotas-breathe 5.2s ease-in-out infinite}
+.rotas-final-hotspot{position:absolute;z-index:20;width:42px;height:42px;padding:0;border-radius:999px;border:1px solid rgba(0,229,255,.08);background:rgba(0,229,255,.01);transform:translate(-50%,-50%);cursor:pointer}
+.rotas-final-hotspot span{position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;background:rgba(0,229,255,.22);box-shadow:0 0 14px rgba(0,229,255,.2);transform:translate(-50%,-50%);opacity:.18;transition:opacity .18s ease,transform .18s ease}
+.rotas-final-hotspot strong{position:absolute;left:50%;top:100%;transform:translate(-50%,5px);padding:5px 8px;border-radius:999px;background:rgba(3,10,18,.78);border:1px solid rgba(0,229,255,.22);color:#fff;font-family:var(--font-display);font-size:9px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;opacity:0;transition:opacity .18s ease,transform .18s ease;pointer-events:none}
+.rotas-final-hotspot:hover span,.rotas-final-hotspot.is-selected span{opacity:1;transform:translate(-50%,-50%) scale(1.25)}
+.rotas-final-hotspot:hover strong,.rotas-final-hotspot.is-selected strong{opacity:1;transform:translate(-50%,9px)}
+.rotas-street-panel{background:rgba(3,10,18,.82);backdrop-filter:blur(16px)}
+.rotas-title small::after{content:" · v1.1 plateau final"}
+@keyframes rotas-breathe{0%,100%{opacity:.42;filter:blur(0)}50%{opacity:.76;filter:blur(1px)}}
+@media(max-width:720px){.rotas-board-shell--final{width:114vw;top:40%}.rotas-board--final{aspect-ratio:4/3}.rotas-final-hotspot{width:34px;height:34px}.rotas-final-hotspot strong{display:none}.rotas-title{top:64px;left:18px;right:18px;padding:18px 20px}.rotas-title strong{font-size:40px}.rotas-street-panel{top:auto;left:18px;right:18px;bottom:112px;width:auto;max-height:34vh;padding:22px 24px;border-radius:28px}.rotas-street-panel h2{font-size:34px}.rotas-street-panel p{font-size:18px;line-height:1.45}.rotas-tip{bottom:18px;left:18px;right:18px}.rotas-back{bottom:70px;right:28px}}
