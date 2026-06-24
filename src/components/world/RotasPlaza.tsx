@@ -51,12 +51,6 @@ export default function RotasPlaza({ entering, onBack }: Props) {
         {birds.map((_, i) => <span key={i} style={{ top: `${16 + i * 9}%`, animationDelay: `${-i * 4}s`, animationDuration: `${24 + i * 5}s` }}>⌁</span>)}
       </div>
 
-      <div className="rotas-ui rotas-title">
-        <span>FEUCH INSTITUTE // ZONE TESTABLE</span>
-        <strong>Rotas</strong>
-        <small>Plateau final composé — v1.1</small>
-      </div>
-
       <button className="rotas-back" onClick={onBack}>Retour carte</button>
 
       <div
@@ -95,19 +89,15 @@ export default function RotasPlaza({ entering, onBack }: Props) {
             <p className="rotas-kind">{selectedSpot.kind}</p>
             <p>{selectedSpot.note}</p>
             <small>{selectedSpot.mood}</small>
-            <div className="rotas-build-list"><strong>À brancher</strong><span>{selectedSpot.detail}</span></div>
-            <button className="rotas-enter-street">Ouvrir la vue rue bientôt</button>
           </>
         ) : (
           <>
             <span className="section-kicker">PROMENADE</span>
-            <h2>Rotas respire</h2>
-            <p>Plateau final composé : bâtiments debout, tentes proches du centre, hotspots prêts pour les vues de rue.</p>
+            <h2>Rotas</h2>
+            <p>Une place suspendue entre mer, lanternes, archives et chemins trop bien décorés pour être entièrement honnêtes.</p>
           </>
         )}
       </aside>
-
-      <p className="rotas-tip">Prototype vivant : plateau final, hotspots invisibles, vues 9/16 à brancher.</p>
     </section>
   );
 }
