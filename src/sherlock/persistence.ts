@@ -13,7 +13,10 @@ export interface D1Database {
 }
 type SessionRow = { initial_json: string };
 type EventRow = { event_json: string };
-export type PersistedSession = { initial: WorldState; events: WorldEvent[]; state: WorldState };
+type DecisionRow = { cycle: number; operation_id: string; source: "octopus"; actor_id: string; action_json: string; recorded_at: string };
+export type DecisionProvenance = { cycle: number; operationId: string; source: "octopus"; actorId: string; action: import("./world-core").ProposedAction; recordedAt: string };
+export type DecisionCommit = Pick<DecisionProvenance, "operationId" | "source" | "actorId" | "action">;
+export type PersistedSession = { initial: WorldState; events: WorldEvent[]; state: WorldState; decisions: DecisionProvenance[] };
 
 function parseJSON<T>(value: string): T { return JSON.parse(value) as T; }
 
@@ -34,7 +37,9 @@ export async function loadSession(db: D1Database, sessionId: string): Promise<Pe
   ).bind(sessionId).all<EventRow>();
   const initial = parseJSON<WorldState>(row.initial_json);
   const events = eventRows.results.map(row => parseJSON<WorldEvent>(row.event_json));
-  return { initial, events, state: replay(initial, events) };
+  const decisionRows = await db.prepare("SELECT cycle, operation_id, source, actor_id, action_json, recorded_at FROM sherlock_cycle_decisions WHERE session_id = ? ORDER BY cycle ASC").bind(sessionId).all<DecisionRow>();
+  const decisions = decisionRows.results.map(row => ({ cycle: row.cycle, operationId: row.operation_id, source: row.source, actorId: row.actor_id, action: parseJSON<DecisionProvenance["action"]>(row.action_json), recordedAt: row.recorded_at }));
+  return { initial, events, state: replay(initial, events), decisions };
 }
 
 /** Append exactly one complete validated cycle, atomically.
@@ -42,7 +47,7 @@ export async function loadSession(db: D1Database, sessionId: string): Promise<Pe
  * committing the same cycle. D1 batch is transactional: failure rolls back all.
  */
 export async function appendCycle(
-  db: D1Database, sessionId: string, expectedCycle: number, events: readonly WorldEvent[]
+  db: D1Database, sessionId: string, expectedCycle: number, events: readonly WorldEvent[], decision: DecisionCommit
 ): Promise<WorldState> {
   if (!Number.isSafeInteger(expectedCycle) || expectedCycle < 0) throw new Error("Invalid expected cycle");
   if (!events.length || events[0].type !== "cycle.started" || events[0].cycle !== expectedCycle + 1)
@@ -57,9 +62,11 @@ export async function appendCycle(
         (i > 0 && event.type === "cycle.started")) throw new Error("Malformed cycle event");
     next = applyEvent(next, event);
   }
+  if (!decision.operationId.trim() || decision.source !== "octopus" || !decision.actorId.trim()) throw new Error("Invalid decision provenance");
   const statements = events.map((event, i) => db.prepare(
     "INSERT INTO sherlock_events (session_id, cycle, position, event_id, event_json) VALUES (?, ?, ?, ?, ?)"
   ).bind(sessionId, event.cycle, i, event.id, JSON.stringify(event)));
+  statements.push(db.prepare("INSERT INTO sherlock_cycle_decisions (session_id, cycle, operation_id, source, actor_id, action_json) VALUES (?, ?, ?, ?, ?, ?)").bind(sessionId, expectedCycle + 1, decision.operationId, decision.source, decision.actorId, JSON.stringify(decision.action)));
   await db.batch(statements);
   return next;
 }
