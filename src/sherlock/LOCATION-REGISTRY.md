@@ -38,7 +38,7 @@ Statuts : **lore** = mention documentaire vérifiée ou apport explicite de Beno
 | fournaise | Fournaise de Feuch | Feuch, rave | Benoît ; Lieux | oui | non auditée | non auditée |
 | fournaise-crater | Cratère / scène de rave | sous-zone Fournaise | Benoît ; Lieux | oui | non auditée | non auditée |
 | ludmila-club | Club de Ludmila | Ludmila, expériences perceptives | Benoît ; Lieux | oui | non auditée | non auditée |
-| ludmila-secret | « match secret » du Club — sens à préciser | Ludmila | Benoît | oui (terme à préciser) | non auditée | non auditée |
+| ludmila-secret | Yacht secret du Club de Ludmila | Ludmila | Benoît | oui (correction confirmée) | non auditée | non auditée |
 | hanging-forest | Forêt suspendue | exploration | Benoît | oui | non auditée | non auditée |
 | mangrove | Mangrove | exploration | Benoît | oui | non auditée | non auditée |
 | lolo-lab | Laboratoire de Lolo | Lolo | Benoît | oui | non auditée | non auditée |
@@ -49,7 +49,7 @@ Statuts : **lore** = mention documentaire vérifiée ou apport explicite de Beno
 
 ### Lieux documentés à ne pas perdre, hors liste ci-dessus
 
-Port de Porsa Rotas, village de Rotas, yacht secret, boutique Pro.Hibited, disquaire, auberge AREPO, observatoire de la Fournaise et système de reboot. Ils nécessitent la même vérification avant consolidation du registre.
+Port de Porsa Rotas, village de Rotas, boutique Pro.Hibited, disquaire, auberge AREPO, observatoire de la Fournaise et système de reboot. Ils nécessitent la même vérification avant consolidation du registre.
 
 ## Contrat de données proposé (non implémenté)
 
