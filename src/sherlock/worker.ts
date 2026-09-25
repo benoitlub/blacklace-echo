@@ -57,7 +57,7 @@ export default {
       } catch (error) {
         const message = errorMessage(error);
         const status = message === "Session not found" ? 404 : /Stale cycle|UNIQUE constraint/i.test(message) ? 409 : 502;
-        return json({ error: message, committed: false }, status);
+        return json({ error: message, committed: "unknown", instruction: "Read the session before retrying." }, status);
       }
     }
     return json({ error: "Method not allowed" }, 405);
