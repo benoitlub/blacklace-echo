@@ -2,11 +2,11 @@
 
 Ce document est un **plan de validation**, pas une carte canonique. Les quatre équivalences de noms ont été confirmées par Benoît. Les relations parent/sous-zone (Fournaise/cratère, Club Ludmila/yacht) ne sont pas des accès praticables. Les coordonnées des neuf hotspots de `Map.tsx` sont des positions d'affichage, non des preuves d'adjacence.
 
-Les sept liens ci-dessous sont consignés dans [route-candidates.ts](./route-candidates.ts), avec leur provenance et une question de validation. `CONFIRMED_ROUTES` reste vide ; aucune transition n'est activée.
+**Entrée canonique confirmée :** le visiteur commence au port de Porsa Rotas, avec Marie Jeanne. Cette donnée est définie dans [arrival.ts](./arrival.ts). Le village de Rotas n'est pas le point de départ. La suite du parcours, les dialogues et les quêtes restent à définir.\n\nLes sept liens ci-dessous sont consignés dans [route-candidates.ts](./route-candidates.ts), avec leur provenance et une question de validation. `CONFIRMED_ROUTES` reste vide ; aucune transition n'est activée.
 
 | Lieux proposés | Indice | Validation nécessaire |
 | --- | --- | --- |
-| Rotas ↔ port | `islandPoiScenes.ts` évoque des escaliers vers le port, action désactivée | Arrivée directe ? |
+| Rotas ↔ port | `islandPoiScenes.ts` évoque des escaliers vers le port, action désactivée | Le départ est au port ; confirmer le chemin et le sens de circulation vers Rotas. |
 | Port ↔ digue / route côtière | `islandPoiScenes.ts` prévoit cette transition | Point de départ ? |
 | Digue ↔ mangrove | Texte de la micro-scène « accès côte » | Accès direct ? |
 | Loft Natasha ↔ studio Natasha | Description de Benoît | Pièce intérieure ou bâtiment séparé ? |
