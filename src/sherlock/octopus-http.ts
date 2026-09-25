@@ -1,5 +1,6 @@
 import type { DecisionExecutor, DecisionResult } from "./octopus-cycle";
-import type { ProposedAction } from "./world-core";
+import { PLACES } from "./world-core";
+import type { PlaceId, ProposedAction } from "./world-core";
 
 export type OctopusHttpConfig = {
   endpoint: string;
@@ -14,9 +15,9 @@ function parseDecision(value: unknown): ProposedAction {
   if (!record(value) || typeof value.actor !== "string") throw new Error("Invalid Octopus action");
   if (value.kind === "wait" && Object.keys(value).every(k => k === "actor" || k === "kind"))
     return { actor: value.actor, kind: "wait" };
-  if (value.kind === "move" && typeof value.to === "string" &&
+  if (value.kind === "move" && typeof value.to === "string" && PLACES.includes(value.to as PlaceId) &&
       Object.keys(value).every(k => k === "actor" || k === "kind" || k === "to"))
-    return { actor: value.actor, kind: "move", to: value.to as ProposedAction & never };
+    return { actor: value.actor, kind: "move", to: value.to as PlaceId };
   throw new Error("Invalid Octopus action shape");
 }
 function decodeOutput(output: unknown): ProposedAction {
