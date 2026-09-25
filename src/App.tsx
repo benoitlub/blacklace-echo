@@ -12,6 +12,7 @@ import Index from "./pages/Index.tsx";
 import Map from "./pages/Map.tsx";
 import Aloisia from "./pages/Aloisia.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import WorldDirectory from "./pages/WorldDirectory.tsx";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/map" element={<Map />} />
           <Route path="/aloisia" element={<Aloisia />} />
+          <Route path="/atlas" element={<WorldDirectory />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
