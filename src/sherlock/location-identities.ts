@@ -19,7 +19,7 @@ export const LOCATION_IDENTITIES = [
   { id: "fournaise", name: "Fournaise de Feuch", aliases: [], worldCorePlaceId: "fournaise" },
   { id: "fournaise-crater", name: "Cratère / scène de rave", aliases: [], worldCorePlaceId: null },
   { id: "ludmila", name: "Club de Ludmila", aliases: [], worldCorePlaceId: "ludmila" },
-  { id: "ludmila-secret", name: "Match secret du Club", aliases: [], worldCorePlaceId: null },
+  { id: "ludmila-yacht", name: "Yacht secret du Club de Ludmila", aliases: ["Yacht secret"], worldCorePlaceId: null },
   { id: "hanging-forest", name: "Forêt suspendue", aliases: [], worldCorePlaceId: null },
   { id: "mangrove", name: "Mangrove", aliases: [], worldCorePlaceId: null },
   { id: "lolo-lab", name: "Laboratoire de Lolo", aliases: [], worldCorePlaceId: null },
@@ -34,7 +34,7 @@ export type LocationIdentityId = (typeof LOCATION_IDENTITIES)[number]["id"];
 /** Confirmed containment from Benoît's description; NOT walkable connections. */
 export const CONFIRMED_SUBZONES = [
   { parent: "fournaise", child: "fournaise-crater" },
-  { parent: "ludmila", child: "ludmila-secret" },
+  { parent: "ludmila", child: "ludmila-yacht" },
 ] as const satisfies readonly { parent: LocationIdentityId; child: LocationIdentityId }[];
 
 /** Deliberately empty: route adjacency requires explicit geography confirmation. */
