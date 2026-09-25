@@ -18,7 +18,7 @@ export const ROUTE_CANDIDATES: readonly RouteCandidate[] = [
     from: "rotas",
     to: "port",
     evidence: "src/data/islandPoiScenes.ts: coast describes stairs toward Port Porsa Rotas; action disabled",
-    question: "Les escaliers du centre de Rotas débouchent-ils directement sur le port ?",
+    question: "Le visiteur commence au port avec Marie Jeanne ; les escaliers relient-ils directement le port à Rotas ?",
     status: "proposed",
   },
   {
