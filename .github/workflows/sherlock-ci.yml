@@ -26,6 +26,11 @@ jobs:
       # The committed lockfile is currently out of sync; use install to expose test/type errors.
       # Restore npm ci after regenerating and committing package-lock.json.
       - run: npm install
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sherlock-regenerated-package-lock
+          path: package-lock.json
+          retention-days: 7
       - run: npm test -- src/sherlock
       - run: npx tsc --noEmit -p tsconfig.app.json
       - run: npm run build
