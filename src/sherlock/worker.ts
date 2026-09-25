@@ -9,6 +9,8 @@ export interface SherlockBindings {
   SHERLOCK_API_TOKEN?: string;
   OCTOPUS_MISSION_URL?: string;
   OCTOPUS_AUTHORIZATION?: string;
+  SHERLOCK_PUBLIC_SESSION_ID?: string;
+  SHERLOCK_PUBLIC_ORIGIN?: string;
 }
 
 function json(value: unknown, status = 200): Response {
@@ -24,6 +26,19 @@ export default {
     if (request.method === "GET" && url.pathname === "/health") {
       return json({ service: "sherlock", status: env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS_MISSION_URL ? "configured" : "unavailable" },
         env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS_MISSION_URL ? 200 : 503);
+    }
+    // Opt-in, read-only projection: never expose session snapshots, IDs, operation IDs or secrets.
+    if (request.method === "GET" && url.pathname === "/api/sherlock/public-feed") {
+      const origin = env.SHERLOCK_PUBLIC_ORIGIN;
+      if (!origin || !env.SHERLOCK_DB || !env.SHERLOCK_PUBLIC_SESSION_ID || !validId(env.SHERLOCK_PUBLIC_SESSION_ID)) return json({ error: "Public feed unavailable" }, 503);
+      try {
+        const session = await loadSession(env.SHERLOCK_DB, env.SHERLOCK_PUBLIC_SESSION_ID);
+        if (!session) return json({ error: "Public feed unavailable" }, 503);
+        const entries = session.events.filter(event => event.type === "character.waited").slice(-20).map(event => ({
+          id: event.id, cycle: event.cycle, actor: event.actor, kind: "waited" as const, place: event.at,
+        }));
+        return new Response(JSON.stringify({ entries }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
+      } catch { return json({ error: "Public feed unavailable" }, 503); }
     }
     if (!url.pathname.startsWith("/api/sherlock/")) return json({ error: "Not found" }, 404);
     if (!env.SHERLOCK_API_TOKEN || request.headers.get("authorization") !== `Bearer ${env.SHERLOCK_API_TOKEN}`)
