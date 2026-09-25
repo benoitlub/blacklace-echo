@@ -38,7 +38,7 @@ export function createOctopusHttpExecutor(config: OctopusHttpConfig): DecisionEx
     throw new Error("Octopus endpoint must use HTTPS");
   if (url.pathname.replace(/\/$/, "") !== "/mission") throw new Error("Expected Octopus /mission endpoint");
   const send = config.fetcher ?? fetch;
-  return async request: Promise<DecisionResult> => {
+  return async (request): Promise<DecisionResult> => {
     const operationId = crypto.randomUUID();
     const response = await send(url.toString(), {
       method: "POST",
