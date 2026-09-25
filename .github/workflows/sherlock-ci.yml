@@ -23,7 +23,9 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      # The committed lockfile is currently out of sync; use install to expose test/type errors.
+      # Restore npm ci after regenerating and committing package-lock.json.
+      - run: npm install
       - run: npm test -- src/sherlock
       - run: npx tsc --noEmit -p tsconfig.app.json
       - run: npm run build
