@@ -120,6 +120,7 @@ const Map = () => {
             <span className="bl-brand-eye">◉</span>
             <span>BLACKLACE</span>
           </Link>
+          <Link className="bl-pill" to="/atlas">LIEUX & HABITANTS</Link>
           <Link className="bl-pill" to="/">RETOUR LIVE</Link>
         </header>
 
