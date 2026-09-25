@@ -22,7 +22,7 @@ export const CONNECTIONS: Readonly<Record<PlaceId, readonly PlaceId[]>> = {
 export function initialWorld(characters: readonly CharacterState[]): WorldState {
   const byId: WorldState["characters"] = Object.create(null);
   for (const character of characters) {
-    if (!character.id || Object.hasOwn(byId, character.id)) throw new Error("Invalid or duplicate character ID");
+    if (!character.id || Object.prototype.hasOwnProperty.call(byId, character.id)) throw new Error("Invalid or duplicate character ID");
     if (!PLACES.includes(character.place)) throw new Error("Unknown place");
     byId[character.id] = { ...character };
   }
