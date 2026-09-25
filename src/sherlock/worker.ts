@@ -34,7 +34,8 @@ export default {
       try {
         const session = await loadSession(env.SHERLOCK_DB, env.SHERLOCK_PUBLIC_SESSION_ID);
         if (!session) return json({ error: "Public feed unavailable" }, 503);
-        const entries = session.events.filter(event => event.type === "character.waited").slice(-20).map(event => ({
+        const verified = new Set(session.decisions.filter(decision => decision.source === "octopus" && decision.action.kind === "wait" && decision.action.actor === decision.actorId).map(decision => `${decision.cycle}:${decision.actorId}`));
+        const entries = session.events.filter(event => event.type === "character.waited" && verified.has(`${event.cycle}:${event.actor}`)).slice(-20).map(event => ({
           id: event.id, cycle: event.cycle, actor: event.actor, kind: "waited" as const, place: event.at,
         }));
         return new Response(JSON.stringify({ entries }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
