@@ -7,7 +7,7 @@ The GitHub Pages workflow deploys only the Vite front end. It does **not** deplo
 1. Provision a dedicated D1 database named `blacklace-sherlock` in the intended Cloudflare account. Record its actual database ID. Do not invent one.
 2. Configure a separate Worker with entrypoint `src/sherlock/worker.ts`, compatibility date, and binding `SHERLOCK_DB` referencing that actual ID. Set its migrations directory to `src/sherlock/migrations` (or apply the SQL explicitly through the Cloudflare D1 tooling). Do not reuse the front-end GitHub Pages deployment.
 3. Set Worker secrets `SHERLOCK_API_TOKEN` (high-entropy, private), and optionally `OCTOPUS_AUTHORIZATION` if the Octopus service supports it. Set `OCTOPUS_MISSION_URL` to the actual HTTPS Octopus `/mission` endpoint. Do not put the Sherlock token in Vite variables or browser JavaScript.
-4. Apply `0001_world_log.sql` to the actual D1 database, first in preview/staging. Deploy the Worker only after reviewing bindings and account.
+4. Apply both `0001_world_log.sql` and `0002_cycle_decisions.sql` to the actual D1 database, first in preview/staging. Deploy the Worker only after reviewing bindings and account.
 5. Keep the Worker private/protected at the edge: the current token header alone does not implement per-user access control, rate limiting, or browser session authentication.
 
 ## Real acceptance sequence
@@ -21,4 +21,11 @@ The GitHub Pages workflow deploys only the Vite front end. It does **not** deplo
 
 **Current action set:** only `wait` for Marie Jeanne. This is a real persisted decision only if Octopus actually returns it; it is not evidence of autonomous roaming or character memory. The simulated place graph is not approved island geography.
 
-**Important gaps before production:** durable provenance of Octopus decisions (currently returned in response, not stored in D1); cross-request idempotency; strict access control and rate limiting; server-side schema validation and authorization of the actor; dedicated deployment workflow and end-to-end tests. Do not claim the simulation is live until these are addressed and tested.
+**Important gaps before production:** durable provenance is implemented in the D1 schema and write path but has not been deployed or verified against a real D1 instance; cross-request idempotency; strict access control and rate limiting; server-side schema validation and authorization of the actor; dedicated deployment workflow and end-to-end tests. Do not claim the simulation is live until these are addressed and tested.
+
+## Public chat projection (opt-in; not yet deployed)
+
+- Set `SHERLOCK_PUBLIC_SESSION_ID` to a real, deliberately published session ID and `SHERLOCK_PUBLIC_ORIGIN` to the exact approved website origin (for browser CORS). Do not publish a private session. The endpoint is publicly readable once enabled; CORS is not access control.
+- Set the Vite build variable `VITE_SHERLOCK_PUBLIC_FEED_URL` to the actual HTTPS Worker `/api/sherlock/public-feed` URL. This URL is public; never use `SHERLOCK_API_TOKEN` in the front end.
+- The feed exposes only validated `character.waited` events with a matching persisted Octopus decision. It is an event projection, not generated character speech, live chat, or a proof of a deployed autonomous system.
+- Test disabled/missing binding behavior, D1 migrations, authorized session lifecycle, Octopus failure, and the actual browser origin before enabling the public feed.
