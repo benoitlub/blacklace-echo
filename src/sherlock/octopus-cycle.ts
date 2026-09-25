@@ -23,6 +23,7 @@ export type CommittedCycle = {
   events: ReturnType<typeof runCycle>["events"];
   operationId: string;
   source: "octopus";
+  recordedAt: string;
 };
 
 export function allowedActionsFor(state: WorldState, actorId: string): ProposedAction[] {
@@ -56,11 +57,14 @@ export async function commitOctopusCycle(
     throw new Error("Decision is not an allowed action");
   }
   const result = runCycle(session.state, [decision.action]);
-  await appendCycle(db, sessionId, session.state.cycle, result.events);
+  await appendCycle(db, sessionId, session.state.cycle, result.events, { operationId: decision.operationId, source: decision.source, actorId, action: decision.action });
   const persisted = await loadSession(db, sessionId);
   if (!persisted || persisted.state.cycle !== result.state.cycle ||
       JSON.stringify(persisted.state) !== JSON.stringify(result.state)) {
     throw new Error("Persisted cycle verification failed");
   }
-  return { sessionId, state: persisted.state, events: result.events, operationId: decision.operationId, source: "octopus" };
+  const provenance = persisted.decisions.find(item => item.cycle === result.state.cycle);
+  if (!provenance || provenance.operationId !== decision.operationId || provenance.actorId !== actorId ||
+      JSON.stringify(provenance.action) !== JSON.stringify(decision.action)) throw new Error("Persisted provenance verification failed");
+  return { sessionId, state: persisted.state, events: result.events, operationId: provenance.operationId, source: provenance.source, recordedAt: provenance.recordedAt };
 }
