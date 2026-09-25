@@ -29,7 +29,7 @@ Audit statique des fichiers GitHub consultés ; aucune application lancée, aucu
 | port | hotspot + zone textuelle | aucune scène spécifique vérifiée | transition depuis Rotas |
 | rotas | hotspot + `RotasPlaza` + 7 micro-scènes déclarées | cible documentaire de génération | granularité des rues et parcours |
 | beach-bar / Max Liberty | hotspot + zone textuelle | cible documentaire | bar de plage = Max Liberty ? |
-| ludmila-club | hotspot + zone textuelle | aucune scène vérifiée | « match secret » : formulation à préciser |
+| ludmila-club | hotspot + zone textuelle | aucune scène vérifiée | yacht secret du Club de Ludmila (correction confirmée) |
 | sator-dolmens | hotspot « Clairière SATOR » + zone textuelle | aucune scène vérifiée | dolmens = sous-zone de la clairière ? |
 | institute | hotspot + zone textuelle + liens externes | cible documentaire | séparer Institute / labo Nikolas / portail web |
 | fournaise | hotspot + visuel volcan + statut « fermé » | aucune scène vérifiée | cratère/scène rave comme sous-zone |
