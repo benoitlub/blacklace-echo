@@ -1,0 +1,38 @@
+name: Sherlock World Core CI
+
+on:
+  pull_request:
+    paths:
+      - 'src/sherlock/**'
+      - 'src/blacklace/**'
+      - 'src/pages/Index.tsx'
+      - '.github/workflows/sherlock-ci.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'tsconfig*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      # The committed lockfile is currently out of sync; use install to expose test/type errors.
+      # Restore npm ci after regenerating and committing package-lock.json.
+      - run: npm install
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sherlock-regenerated-package-lock
+          path: package-lock.json
+          retention-days: 7
+      - run: npm test -- src/sherlock src/blacklace
+      - run: npx tsc --noEmit -p tsconfig.app.json
+      - run: npm run build

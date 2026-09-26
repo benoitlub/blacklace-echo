@@ -1,0 +1,10 @@
+name = "blacklace-sherlock"
+main = "src/sherlock/worker.ts"
+compatibility_date = "2026-09-26"
+workers_dev = true
+
+[[d1_databases]]
+binding = "SHERLOCK_DB"
+database_name = "blacklace-sherlock"
+database_id = "d8a9b5e5-23ce-4544-9013-a0c35f67b7bd"
+migrations_dir = "src/sherlock/migrations"
