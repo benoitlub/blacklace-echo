@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'src/sherlock/**'
+      - 'src/blacklace/**'
+      - 'src/pages/Index.tsx'
       - '.github/workflows/sherlock-ci.yml'
       - 'package.json'
       - 'package-lock.json'
@@ -31,6 +33,6 @@ jobs:
           name: sherlock-regenerated-package-lock
           path: package-lock.json
           retention-days: 7
-      - run: npm test -- src/sherlock
+      - run: npm test -- src/sherlock src/blacklace
       - run: npx tsc --noEmit -p tsconfig.app.json
       - run: npm run build
