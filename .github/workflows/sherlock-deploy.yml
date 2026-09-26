@@ -1,0 +1,31 @@
+name: Deploy Sherlock Worker
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sherlock-worker-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: sherlock-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm test -- src/sherlock src/blacklace
+      - run: npx tsc --noEmit -p tsconfig.app.json
+      - name: Deploy existing Worker (do not run D1 migrations)
+        run: npx --yes wrangler@4 deploy --config wrangler.sherlock.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Check health (configuration only)
+        run: curl --fail --silent --show-error https://blacklace-sherlock.benoitlubert.workers.dev/health
