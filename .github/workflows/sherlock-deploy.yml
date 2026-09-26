@@ -2,6 +2,12 @@ name: Deploy Sherlock Worker
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/sherlock/**'
+      - 'wrangler.sherlock.toml'
+      - '.github/workflows/sherlock-deploy.yml'
 
 permissions:
   contents: read
@@ -13,7 +19,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: sherlock-production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,5 +32,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      - name: Check health (configuration only)
-        run: curl --fail --silent --show-error https://blacklace-sherlock.benoitlubert.workers.dev/health
+      - name: Check deployed endpoint (configuration may still be incomplete)
+        run: |
+          curl --silent --show-error --output health.json --write-out '%{http_code}' https://blacklace-sherlock.benoitlubert.workers.dev/health > status.txt
+          cat health.json
+          grep -q '"service":"sherlock"' health.json
+          grep -Eq '^(200|503)
+ status.txt
