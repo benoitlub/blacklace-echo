@@ -23,7 +23,10 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm run build
+      - name: Build Blacklace Echo with optional public Sherlock feed
+        run: npm run build
+        env:
+          VITE_SHERLOCK_PUBLIC_FEED_URL: ${{ vars.VITE_SHERLOCK_PUBLIC_FEED_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
