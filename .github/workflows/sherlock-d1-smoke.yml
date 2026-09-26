@@ -1,0 +1,23 @@
+name: Verify Sherlock D1
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create and read session
+        env:
+          TOKEN: ${{ secrets.SHERLOCK_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$TOKEN"
+          endpoint=https://blacklace-sherlock.benoitlubert.workers.dev/api/sherlock/sessions
+          code=$(curl -sS -o created.json -w '%{http_code}' -X POST -H "Authorization: Bearer $TOKEN" "$endpoint")
+          test "$code" = 201
+          id=$(jq -er '.sessionId' created.json)
+          code=$(curl -sS -o loaded.json -w '%{http_code}' -H "Authorization: Bearer $TOKEN" "$endpoint/$id")
+          test "$code" = 200
+          jq -e --arg id "$id" '.sessionId == $id and (.events | type == "array") and (.decisions | type == "array")' loaded.json >/dev/null
+          echo "PASS: session created and read from D1"
