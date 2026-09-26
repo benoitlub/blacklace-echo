@@ -37,5 +37,4 @@ jobs:
           curl --silent --show-error --output health.json --write-out '%{http_code}' https://blacklace-sherlock.benoitlubert.workers.dev/health > status.txt
           cat health.json
           grep -q '"service":"sherlock"' health.json
-          grep -Eq '^(200|503)
- status.txt
+          grep -Eq '^(200|503)$' status.txt
