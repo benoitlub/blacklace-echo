@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { Anchor, Beer, Triangle, Hexagon, Eye, Radio } from "lucide-react";
 import { BackgroundLayers, glitch } from "@/blacklace/Layers";
 import { zones, scriptedLines, videoSources, ZoneKey, appLinks } from "@/blacklace/data";
+import { characterInterventions } from "@/blacklace/character-interventions";
+import { describeWorldEntry, parsePublicFeed } from "@/blacklace/sherlock-feed";
 
-type ChatItem = { name: string; text: string };
+type ChatItem = { name: string; text: string; origin?: "archive" | "visitor" | "system" | "world" };
 type Phase = "phase-signal" | "phase-feuch" | "phase-reboot";
 type Phase2 = Phase | "phase-sator";
 
@@ -32,12 +34,13 @@ const statusClass = (status: string) => status.toLowerCase().replace(/\s+/g, "-"
 const Index = () => {
   const [phase, setPhase] = useState<Phase2>("phase-signal");
   const [chat, setChat] = useState<ChatItem[]>([{ name: "SYSTEM", text: "Connexion au signal Blacklace..." }]);
-  const [viewerCount, setViewerCount] = useState(128);
   const [signalHealth, setSignalHealth] = useState(97);
   const [videoIdx, setVideoIdx] = useState(0);
   const [zoneOpen, setZoneOpen] = useState<ZoneKey | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [signalLost, setSignalLost] = useState(false);
+  const [worldFeedStatus, setWorldFeedStatus] = useState<"off" | "connecting" | "connected" | "unavailable">("off");
+  const seenWorldEvents = useRef(new Set<string>());
 
   const chatRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -53,10 +56,38 @@ const Index = () => {
   useEffect(() => {
     const id = setInterval(() => {
       const [name, text] = scriptedLines[Math.floor(Math.random() * scriptedLines.length)];
-      setChat((c) => [...c.slice(-40), { name, text }]);
-      setViewerCount(121 + Math.floor(Math.random() * 18));
+      setChat((c) => [...c.slice(-40), { name, text, origin: "archive" }]);
     }, 7000);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const endpoint = import.meta.env.VITE_SHERLOCK_PUBLIC_FEED_URL;
+    if (!endpoint) return;
+    let active = true;
+    const controller = new AbortController();
+    setWorldFeedStatus("connecting");
+    async function refresh() {
+      try {
+        const response = await fetch(endpoint, { signal: controller.signal, credentials: "omit", cache: "no-store" });
+        if (!response.ok) throw new Error("Feed unavailable");
+        const entries = parsePublicFeed(await response.json());
+        if (!active) return;
+        const unseen = entries.filter(entry => {
+          const key = `${entry.cycle}:${entry.id}`;
+          if (seenWorldEvents.current.has(key)) return false;
+          seenWorldEvents.current.add(key);
+          return true;
+        });
+        if (unseen.length) setChat(c => [...c, ...unseen.map(entry => ({ ...describeWorldEntry(entry), origin: "world" as const }))].slice(-60));
+        setWorldFeedStatus("connected");
+      } catch {
+        if (active) setWorldFeedStatus("unavailable");
+      }
+    }
+    void refresh();
+    const timer = window.setInterval(() => void refresh(), 15000);
+    return () => { active = false; controller.abort(); window.clearInterval(timer); };
   }, []);
 
   useEffect(() => {
@@ -110,7 +141,7 @@ const Index = () => {
 
   function openZone(k: ZoneKey) {
     setZoneOpen(k);
-    setChat((c) => [...c, { name: "SYSTEM", text: "Accès demandé : " + zones[k].title + "." }]);
+    setChat((c) => [...c.slice(-40), { name: "SYSTEM", text: "Accès demandé : " + zones[k].title + ".", origin: "system" }, ...characterInterventions[k].map(line => ({ ...line, origin: "archive" as const }))]);
     glitch();
   }
 
@@ -118,14 +149,9 @@ const Index = () => {
     e.preventDefault();
     const v = chatInput.trim();
     if (!v) return;
-    setChat((c) => [...c, { name: "BENOÎT", text: v }]);
+    setChat((c) => [...c.slice(-40), { name: "VISITEUR", text: v, origin: "visitor" }]);
     setChatInput("");
-    setTimeout(() => {
-      setChat((c) => [
-        ...c,
-        { name: "ALOISIA", text: "Signal reçu. Je le garde dans la brume pour la prochaine mutation de l'île." },
-      ]);
-    }, 450);
+    setChat((c) => [...c.slice(-40), { name: "SYSTEM", text: "Message affiché localement. Les réponses interactives des personnages ne sont pas encore connectées.", origin: "system" }]);
     glitch();
   }
 
@@ -212,12 +238,12 @@ const Index = () => {
           <aside className="bl-card bl-signal-console">
             <div className="bl-card-head">
               <span>ISLAND CHAT</span>
-              <span>{viewerCount} viewers</span>
+              <span>{worldFeedStatus === "connected" ? "SHERLOCK · ÉVÉNEMENTS CONNECTÉS" : worldFeedStatus === "connecting" ? "SHERLOCK · CONNEXION…" : worldFeedStatus === "unavailable" ? "SHERLOCK · INDISPONIBLE" : "ARCHIVES // INTERACTIONS EN PRÉPARATION"}</span>
             </div>
             <div className="bl-log-list" ref={chatRef}>
               {chat.map((l, i) => (
                 <div className="bl-log" key={i}>
-                  <strong>{l.name}</strong>
+                  <strong>{l.name}{l.origin === "archive" ? " · ARCHIVE" : l.origin === "visitor" ? " · LOCAL" : l.origin === "world" ? " · ÉVÉNEMENT SHERLOCK" : ""}</strong>
                   <span>{l.text}</span>
                 </div>
               ))}
@@ -226,7 +252,7 @@ const Index = () => {
               <textarea
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Écris au signal..."
+                placeholder="Écris au signal (affichage local)..."
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
