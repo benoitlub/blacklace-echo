@@ -15,6 +15,8 @@ describe("Sherlock public chat projection", () => {
       { id: "1:0", cycle: 1, actor: "marie-jeanne", kind: "started", place: "port" },
       { id: "1:1", cycle: 1, actor: "marie-jeanne", kind: "waited", place: "port" },
       { id: "1:2", cycle: -1, actor: "marie-jeanne", kind: "waited", place: "port" },
+      { id: "2:1", cycle: 1, actor: "marie-jeanne", kind: "waited", place: "port" },
+      { id: "1:0", cycle: 1, actor: "marie-jeanne", kind: "waited", place: "port" },
     ] })).toHaveLength(1);
   });
 });
