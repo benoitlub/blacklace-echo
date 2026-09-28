@@ -1,6 +1,7 @@
 import { createSession, loadSession } from "./persistence";
 import type { D1Database } from "./persistence";
 import { initialWorld } from "./world-core";
+import type { PlaceId } from "./world-core";
 import { commitOctopusCycle } from "./octopus-cycle";
 import { createOctopusHttpExecutor } from "./octopus-http";
 
@@ -36,22 +37,28 @@ export default {
         const verified = new Map(session.decisions
           .filter(decision => decision.source === "octopus" && decision.action.actor === decision.actorId)
           .map(decision => [`${decision.cycle}:${decision.actorId}`, decision.action]));
-        const entries = session.events.flatMap(event => {
+        type PublicEntry =
+          | { id: string; cycle: number; actor: string; kind: "waited"; place: PlaceId }
+          | { id: string; cycle: number; actor: string; kind: "moved"; from: PlaceId; to: PlaceId };
+        const entries: PublicEntry[] = [];
+        for (const event of session.events) {
           if (event.type === "character.waited") {
             const action = verified.get(`${event.cycle}:${event.actor}`);
-            return action?.kind === "wait" ? [{
-              id: event.id, cycle: event.cycle, actor: event.actor, kind: "waited" as const, place: event.at,
-            }] : [];
+            if (action?.kind === "wait") entries.push({
+              id: event.id, cycle: event.cycle, actor: event.actor, kind: "waited", place: event.at,
+            });
+            continue;
           }
           if (event.type === "character.moved") {
             const action = verified.get(`${event.cycle}:${event.actor}`);
-            return action?.kind === "move" && action.to === event.to ? [{
-              id: event.id, cycle: event.cycle, actor: event.actor, kind: "moved" as const, from: event.from, to: event.to,
-            }] : [];
+            if (action?.kind === "move" && action.to === event.to) entries.push({
+              id: event.id, cycle: event.cycle, actor: event.actor, kind: "moved", from: event.from, to: event.to,
+            });
+            continue;
           }
-          return [];
-        }).slice(-20);
-        return new Response(JSON.stringify({ entries }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
+        }
+        const publicEntries = entries.slice(-20);
+        return new Response(JSON.stringify({ entries: publicEntries }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
       } catch { return json({ error: "Public feed unavailable" }, 503); }
     }
     if (!url.pathname.startsWith("/api/sherlock/")) return json({ error: "Not found" }, 404);
