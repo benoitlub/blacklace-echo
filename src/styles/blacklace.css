@@ -367,6 +367,11 @@ body.bl-route-transition main{animation:routeGlitch .38s steps(2,end)}
 
 /* ===== Walking characters ===== */
 .i3d-char{position:absolute;width:0;height:0;transform:translate(-50%,-50%) translateZ(70px);pointer-events:none;z-index:5}
+.i3d-char--sherlock{z-index:36;transition:left 4s cubic-bezier(.4,0,.2,1),top 4s cubic-bezier(.4,0,.2,1)}
+.i3d-char--sherlock .i3d-char-dot{width:12px;height:12px;left:-6px;top:-6px;border:2px solid rgba(255,255,255,.9)}
+.i3d-char--sherlock.is-moving .i3d-char-dot{animation:charBob .32s ease-in-out infinite alternate,sherlockMovePulse .8s ease-in-out infinite}
+.i3d-char--sherlock.is-moving .i3d-char-trail{width:18px;height:18px;left:-9px;top:-9px;opacity:.8}
+@keyframes sherlockMovePulse{50%{box-shadow:0 0 16px var(--c),0 0 34px var(--c),0 0 50px rgba(0,229,255,.45)}}
 .i3d-char-dot{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c),0 0 20px var(--c);animation:charBob .6s ease-in-out infinite alternate}
 .i3d-char-trail{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:var(--c);filter:blur(6px);opacity:.6}
 .i3d-char-name{position:absolute;left:10px;top:-14px;font-family:var(--font-display);font-size:8px;letter-spacing:.18em;color:#fff;background:rgba(0,0,0,.55);padding:2px 6px;border-radius:6px;border:1px solid var(--c);white-space:nowrap;text-shadow:0 0 4px var(--c)}
@@ -501,6 +506,11 @@ body.bl-route-transition main{animation:routeGlitch .38s steps(2,end)}
   padding:14px 18px;border-radius:18px;
   background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.2);
 }
+.sherlock-map-status{position:absolute;left:18px;bottom:18px;z-index:45;display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:999px;background:rgba(2,3,10,.72);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px);font-family:var(--font-display);font-size:9px;letter-spacing:.13em;color:rgba(255,255,255,.72);pointer-events:none}
+.sherlock-map-dot{width:7px;height:7px;border-radius:50%;background:#777;box-shadow:0 0 10px #777}
+.sherlock-map-status.is-live .sherlock-map-dot{background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:pulse 1.4s ease-in-out infinite}
+.sherlock-map-status.is-connecting .sherlock-map-dot{background:var(--orange);box-shadow:0 0 12px var(--orange)}
+.sherlock-map-status.is-unavailable .sherlock-map-dot{background:#ec4899;box-shadow:0 0 12px #ec4899}
 .i3d-info h3{margin:0;font-family:var(--font-display);letter-spacing:.06em}
 
 .i3d-placeholder{
