@@ -1,6 +1,6 @@
 import { appendCycle, loadSession } from "./persistence";
 import type { D1Database } from "./persistence";
-import { runCycle } from "./world-core";
+import { CONNECTIONS, runCycle } from "./world-core";
 import type { ProposedAction, WorldState } from "./world-core";
 
 /** Boundary for an actual Octopus decision service. No scripted or local fallback. */
@@ -29,8 +29,10 @@ export type CommittedCycle = {
 export function allowedActionsFor(state: WorldState, actorId: string): ProposedAction[] {
   const actor = state.characters[actorId];
   if (!actor) throw new Error("Unknown character");
-  // Until geographic links are approved, no movement is exposed to a real agent.
-  return [{ actor: actorId, kind: "wait" }];
+  return [
+    { actor: actorId, kind: "wait" },
+    ...CONNECTIONS[actor.place].map((to) => ({ actor: actorId, kind: "move" as const, to })),
+  ];
 }
 
 /** One real decision, validated and persisted. Requires a caller-provided live executor and D1. */
