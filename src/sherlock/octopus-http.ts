@@ -53,7 +53,10 @@ export function createOctopusHttpExecutor(config: OctopusHttpConfig): DecisionEx
         prompt: `Choose exactly one action from this JSON array and return ONLY JSON {"action":<chosen action>}: ${JSON.stringify(request.allowedActions)}. State: ${JSON.stringify(request.state)}`,
       }),
     });
-    if (!response.ok) throw new Error(`Octopus HTTP ${response.status}`);
+    if (!response.ok) {
+      const detail = (await response.text().catch(() => "")).trim().replace(/\s+/g, " ").slice(0, 500);
+      throw new Error(`Octopus HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
+    }
     const payload: unknown = await response.json();
     if (!record(payload) || payload.status !== "completed" || payload.operationId !== operationId)
       throw new Error("Octopus mission was not completed or operation ID mismatched");
