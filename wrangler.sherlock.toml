@@ -4,9 +4,11 @@ compatibility_date = "2026-09-26"
 workers_dev = true
 keep_vars = true
 
-# Runtime vars/secrets (SHERLOCK_API_TOKEN, OCTOPUS_MISSION_URL,
-# OCTOPUS_AUTHORIZATION, SHERLOCK_PUBLIC_SESSION_ID and SHERLOCK_PUBLIC_ORIGIN)
-# are managed in Cloudflare and must survive Wrangler deployments.
+# Runtime vars/secrets are managed in Cloudflare and survive deployments.
+# Octopus is reached privately through a Cloudflare Service Binding.
+[[services]]
+binding = "OCTOPUS"
+service = "octopus-engine-app"
 
 [[d1_databases]]
 binding = "SHERLOCK_DB"
