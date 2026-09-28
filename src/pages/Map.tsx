@@ -3,7 +3,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BackgroundLayers } from "@/blacklace/Layers";
 import RotasPlaza from "@/components/world/RotasPlaza";
 import "@/styles/rotas.css";
-import { ISLAND_LOCATIONS } from "@/blacklace/island-geography";
+import { ISLAND_LOCATIONS, ISLAND_LOCATION_BY_ID } from "@/blacklace/island-geography";
+import { parsePublicFeed, type PublicWorldEntry } from "@/blacklace/sherlock-feed";
+import type { PlaceId } from "@/sherlock/world-core";
 
 const HOTSPOTS = ISLAND_LOCATIONS;
 
@@ -12,6 +14,11 @@ const HOLOWALL_LABELS = ["ROTAS", "SATOR", "FEUCH", "ALOISIA", "SIGNAL", "BRUME"
 type Weather = "clear" | "rain" | "storm" | "fog";
 type Time = "dawn" | "day" | "dusk" | "night";
 type MapView = "map" | "zooming-rotas" | "rotas";
+type SherlockPresence = { actor: string; place: PlaceId; cycle: number; moving: boolean };
+const PLACE_IDS = new Set(ISLAND_LOCATIONS.map(location => location.id));
+const isPlaceId = (value: string): value is PlaceId => PLACE_IDS.has(value as PlaceId);
+const ACTOR_NAMES: Record<string, string> = { "marie-jeanne": "MARIE JEANNE" };
+const ACTOR_COLORS: Record<string, string> = { "marie-jeanne": "#fff2a8" };
 
 const Map = () => {
   const [imgOk, setImgOk] = useState(true);
@@ -19,6 +26,9 @@ const Map = () => {
   const [view, setView] = useState<MapView>("map");
   const [weather, setWeather] = useState<Weather>("clear");
   const [time, setTime] = useState<Time>("day");
+  const [sherlockStatus, setSherlockStatus] = useState<"off" | "connecting" | "live" | "unavailable">("off");
+  const [presences, setPresences] = useState<Record<string, SherlockPresence>>({});
+  const seenSherlockEvents = useRef(new Set<string>());
   const stageRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const islandRef = useRef<HTMLDivElement>(null);
@@ -59,6 +69,60 @@ const Map = () => {
       cancelAnimationFrame(raf);
     };
   }, [view]);
+
+  useEffect(() => {
+    const endpoint = import.meta.env.VITE_SHERLOCK_PUBLIC_FEED_URL;
+    if (!endpoint) return;
+    let active = true;
+    const controller = new AbortController();
+    const movementTimers = new Set<number>();
+    setSherlockStatus("connecting");
+
+    async function refresh() {
+      try {
+        const response = await fetch(endpoint, { signal: controller.signal, credentials: "omit", cache: "no-store" });
+        if (!response.ok) throw new Error("Feed unavailable");
+        const entries = parsePublicFeed(await response.json());
+        if (!active) return;
+        for (const entry of entries) {
+          const key = `${entry.cycle}:${entry.id}`;
+          if (seenSherlockEvents.current.has(key)) continue;
+          seenSherlockEvents.current.add(key);
+          if (entry.kind === "waited" && isPlaceId(entry.place)) {
+            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: entry.place, cycle: entry.cycle, moving: false } }));
+          } else if (entry.kind === "moved" && isPlaceId(entry.from) && isPlaceId(entry.to)) {
+            // Reconstruct the verified origin first; the CSS transition then visualises the trip to the verified destination.
+            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: entry.from, cycle: entry.cycle, moving: true } }));
+            const timer = window.setTimeout(() => {
+              if (!active) return;
+              setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: entry.to, cycle: entry.cycle, moving: true } }));
+              const settle = window.setTimeout(() => {
+                if (!active) return;
+                setPresences(current => {
+                  const presence = current[entry.actor];
+                  return presence ? { ...current, [entry.actor]: { ...presence, moving: false } } : current;
+                });
+              }, 4200);
+              movementTimers.add(settle);
+            }, 80);
+            movementTimers.add(timer);
+          }
+        }
+        setSherlockStatus("live");
+      } catch {
+        if (active) setSherlockStatus("unavailable");
+      }
+    }
+
+    void refresh();
+    const poll = window.setInterval(() => void refresh(), 15000);
+    return () => {
+      active = false;
+      controller.abort();
+      window.clearInterval(poll);
+      movementTimers.forEach(timer => window.clearTimeout(timer));
+    };
+  }, []);
 
   useEffect(() => {
     const wOrder: Weather[] = ["clear", "fog", "rain", "clear"];
@@ -197,6 +261,23 @@ const Map = () => {
                     <span className="i3d-label">{h.label}</span>
                   </button>
                 ))}
+
+                {Object.values(presences).map(presence => {
+                  const location = ISLAND_LOCATION_BY_ID[presence.place];
+                  const color = ACTOR_COLORS[presence.actor] ?? "#ffffff";
+                  return (
+                    <div
+                      key={presence.actor}
+                      className={`i3d-char i3d-char--sherlock ${presence.moving ? "is-moving" : ""}`}
+                      style={{ left: `${location.x}%`, top: `${location.y}%`, ["--c" as any]: color }}
+                      title={`${ACTOR_NAMES[presence.actor] ?? presence.actor} · ${location.label} · cycle ${presence.cycle}`}
+                    >
+                      <span className="i3d-char-trail" />
+                      <span className="i3d-char-dot" />
+                      <span className="i3d-char-name">{ACTOR_NAMES[presence.actor] ?? presence.actor} · C{presence.cycle}</span>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="i3d-layer i3d-weather">
@@ -216,6 +297,13 @@ const Map = () => {
 
             <div className="i3d-tint" aria-hidden />
           </div>
+
+          {view === "map" && (
+            <div className={`sherlock-map-status is-${sherlockStatus}`}>
+              <span className="sherlock-map-dot" />
+              SHERLOCK {sherlockStatus === "live" ? `LIVE · ${Object.keys(presences).length} PRÉSENCE(S)` : sherlockStatus === "connecting" ? "CONNEXION…" : sherlockStatus === "unavailable" ? "HORS SIGNAL" : "OFF"}
+            </div>
+          )}
 
           {activeZone && view === "map" && (
             <div className="i3d-info">
