@@ -7,8 +7,7 @@ import { createOctopusHttpExecutor } from "./octopus-http";
 export interface SherlockBindings {
   SHERLOCK_DB?: D1Database;
   SHERLOCK_API_TOKEN?: string;
-  OCTOPUS_MISSION_URL?: string;
-  OCTOPUS_AUTHORIZATION?: string;
+  OCTOPUS?: Fetcher;
   SHERLOCK_PUBLIC_SESSION_ID?: string;
   SHERLOCK_PUBLIC_ORIGIN?: string;
 }
@@ -24,8 +23,8 @@ export default {
   async fetch(request: Request, env: SherlockBindings): Promise<Response> {
     const url = new URL(request.url);
     if (request.method === "GET" && url.pathname === "/health") {
-      return json({ service: "sherlock", status: env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS_MISSION_URL ? "configured" : "unavailable" },
-        env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS_MISSION_URL ? 200 : 503);
+      return json({ service: "sherlock", status: env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS ? "configured" : "unavailable" },
+        env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS ? 200 : 503);
     }
     // Opt-in, read-only projection: never expose session snapshots, IDs, operation IDs or secrets.
     if (request.method === "GET" && url.pathname === "/api/sherlock/public-feed") {
@@ -65,9 +64,12 @@ export default {
       } catch (error) { return json({ error: errorMessage(error) }, 503); }
     }
     if (request.method === "POST" && match[2] === "cycles") {
-      if (!env.OCTOPUS_MISSION_URL) return json({ error: "Octopus endpoint unavailable" }, 503);
+      if (!env.OCTOPUS) return json({ error: "Octopus service binding unavailable" }, 503);
       try {
-        const executor = createOctopusHttpExecutor({ endpoint: env.OCTOPUS_MISSION_URL, authorization: env.OCTOPUS_AUTHORIZATION });
+        const executor = createOctopusHttpExecutor({
+          endpoint: "https://octopus.internal/mission",
+          fetcher: env.OCTOPUS.fetch.bind(env.OCTOPUS) as typeof fetch,
+        });
         const result = await commitOctopusCycle(db, sessionId, "marie-jeanne", executor);
         return json(result);
       } catch (error) {
