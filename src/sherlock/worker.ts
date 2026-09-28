@@ -33,10 +33,24 @@ export default {
       try {
         const session = await loadSession(env.SHERLOCK_DB, env.SHERLOCK_PUBLIC_SESSION_ID);
         if (!session) return json({ error: "Public feed unavailable" }, 503);
-        const verified = new Set(session.decisions.filter(decision => decision.source === "octopus" && decision.action.kind === "wait" && decision.action.actor === decision.actorId).map(decision => `${decision.cycle}:${decision.actorId}`));
-        const entries = session.events.flatMap(event => event.type === "character.waited" && verified.has(`${event.cycle}:${event.actor}`) ? [{
-          id: event.id, cycle: event.cycle, actor: event.actor, kind: "waited" as const, place: event.at,
-        }] : []).slice(-20);
+        const verified = new Map(session.decisions
+          .filter(decision => decision.source === "octopus" && decision.action.actor === decision.actorId)
+          .map(decision => [`${decision.cycle}:${decision.actorId}`, decision.action]));
+        const entries = session.events.flatMap(event => {
+          if (event.type === "character.waited") {
+            const action = verified.get(`${event.cycle}:${event.actor}`);
+            return action?.kind === "wait" ? [{
+              id: event.id, cycle: event.cycle, actor: event.actor, kind: "waited" as const, place: event.at,
+            }] : [];
+          }
+          if (event.type === "character.moved") {
+            const action = verified.get(`${event.cycle}:${event.actor}`);
+            return action?.kind === "move" && action.to === event.to ? [{
+              id: event.id, cycle: event.cycle, actor: event.actor, kind: "moved" as const, from: event.from, to: event.to,
+            }] : [];
+          }
+          return [];
+        }).slice(-20);
         return new Response(JSON.stringify({ entries }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
       } catch { return json({ error: "Public feed unavailable" }, 503); }
     }
