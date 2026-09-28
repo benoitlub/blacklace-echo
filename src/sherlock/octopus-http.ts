@@ -47,7 +47,7 @@ export function createOctopusHttpExecutor(config: OctopusHttpConfig): DecisionEx
         operationId,
         title: "Sherlock character decision",
         objective: "Choose exactly one permitted action. Return JSON with an action object; do not invent places.",
-        requiredCapabilities: ["content.generate"],
+        requiredCapabilities: ["copy.generate"],
         context: { id: `sherlock:${request.sessionId}:${request.cycle}`, label: "Blacklace world cycle",
           metadata: { sessionId: request.sessionId, cycle: request.cycle, state: request.state, allowedActions: request.allowedActions } },
         prompt: `Choose exactly one action from this JSON array and return ONLY JSON {"action":<chosen action>}: ${JSON.stringify(request.allowedActions)}. State: ${JSON.stringify(request.state)}`,
