@@ -7,7 +7,7 @@ import { createOctopusHttpExecutor } from "./octopus-http";
 export interface SherlockBindings {
   SHERLOCK_DB?: D1Database;
   SHERLOCK_API_TOKEN?: string;
-  OCTOPUS?: Fetcher;
+  OCTOPUS?: { fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> };
   SHERLOCK_PUBLIC_SESSION_ID?: string;
   SHERLOCK_PUBLIC_ORIGIN?: string;
 }
