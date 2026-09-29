@@ -9,6 +9,7 @@ on:
       - 'src/blacklace/sherlock-feed.ts'
       - 'src/blacklace/sherlock-feed.test.ts'
       - 'src/pages/Map.tsx'
+      - '.github/workflows/sherlock-d1-smoke.yml'
       - 'wrangler.sherlock.toml'
       - '.github/workflows/sherlock-deploy.yml'
 
