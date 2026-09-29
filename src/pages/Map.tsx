@@ -89,13 +89,16 @@ const Map = () => {
           if (seenSherlockEvents.current.has(key)) continue;
           seenSherlockEvents.current.add(key);
           if (entry.kind === "waited" && isPlaceId(entry.place)) {
-            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: entry.place, cycle: entry.cycle, moving: false } }));
+            const place = entry.place;
+            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place, cycle: entry.cycle, moving: false } }));
           } else if (entry.kind === "moved" && isPlaceId(entry.from) && isPlaceId(entry.to)) {
+            const from = entry.from;
+            const to = entry.to;
             // Reconstruct the verified origin first; the CSS transition then visualises the trip to the verified destination.
-            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: entry.from, cycle: entry.cycle, moving: true } }));
+            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: from, cycle: entry.cycle, moving: true } }));
             const timer = window.setTimeout(() => {
               if (!active) return;
-              setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: entry.to, cycle: entry.cycle, moving: true } }));
+              setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: to, cycle: entry.cycle, moving: true } }));
               const settle = window.setTimeout(() => {
                 if (!active) return;
                 setPresences(current => {
