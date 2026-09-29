@@ -37,17 +37,6 @@ const ACTOR_COLORS: Record<string, string> = {
   ludmila: "#ec4899",
   max: "#ff003c",
 };
-const PRESENCE_OFFSETS: Record<string, readonly [number, number]> = {
-  "marie-jeanne": [-3.2, 2.4],
-  natasha: [-2.7, -2.3],
-  marty: [2.8, -2.1],
-  slobodane: [3.2, 2.2],
-  lolo: [-2.4, -2.5],
-  nikolas: [2.6, -2.4],
-  ludmila: [-2.8, 2.5],
-  max: [2.8, 2.5],
-};
-
 const Map = () => {
   const [imgOk, setImgOk] = useState(true);
   const [active, setActive] = useState<string | null>(null);
@@ -196,6 +185,24 @@ const Map = () => {
   const tiles = useMemo(() => Array.from({ length: 24 }), []);
   const stars = useMemo(() => Array.from({ length: 60 }), []);
   const activeZone = HOTSPOTS.find(h => h.id === active);
+  const presenceLayout = useMemo(() => {
+    const groups = new Map<PlaceId, SherlockPresence[]>();
+    Object.values(presences).forEach(p => groups.set(p.place, [...(groups.get(p.place) ?? []), p]));
+    return Array.from(groups.values()).flatMap(group => {
+      group.sort((a, b) => a.actor.localeCompare(b.actor));
+      const radius = group.length > 1 ? Math.min(6, 2.8 + group.length * 0.55) : 0;
+      return group.map((presence, index) => {
+        const angle = group.length > 1 ? -Math.PI / 2 + index * (Math.PI * 2 / group.length) : 0;
+        return {
+          presence,
+          offsetX: Math.cos(angle) * radius,
+          offsetY: Math.sin(angle) * radius * 0.72,
+          labelLeft: group.length > 1 && Math.cos(angle) < -0.15,
+          labelDy: group.length > 2 ? ((index % 3) - 1) * 12 : 0,
+        };
+      });
+    });
+  }, [presences]);
 
   return (
     <>
@@ -293,15 +300,14 @@ const Map = () => {
                   </button>
                 ))}
 
-                {Object.values(presences).map(presence => {
+                {presenceLayout.map(({ presence, offsetX, offsetY, labelLeft, labelDy }) => {
                   const location = ISLAND_LOCATION_BY_ID[presence.place];
                   const color = ACTOR_COLORS[presence.actor] ?? "#ffffff";
-                  const [offsetX, offsetY] = PRESENCE_OFFSETS[presence.actor] ?? [0, 0];
                   return (
                     <div
                       key={presence.actor}
-                      className={`i3d-char i3d-char--sherlock ${presence.moving ? "is-moving" : ""}`}
-                      style={{ left: `${location.x + offsetX}%`, top: `${location.y + offsetY}%`, ["--c" as any]: color }}
+                      className={`i3d-char i3d-char--sherlock ${presence.moving ? "is-moving" : ""} ${labelLeft ? "label-left" : "label-right"}`}
+                      style={{ left: `${location.x + offsetX}%`, top: `${location.y + offsetY}%`, ["--c" as any]: color, ["--label-dy" as any]: `${labelDy}px` }}
                       title={`${ACTOR_NAMES[presence.actor] ?? presence.actor} · ${location.label} · cycle ${presence.cycle}`}
                     >
                       <span className="i3d-char-trail" />
