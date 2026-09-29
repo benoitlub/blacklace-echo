@@ -1,7 +1,7 @@
-import { createSession, loadSession } from "./persistence";
+import { createSession, ensureSessionCharacters, loadSession } from "./persistence";
 import type { D1Database } from "./persistence";
 import { initialWorld } from "./world-core";
-import type { PlaceId } from "./world-core";
+import type { CharacterState, PlaceId } from "./world-core";
 import { commitOctopusCycle } from "./octopus-cycle";
 import { createOctopusHttpExecutor } from "./octopus-http";
 
@@ -18,6 +18,17 @@ function json(value: unknown, status = 200): Response {
 }
 function errorMessage(error: unknown): string { return error instanceof Error ? error.message : "Unexpected error"; }
 function validId(id: string): boolean { return /^[a-f0-9-]{36}$/i.test(id); }
+
+const BLACKLACE_CAST: readonly CharacterState[] = [
+  { id: "marie-jeanne", place: "port" },
+  { id: "natasha", place: "rotas" },
+  { id: "marty", place: "port" },
+  { id: "slobodane", place: "rotas" },
+  { id: "lolo", place: "institute" },
+  { id: "nikolas", place: "sator" },
+  { id: "ludmila", place: "ludmila" },
+  { id: "max", place: "max" },
+];
 
 /** Dedicated Worker entrypoint; no public mutation without configured token. */
 export default {
@@ -69,7 +80,7 @@ export default {
     if (request.method === "POST" && url.pathname === "/api/sherlock/sessions") {
       try {
         const sessionId = crypto.randomUUID();
-        await createSession(db, sessionId, initialWorld([{ id: "marie-jeanne", place: "port" }]));
+        await createSession(db, sessionId, initialWorld(BLACKLACE_CAST));
         const session = await loadSession(db, sessionId);
         if (!session) throw new Error("Session verification failed");
         return json({ sessionId, ...session }, 201);
@@ -91,7 +102,12 @@ export default {
           endpoint: "https://octopus.internal/mission",
           fetcher: env.OCTOPUS.fetch.bind(env.OCTOPUS) as typeof fetch,
         });
-        const result = await commitOctopusCycle(db, sessionId, "marie-jeanne", executor);
+        await ensureSessionCharacters(db, sessionId, BLACKLACE_CAST);
+        const session = await loadSession(db, sessionId);
+        if (!session) throw new Error("Session not found");
+        const actors = Object.keys(session.state.characters).sort();
+        const actorId = actors[session.state.cycle % actors.length];
+        const result = await commitOctopusCycle(db, sessionId, actorId, executor);
         return json(result);
       } catch (error) {
         const message = errorMessage(error);
