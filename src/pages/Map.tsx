@@ -37,7 +37,7 @@ const ACTOR_COLORS: Record<string, string> = {
   ludmila: "#ec4899",
   max: "#ff003c",
 };
-const Map = () => {
+const BlacklaceMap = () => {
   const [imgOk, setImgOk] = useState(true);
   const [active, setActive] = useState<string | null>(null);
   const [view, setView] = useState<MapView>("map");
@@ -361,4 +361,4 @@ const Map = () => {
   );
 };
 
-export default Map;
+export default BlacklaceMap;
