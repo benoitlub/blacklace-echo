@@ -49,14 +49,16 @@ export default {
           .filter(decision => decision.source === "octopus" && decision.action.actor === decision.actorId)
           .map(decision => [`${decision.cycle}:${decision.actorId}`, decision.action]));
         type PublicEntry =
-          | { id: string; cycle: number; actor: string; kind: "waited"; place: PlaceId }
-          | { id: string; cycle: number; actor: string; kind: "moved"; from: PlaceId; to: PlaceId };
+          | { id: string; cycle: number; actor: string; kind: "waited"; place: PlaceId; activity?: string; intention?: string }
+          | { id: string; cycle: number; actor: string; kind: "moved"; from: PlaceId; to: PlaceId; activity?: string; intention?: string };
         const entries: PublicEntry[] = [];
         for (const event of session.events) {
           if (event.type === "character.waited") {
             const action = verified.get(`${event.cycle}:${event.actor}`);
             if (action?.kind === "wait") entries.push({
               id: event.id, cycle: event.cycle, actor: event.actor, kind: "waited", place: event.at,
+              activity: session.state.characters[event.actor]?.activity,
+              intention: session.state.characters[event.actor]?.intention,
             });
             continue;
           }
@@ -64,6 +66,8 @@ export default {
             const action = verified.get(`${event.cycle}:${event.actor}`);
             if (action?.kind === "move" && action.to === event.to) entries.push({
               id: event.id, cycle: event.cycle, actor: event.actor, kind: "moved", from: event.from, to: event.to,
+              activity: session.state.characters[event.actor]?.activity,
+              intention: session.state.characters[event.actor]?.intention,
             });
             continue;
           }
@@ -78,6 +82,8 @@ export default {
             actor: character.id,
             kind: "waited",
             place: character.place,
+            activity: character.activity ?? "idle",
+            intention: character.intention ?? `Présent à ${character.place}`,
           });
         }
         const publicEntries = entries.slice(-20);
