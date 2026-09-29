@@ -68,6 +68,18 @@ export default {
             continue;
           }
         }
+        // Presence is state, not only activity: publish a verified snapshot for every
+        // resident so newly-added or currently-idle characters are visible immediately.
+        const latestByActor = new Map(entries.map(entry => [entry.actor, entry]));
+        for (const character of Object.values(session.state.characters)) {
+          if (!latestByActor.has(character.id)) entries.push({
+            id: `presence:${session.state.cycle}:${character.id}`,
+            cycle: session.state.cycle,
+            actor: character.id,
+            kind: "waited",
+            place: character.place,
+          });
+        }
         const publicEntries = entries.slice(-20);
         return new Response(JSON.stringify({ entries: publicEntries }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
       } catch { return json({ error: "Public feed unavailable" }, 503); }
