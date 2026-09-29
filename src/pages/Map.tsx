@@ -17,8 +17,26 @@ type MapView = "map" | "zooming-rotas" | "rotas";
 type SherlockPresence = { actor: string; place: PlaceId; cycle: number; moving: boolean };
 const PLACE_IDS = new Set(ISLAND_LOCATIONS.map(location => location.id));
 const isPlaceId = (value: string): value is PlaceId => PLACE_IDS.has(value as PlaceId);
-const ACTOR_NAMES: Record<string, string> = { "marie-jeanne": "MARIE JEANNE" };
-const ACTOR_COLORS: Record<string, string> = { "marie-jeanne": "#fff2a8" };
+const ACTOR_NAMES: Record<string, string> = {
+  "marie-jeanne": "MARIE JEANNE",
+  natasha: "NATASHA",
+  marty: "MARTY",
+  slobodane: "SLOBODANE",
+  lolo: "LOLO",
+  nikolas: "NIKOLAS",
+  ludmila: "LUDMILA",
+  max: "MAX",
+};
+const ACTOR_COLORS: Record<string, string> = {
+  "marie-jeanne": "#fff2a8",
+  natasha: "#00e5ff",
+  marty: "#60a5fa",
+  slobodane: "#22c55e",
+  lolo: "#ff7a00",
+  nikolas: "#a855f7",
+  ludmila: "#ec4899",
+  max: "#ff003c",
+};
 
 const Map = () => {
   const [imgOk, setImgOk] = useState(true);
