@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - 'src/sherlock/**'
+      - 'src/blacklace/sherlock-feed.ts'
+      - 'src/blacklace/sherlock-feed.test.ts'
+      - 'src/pages/Map.tsx'
       - 'wrangler.sherlock.toml'
       - '.github/workflows/sherlock-deploy.yml'
 
