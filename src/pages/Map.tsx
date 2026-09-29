@@ -37,6 +37,16 @@ const ACTOR_COLORS: Record<string, string> = {
   ludmila: "#ec4899",
   max: "#ff003c",
 };
+const PRESENCE_OFFSETS: Record<string, readonly [number, number]> = {
+  "marie-jeanne": [-3.2, 2.4],
+  natasha: [-2.7, -2.3],
+  marty: [2.8, -2.1],
+  slobodane: [3.2, 2.2],
+  lolo: [-2.4, -2.5],
+  nikolas: [2.6, -2.4],
+  ludmila: [-2.8, 2.5],
+  max: [2.8, 2.5],
+};
 
 const Map = () => {
   const [imgOk, setImgOk] = useState(true);
@@ -286,11 +296,12 @@ const Map = () => {
                 {Object.values(presences).map(presence => {
                   const location = ISLAND_LOCATION_BY_ID[presence.place];
                   const color = ACTOR_COLORS[presence.actor] ?? "#ffffff";
+                  const [offsetX, offsetY] = PRESENCE_OFFSETS[presence.actor] ?? [0, 0];
                   return (
                     <div
                       key={presence.actor}
                       className={`i3d-char i3d-char--sherlock ${presence.moving ? "is-moving" : ""}`}
-                      style={{ left: `${location.x}%`, top: `${location.y}%`, ["--c" as any]: color }}
+                      style={{ left: `${location.x + offsetX}%`, top: `${location.y + offsetY}%`, ["--c" as any]: color }}
                       title={`${ACTOR_NAMES[presence.actor] ?? presence.actor} · ${location.label} · cycle ${presence.cycle}`}
                     >
                       <span className="i3d-char-trail" />
