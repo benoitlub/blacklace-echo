@@ -1,7 +1,7 @@
 /** Only verified public projections are accepted; this is not a dialogue transport. */
 export type PublicWorldEntry =
-  | { id: string; cycle: number; actor: string; kind: "waited"; place: string }
-  | { id: string; cycle: number; actor: string; kind: "moved"; from: string; to: string };
+  | { id: string; cycle: number; actor: string; kind: "waited"; place: string; activity?: string; intention?: string }
+  | { id: string; cycle: number; actor: string; kind: "moved"; from: string; to: string; activity?: string; intention?: string };
 
 const validPlace = (value: unknown): value is string => typeof value === "string" && value.length > 0 && value.length <= 80;
 
@@ -11,8 +11,10 @@ export function parsePublicFeed(payload: unknown): PublicWorldEntry[] {
     if (!entry || typeof entry !== "object") return false;
     const e = entry as Record<string, unknown>;
     const parts = typeof e.id === "string" ? e.id.split(":") : [];
+    const eventIdOk = (parts.length === 2 && parts[0] === String(e.cycle) && /^[1-9][0-9]*$/.test(parts[1])) ||
+      (parts.length === 3 && parts[0] === "presence" && parts[1] === String(e.cycle) && typeof parts[2] === "string" && parts[2].length > 0);
     const common = Number.isSafeInteger(e.cycle) && (e.cycle as number) >= 1 &&
-      parts.length === 2 && parts[0] === String(e.cycle) && /^[1-9][0-9]*$/.test(parts[1]) &&
+      eventIdOk &&
       typeof e.actor === "string" && e.actor.length > 0 && e.actor.length <= 80;
     if (!common) return false;
     if (e.kind === "waited") return validPlace(e.place);
