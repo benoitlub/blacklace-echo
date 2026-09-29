@@ -63,3 +63,20 @@
 @keyframes rotasBird{from{transform:translateX(0)}to{transform:translateX(112vw)}}
 
 @media(max-width:720px){.rotas-board-shell{width:124vw;top:44%}.rotas-board{transform:rotateX(58deg) rotateZ(-2deg)}.rotas-title{left:14px;right:14px;top:42px}.rotas-back{right:14px;top:auto;bottom:78px}.rotas-sound{display:none}.rotas-tip{width:max-content;max-width:86%;bottom:18px}.rotas-hotspot{font-size:8px;padding:6px 8px 6px 21px}.rotas-hotspot span{left:8px;width:7px;height:7px}.rotas-street-panel{left:14px;right:14px;top:auto;bottom:118px;width:auto;max-height:43vh}.rotas-street-preview{height:150px}}
+
+
+/* Sherlock residents: labels fan away from crowded POIs instead of stacking. */
+.i3d-char--sherlock .i3d-char-name{
+  transform:translateY(var(--label-dy,0));
+  white-space:nowrap;
+}
+.i3d-char--sherlock.label-left .i3d-char-name{
+  left:auto !important;
+  right:10px;
+  text-align:right;
+}
+.i3d-char--sherlock.label-right .i3d-char-name{
+  left:10px;
+  right:auto;
+  text-align:left;
+}
