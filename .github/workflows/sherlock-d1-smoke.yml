@@ -1,10 +1,14 @@
 name: Verify Sherlock D1
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy Sherlock Worker"]
+    types: [completed]
 permissions:
   contents: read
 jobs:
   verify:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Cycle the configured public Sherlock session
