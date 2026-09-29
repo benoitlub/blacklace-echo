@@ -24,6 +24,9 @@ describe("Sherlock Octopus HTTP boundary", () => {
     expect(result.action).toEqual({ actor: "marie-jeanne", kind: "wait" });
     expect(result.source).toBe("octopus");
     expect(fetcher).toHaveBeenCalledOnce();
+    const mission = JSON.parse(String(fetcher.mock.calls[0][1]?.body));
+    expect(mission.prompt).toContain("Curieuse et indépendante");
+    expect(mission.prompt).toContain('"actor":"marie-jeanne"');
   });
 
   it("rejects incomplete missions instead of inventing an action", async () => {
