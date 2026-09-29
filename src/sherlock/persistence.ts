@@ -70,3 +70,27 @@ export async function appendCycle(
   await db.batch(statements);
   return next;
 }
+
+
+/** Add missing cast members to an existing session without altering existing character state or event history. */
+export async function ensureSessionCharacters(
+  db: D1Database,
+  sessionId: string,
+  characters: readonly import("./world-core").CharacterState[],
+): Promise<void> {
+  const session = await loadSession(db, sessionId);
+  if (!session) throw new Error("Session not found");
+  const missing = characters.filter(character => !session.initial.characters[character.id]);
+  if (!missing.length) return;
+  const initial: WorldState = {
+    ...session.initial,
+    characters: { ...session.initial.characters },
+  };
+  for (const character of missing) {
+    if (!character.id.trim()) throw new Error("Invalid character ID");
+    initial.characters[character.id] = { ...character };
+  }
+  // Existing events are replayed on top of this expanded immutable baseline.
+  await db.batch([db.prepare("UPDATE sherlock_sessions SET initial_json = ? WHERE id = ?")
+    .bind(JSON.stringify(initial), sessionId)]);
+}
