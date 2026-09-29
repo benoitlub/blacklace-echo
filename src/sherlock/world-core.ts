@@ -6,7 +6,14 @@ export type WorldEvent =
   | { id: string; cycle: number; type: "character.moved"; actor: CharacterId; from: PlaceId; to: PlaceId }
   | { id: string; cycle: number; type: "character.waited"; actor: CharacterId; at: PlaceId };
 
-export type CharacterState = { id: CharacterId; place: PlaceId };
+export type CharacterActivity = "idle" | "exploring" | "observing" | "socializing" | "working";
+export type CharacterState = {
+  id: CharacterId;
+  place: PlaceId;
+  activity?: CharacterActivity;
+  intention?: string;
+  lastAction?: "wait" | "move";
+};
 export type WorldState = { cycle: number; characters: Record<CharacterId, CharacterState> };
 export type WorldLog = { initial: WorldState; events: WorldEvent[] };
 export type ProposedAction = { actor: CharacterId; kind: "move"; to: PlaceId } | { actor: CharacterId; kind: "wait" };
@@ -36,10 +43,10 @@ export function applyEvent(state: WorldState, event: WorldEvent): WorldState {
   if (!actor) throw new Error("Unknown character");
   if (event.type === "character.waited") {
     if (actor.place !== event.at) throw new Error("Invalid wait location");
-    return state;
+    return { ...state, characters: { ...state.characters, [actor.id]: { ...actor, activity: "observing", intention: `Observer ${event.at}`, lastAction: "wait" } } };
   }
   if (actor.place !== event.from || !CONNECTIONS[event.from].includes(event.to)) throw new Error("Invalid movement");
-  return { ...state, characters: { ...state.characters, [actor.id]: { ...actor, place: event.to } } };
+  return { ...state, characters: { ...state.characters, [actor.id]: { ...actor, place: event.to, activity: "exploring", intention: `Explorer ${event.to}`, lastAction: "move" } } };
 }
 
 export function replay(initial: WorldState, events: readonly WorldEvent[]): WorldState {
