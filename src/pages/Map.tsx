@@ -151,21 +151,25 @@ const BlacklaceMap = () => {
   }, []);
 
   useEffect(() => {
-    const wOrder: Weather[] = ["clear", "fog", "rain", "clear"];
-    const tOrder: Time[] = ["day", "dusk", "night", "dawn"];
-    let wi = 0;
-    let ti = 0;
-    const wt = setInterval(() => {
-      wi = (wi + 1) % wOrder.length;
-      setWeather(wOrder[wi]);
-    }, 24000);
-    const tt = setInterval(() => {
-      ti = (ti + 1) % tOrder.length;
-      setTime(tOrder[ti]);
-    }, 30000);
+    // Blacklace ambience follows a slow island clock instead of cycling like a demo.
+    const updateTime = () => {
+      const hour = new Date().getHours();
+      setTime(hour >= 6 && hour < 9 ? "dawn" : hour >= 9 && hour < 18 ? "day" : hour >= 18 && hour < 21 ? "dusk" : "night");
+    };
+    updateTime();
+    const clock = window.setInterval(updateTime, 60_000);
+
+    // Weather changes rarely and keeps continuity between transitions.
+    const weatherOrder: Weather[] = ["clear", "clear", "fog", "clear", "rain", "clear"];
+    let weatherIndex = 0;
+    const weatherCycle = window.setInterval(() => {
+      weatherIndex = (weatherIndex + 1) % weatherOrder.length;
+      setWeather(weatherOrder[weatherIndex]);
+    }, 240_000);
+
     return () => {
-      clearInterval(wt);
-      clearInterval(tt);
+      window.clearInterval(clock);
+      window.clearInterval(weatherCycle);
     };
   }, []);
 
