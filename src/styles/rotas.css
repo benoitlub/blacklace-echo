@@ -103,3 +103,25 @@
   .i3d-char--sherlock .i3d-char-name{font-size:8px}
   .i3d-char--sherlock.is-selected .i3d-char-dot{transform:scale(.9)}
 }
+
+
+/* Natural island ambience: depth should breathe, not compete with the world. */
+.island3d-scene{transition:transform .18s ease-out}
+.i3d-cloud{filter:blur(1.5px);will-change:transform;animation-timing-function:linear}
+.i3d-bird{opacity:.58;animation-timing-function:linear}
+.i3d-boat{opacity:.72;filter:saturate(.78);animation-timing-function:ease-in-out}
+.i3d-stars{opacity:.58}
+.holowall{opacity:.68}
+.holowall-tile{animation-duration:7.5s!important}
+.i3d-smoke{opacity:.46;filter:blur(2px)}
+.i3d-ember{opacity:.55}
+.i3d-fog{opacity:.48;filter:blur(12px)}
+.i3d-weather{pointer-events:none}
+.i3d-tint{opacity:.7;transition:opacity 3s ease,background 3s ease}
+.time-dawn .i3d-tint,.time-dusk .i3d-tint{opacity:.62}
+.time-day .i3d-tint{opacity:.42}
+.time-night .i3d-tint{opacity:.76}
+@media (prefers-reduced-motion:reduce){
+  .i3d-cloud,.i3d-bird,.i3d-boat,.i3d-smoke,.i3d-ember,.i3d-stars span,.holowall-tile{animation:none!important}
+  .island3d-scene{transition:none}
+}
