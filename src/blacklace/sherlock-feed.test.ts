@@ -17,6 +17,14 @@ describe("Sherlock public chat projection", () => {
     });
   });
 
+  it("accepts and describes a resident encounter", () => {
+    const entries = parsePublicFeed({ entries: [{ id: "3:2", cycle: 3, actors: ["ludmila", "natasha"], kind: "met", place: "rotas" }] });
+    expect(entries).toHaveLength(1);
+    expect(describeWorldEntry(entries[0])).toEqual({
+      name: "SHERLOCK", text: "Cycle 3 : LUDMILA rencontre NATASHA à Rotas.",
+    });
+  });
+
   it("rejects malformed envelopes and filters unsupported or malformed events", () => {
     expect(() => parsePublicFeed({ entries: null })).toThrow("Invalid Sherlock feed");
     expect(parsePublicFeed({ entries: [
