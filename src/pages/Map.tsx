@@ -45,6 +45,7 @@ const BlacklaceMap = () => {
   const [time, setTime] = useState<Time>("day");
   const [sherlockStatus, setSherlockStatus] = useState<"off" | "connecting" | "live" | "unavailable">("off");
   const [presences, setPresences] = useState<Record<string, SherlockPresence>>({});
+  const [selectedActor, setSelectedActor] = useState<string | null>(null);
   const seenSherlockEvents = useRef(new Set<string>());
   const stageRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -312,13 +313,14 @@ const BlacklaceMap = () => {
                   return (
                     <div
                       key={presence.actor}
-                      className={`i3d-char i3d-char--sherlock ${presence.moving ? "is-moving" : ""} ${labelLeft ? "label-left" : "label-right"}`}
+                      className={`i3d-char i3d-char--sherlock ${presence.moving ? "is-moving" : ""} ${selectedActor === presence.actor ? "is-selected" : ""} ${labelLeft ? "label-left" : "label-right"}`}
                       style={{ left: `${position.x + offsetX}%`, top: `${position.y + offsetY}%`, ["--c" as any]: color, ["--label-dy" as any]: `${labelDy}px` }}
                       title={`${ACTOR_NAMES[presence.actor] ?? presence.actor} · ${location.label} · cycle ${presence.cycle}`}
+                      onClick={(event) => { event.stopPropagation(); setSelectedActor(current => current === presence.actor ? null : presence.actor); }}
                     >
                       <span className="i3d-char-trail" />
                       <span className="i3d-char-dot" />
-                      <span className="i3d-char-name">{ACTOR_NAMES[presence.actor] ?? presence.actor} · C{presence.cycle}</span>
+                      <span className="i3d-char-name">{ACTOR_NAMES[presence.actor] ?? presence.actor}</span>
                     </div>
                   );
                 })}
