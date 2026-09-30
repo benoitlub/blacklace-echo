@@ -1,6 +1,18 @@
 /** SHERLOCK S-001: deterministic, model-free world simulation. No lore is canonized here. */
 export type PlaceId = "port" | "rotas" | "max" | "ludmila" | "sator" | "institute" | "fournaise" | "reboot" | "observatoire";
 export type CharacterId = string;
+export type HiddenEntityKind = "incarnate" | "presence" | "artifact" | "resource";
+export type HiddenEntityId = "aloisia" | "lili" | "feuch" | "fee-belette" | "sator-network" | "moscovium";
+export type HiddenEntityState = {
+  id: HiddenEntityId;
+  kind: HiddenEntityKind;
+  /** Canonical existence is distinct from public observability. */
+  observable: boolean;
+  place?: PlaceId;
+  depth?: "surface" | "shallow" | "deep";
+  state: "dormant" | "present" | "active" | "unknown";
+  description: string;
+};
 export type WorldEvent =
   | { id: string; cycle: number; type: "cycle.started" }
   | { id: string; cycle: number; type: "character.moved"; actor: CharacterId; from: PlaceId; to: PlaceId }
@@ -15,9 +27,18 @@ export type CharacterState = {
   intention?: string;
   lastAction?: "wait" | "move";
 };
-export type WorldState = { cycle: number; characters: Record<CharacterId, CharacterState> };
+export type WorldState = { cycle: number; characters: Record<CharacterId, CharacterState>; hidden: Record<HiddenEntityId, HiddenEntityState> };
 export type WorldLog = { initial: WorldState; events: WorldEvent[] };
 export type ProposedAction = { actor: CharacterId; kind: "move"; to: PlaceId } | { actor: CharacterId; kind: "wait" };
+
+export const BLACKLACE_HIDDEN: readonly HiddenEntityState[] = [
+  { id: "aloisia", kind: "incarnate", observable: true, place: "observatoire", state: "present", description: "Version incarnée d'Aloisia sur l'île." },
+  { id: "lili", kind: "incarnate", observable: true, place: "rotas", state: "present", description: "Présence incarnée de Lili sur Blacklace." },
+  { id: "feuch", kind: "presence", observable: false, place: "fournaise", state: "unknown", description: "Présence Feuch; ses manifestations doivent être observées avant d'être affirmées." },
+  { id: "fee-belette", kind: "presence", observable: false, place: "reboot", state: "unknown", description: "Présence de la Fée Belette associée au Reboot." },
+  { id: "sator-network", kind: "artifact", observable: true, place: "sator", state: "dormant", description: "Réseau persistant de carrés SATOR répartis dans l'île." },
+  { id: "moscovium", kind: "resource", observable: false, depth: "deep", state: "present", description: "Moscovium présent dans les profondeurs de l'île; non observable directement depuis la surface." },
+];
 
 export const PLACES: readonly PlaceId[] = ["port", "rotas", "max", "ludmila", "sator", "institute", "fournaise", "reboot", "observatoire"];
 export const CONNECTIONS: Readonly<Record<PlaceId, readonly PlaceId[]>> = {
@@ -34,7 +55,9 @@ export function initialWorld(characters: readonly CharacterState[]): WorldState 
     if (!PLACES.includes(character.place)) throw new Error("Unknown place");
     byId[character.id] = { ...character };
   }
-  return { cycle: 0, characters: byId };
+  const hidden = Object.create(null) as WorldState["hidden"];
+  for (const entity of BLACKLACE_HIDDEN) hidden[entity.id] = { ...entity };
+  return { cycle: 0, characters: byId, hidden };
 }
 
 export function applyEvent(state: WorldState, event: WorldEvent): WorldState {
