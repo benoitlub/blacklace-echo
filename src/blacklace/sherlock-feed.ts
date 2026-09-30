@@ -1,7 +1,8 @@
 /** Only verified public projections are accepted; this is not a dialogue transport. */
 export type PublicWorldEntry =
   | { id: string; cycle: number; actor: string; kind: "waited"; place: string; activity?: string; intention?: string }
-  | { id: string; cycle: number; actor: string; kind: "moved"; from: string; to: string; activity?: string; intention?: string };
+  | { id: string; cycle: number; actor: string; kind: "moved"; from: string; to: string; activity?: string; intention?: string }
+  | { id: string; cycle: number; actors: readonly [string, string]; kind: "met"; place: string };
 
 const validPlace = (value: unknown): value is string => typeof value === "string" && value.length > 0 && value.length <= 80;
 
@@ -13,10 +14,12 @@ export function parsePublicFeed(payload: unknown): PublicWorldEntry[] {
     const parts = typeof e.id === "string" ? e.id.split(":") : [];
     const eventIdOk = (parts.length === 2 && parts[0] === String(e.cycle) && /^[1-9][0-9]*$/.test(parts[1])) ||
       (parts.length === 3 && parts[0] === "presence" && parts[1] === String(e.cycle) && typeof parts[2] === "string" && parts[2].length > 0);
-    const common = Number.isSafeInteger(e.cycle) && (e.cycle as number) >= 1 &&
-      eventIdOk &&
-      typeof e.actor === "string" && e.actor.length > 0 && e.actor.length <= 80;
+    const common = Number.isSafeInteger(e.cycle) && (e.cycle as number) >= 1 && eventIdOk;
     if (!common) return false;
+    if (e.kind === "met") return Array.isArray(e.actors) && e.actors.length === 2 &&
+      e.actors.every(actor => typeof actor === "string" && actor.length > 0 && actor.length <= 80) &&
+      e.actors[0] !== e.actors[1] && validPlace(e.place);
+    if (typeof e.actor !== "string" || e.actor.length === 0 || e.actor.length > 80) return false;
     if (e.kind === "waited") return validPlace(e.place);
     if (e.kind === "moved") return validPlace(e.from) && validPlace(e.to) && e.from !== e.to;
     return false;
@@ -24,13 +27,20 @@ export function parsePublicFeed(payload: unknown): PublicWorldEntry[] {
 }
 
 export function describeWorldEntry(entry: PublicWorldEntry): { name: string; text: string } {
-  const names: Record<string, string> = { "marie-jeanne": "MARIE JEANNE" };
+  const names: Record<string, string> = {
+    "marie-jeanne": "MARIE JEANNE", natasha: "NATASHA", marty: "MARTY", slobodane: "SLOBODANE",
+    lolo: "LOLO", nikolas: "NIKOLAS", ludmila: "LUDMILA", max: "MAX",
+  };
   const places: Record<string, string> = {
     port: "Port Porsa Rotas", rotas: "Rotas", max: "Max Liberty", ludmila: "Club Ludmila",
     sator: "SATOR", institute: "Feuch Institute", fournaise: "Fournaise", reboot: "Cascade Reboot",
     observatoire: "Observatoire",
   };
-  const name = names[entry.actor] ?? "Un personnage";
+  if (entry.kind === "met") {
+    const [a, b] = entry.actors;
+    return { name: "SHERLOCK", text: `Cycle ${entry.cycle} : ${names[a] ?? a} rencontre ${names[b] ?? b} à ${places[entry.place] ?? entry.place}.` };
+  }
+  const name = names[entry.actor] ?? entry.actor;
   if (entry.kind === "moved") {
     return { name: names[entry.actor] ?? "SHERLOCK", text: `Cycle ${entry.cycle} : ${name} se déplace de ${places[entry.from] ?? entry.from} vers ${places[entry.to] ?? entry.to}.` };
   }
