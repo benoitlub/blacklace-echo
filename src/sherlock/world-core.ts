@@ -4,7 +4,8 @@ export type CharacterId = string;
 export type WorldEvent =
   | { id: string; cycle: number; type: "cycle.started" }
   | { id: string; cycle: number; type: "character.moved"; actor: CharacterId; from: PlaceId; to: PlaceId }
-  | { id: string; cycle: number; type: "character.waited"; actor: CharacterId; at: PlaceId };
+  | { id: string; cycle: number; type: "character.waited"; actor: CharacterId; at: PlaceId }
+  | { id: string; cycle: number; type: "characters.met"; actors: readonly [CharacterId, CharacterId]; at: PlaceId };
 
 export type CharacterActivity = "idle" | "exploring" | "observing" | "socializing" | "working";
 export type CharacterState = {
@@ -39,6 +40,18 @@ export function initialWorld(characters: readonly CharacterState[]): WorldState 
 export function applyEvent(state: WorldState, event: WorldEvent): WorldState {
   if (event.cycle !== state.cycle + (event.type === "cycle.started" ? 1 : 0)) throw new Error("Invalid event cycle");
   if (event.type === "cycle.started") return { ...state, cycle: event.cycle };
+  if (event.type === "characters.met") {
+    const [a, b] = event.actors;
+    if (!a || !b || a === b) throw new Error("Invalid encounter");
+    const first = state.characters[a];
+    const second = state.characters[b];
+    if (!first || !second || first.place !== event.at || second.place !== event.at) throw new Error("Invalid encounter location");
+    return { ...state, characters: {
+      ...state.characters,
+      [a]: { ...first, activity: "socializing", intention: `Rencontrer ${b}` },
+      [b]: { ...second, activity: "socializing", intention: `Rencontrer ${a}` },
+    } };
+  }
   const actor = state.characters[event.actor];
   if (!actor) throw new Error("Unknown character");
   if (event.type === "character.waited") {
@@ -69,6 +82,21 @@ export function runCycle(state: WorldState, actions: readonly ProposedAction[]):
       : { id: `${cycle}:${events.length}`, cycle, type: "character.moved", actor: action.actor, from: actor.place, to: action.to };
     next = applyEvent(next, event);
     events.push(event);
+  }
+  const actors = Object.values(next.characters).sort((a, b) => a.id.localeCompare(b.id));
+  for (let i = 0; i < actors.length; i++) {
+    for (let j = i + 1; j < actors.length; j++) {
+      if (actors[i].place !== actors[j].place) continue;
+      const encounter: WorldEvent = {
+        id: `${cycle}:${events.length}`,
+        cycle,
+        type: "characters.met",
+        actors: [actors[i].id, actors[j].id],
+        at: actors[i].place,
+      };
+      next = applyEvent(next, encounter);
+      events.push(encounter);
+    }
   }
   return { state: next, events };
 }
