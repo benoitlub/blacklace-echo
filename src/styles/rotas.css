@@ -175,3 +175,43 @@
     background:rgba(2,7,12,.68);
   }
 }
+
+
+/* Mobile HoloMap: keep navigation compact so the island remains the hero. */
+@media(max-width:720px){
+  .map-topbar{
+    padding:10px 12px 6px !important;
+    gap:7px !important;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .map-topbar .bl-brand{
+    font-size:1.15rem !important;
+    letter-spacing:.12em;
+    margin-right:auto;
+  }
+  .map-topbar .bl-brand-eye{font-size:.72rem}
+  .map-topbar .bl-pill{
+    min-height:34px;
+    padding:7px 10px !important;
+    font-size:8px !important;
+    letter-spacing:.12em;
+    white-space:nowrap;
+  }
+  .map-topbar .bl-pill:last-child{
+    order:3;
+    margin:0 !important;
+  }
+  .holo-map-stage--bare{
+    margin-top:0 !important;
+  }
+  .map-page--full .holo-map-stage{
+    min-height:calc(100svh - 88px);
+  }
+  .sherlock-map-status{
+    max-width:calc(100vw - 28px);
+    font-size:8px;
+    letter-spacing:.12em;
+    padding:8px 12px;
+  }
+}
