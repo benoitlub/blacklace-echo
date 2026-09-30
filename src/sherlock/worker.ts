@@ -50,7 +50,8 @@ export default {
           .map(decision => [`${decision.cycle}:${decision.actorId}`, decision.action]));
         type PublicEntry =
           | { id: string; cycle: number; actor: string; kind: "waited"; place: PlaceId; activity?: string; intention?: string }
-          | { id: string; cycle: number; actor: string; kind: "moved"; from: PlaceId; to: PlaceId; activity?: string; intention?: string };
+          | { id: string; cycle: number; actor: string; kind: "moved"; from: PlaceId; to: PlaceId; activity?: string; intention?: string }
+          | { id: string; cycle: number; actors: readonly [string, string]; kind: "met"; place: PlaceId };
         const entries: PublicEntry[] = [];
         for (const event of session.events) {
           if (event.type === "character.waited") {
@@ -60,6 +61,10 @@ export default {
               activity: session.state.characters[event.actor]?.activity,
               intention: session.state.characters[event.actor]?.intention,
             });
+            continue;
+          }
+          if (event.type === "characters.met") {
+            entries.push({ id: event.id, cycle: event.cycle, actors: event.actors, kind: "met", place: event.at });
             continue;
           }
           if (event.type === "character.moved") {
