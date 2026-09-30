@@ -80,3 +80,26 @@
   right:auto;
   text-align:left;
 }
+
+
+/* Macro HoloMap: residents are signals first, identities on focus. */
+.i3d-char--sherlock{cursor:pointer}
+.i3d-char--sherlock .i3d-char-dot{transform:scale(.68)}
+.i3d-char--sherlock .i3d-char-trail{transform:scale(.72);opacity:.55}
+.i3d-char--sherlock .i3d-char-name{
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(var(--label-dy,0)) scale(.88);
+  transition:opacity .18s ease,transform .18s ease;
+}
+.i3d-char--sherlock:is(.is-selected,.is-moving) .i3d-char-name{
+  opacity:1;
+  transform:translateY(var(--label-dy,0)) scale(1);
+}
+.i3d-char--sherlock.is-selected .i3d-char-dot{transform:scale(1)}
+@media(max-width:720px){
+  .i3d-char--sherlock .i3d-char-dot{transform:scale(.56)}
+  .i3d-char--sherlock .i3d-char-trail{transform:scale(.6);opacity:.45}
+  .i3d-char--sherlock .i3d-char-name{font-size:8px}
+  .i3d-char--sherlock.is-selected .i3d-char-dot{transform:scale(.9)}
+}
