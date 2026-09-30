@@ -132,3 +132,46 @@
 .rotas-final-hotspot.is-dimmed{opacity:.18;filter:blur(1px) saturate(.5);pointer-events:none}
 .rotas-place-detail{margin-top:14px;padding:12px 14px;border:1px solid rgba(89,240,224,.28);border-radius:12px;background:rgba(5,18,24,.52);color:#d9fffa;font-size:.86rem;line-height:1.45}
 .rotas-depth-path{margin-top:12px;color:#69eadc;font-size:.68rem;letter-spacing:.13em;text-transform:uppercase;opacity:.78}
+
+
+/* HoloMap resident usability: identity must remain readable and touch targets usable. */
+.i3d-char--sherlock{
+  cursor:pointer;
+  pointer-events:auto !important;
+  z-index:40;
+  width:28px;
+  height:28px;
+  margin:-14px 0 0 -14px;
+  touch-action:manipulation;
+  outline:none;
+}
+.i3d-char--sherlock .i3d-char-name{
+  opacity:.88 !important;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-shadow:0 1px 3px #000,0 0 6px #000;
+}
+.i3d-char--sherlock:is(:hover,:focus-visible,.is-selected) .i3d-char-name{
+  opacity:1 !important;
+  transform:translateY(var(--label-dy,0)) scale(1.08);
+}
+.i3d-char--sherlock:is(:focus-visible,.is-selected) .i3d-char-dot{
+  transform:scale(1.12) !important;
+  box-shadow:0 0 0 3px rgba(255,255,255,.72),0 0 14px var(--c);
+}
+@media(max-width:720px){
+  .i3d-char--sherlock{
+    width:40px;
+    height:40px;
+    margin:-20px 0 0 -20px;
+  }
+  .i3d-char--sherlock .i3d-char-dot{transform:scale(.72)}
+  .i3d-char--sherlock .i3d-char-name{
+    opacity:1 !important;
+    font-size:8px;
+    padding:2px 4px;
+    border-radius:4px;
+    background:rgba(2,7,12,.68);
+  }
+}
