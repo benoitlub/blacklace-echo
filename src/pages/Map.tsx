@@ -184,12 +184,16 @@ const BlacklaceMap = () => {
     setActive(null);
   }
 
-  const drops = useMemo(() => Array.from({ length: 90 }), []);
-  const clouds = useMemo(() => Array.from({ length: 6 }), []);
-  const birds = useMemo(() => Array.from({ length: 4 }), []);
-  const boats = useMemo(() => Array.from({ length: 3 }), []);
-  const tiles = useMemo(() => Array.from({ length: 24 }), []);
-  const stars = useMemo(() => Array.from({ length: 60 }), []);
+  const drops = useMemo(() => Array.from({ length: 54 }, (_, i) => ({
+    left: (i * 37 + 11) % 100,
+    duration: 0.62 + (i % 9) * 0.055,
+    delay: -((i * 0.173) % 2.4),
+  })), []);
+  const clouds = useMemo(() => Array.from({ length: 4 }), []);
+  const birds = useMemo(() => Array.from({ length: 3 }), []);
+  const boats = useMemo(() => Array.from({ length: 2 }), []);
+  const tiles = useMemo(() => Array.from({ length: 18 }), []);
+  const stars = useMemo(() => Array.from({ length: 42 }), []);
   const activeZone = HOTSPOTS.find(h => h.id === active);
   const presenceLayout = useMemo(() => {
     const groups = new Map<PlaceId, SherlockPresence[]>();
@@ -327,11 +331,11 @@ const BlacklaceMap = () => {
               </div>
 
               <div className="i3d-layer i3d-weather">
-                {(weather === "rain" || weather === "storm") && drops.map((_, i) => (
+                {(weather === "rain" || weather === "storm") && drops.map((drop, i) => (
                   <span key={i} className="i3d-drop" style={{
-                    left: `${(i * 37) % 100}%`,
-                    animationDuration: `${0.5 + Math.random() * 0.6}s`,
-                    animationDelay: `${-Math.random() * 2}s`,
+                    left: `${drop.left}%`,
+                    animationDuration: `${drop.duration}s`,
+                    animationDelay: `${drop.delay}s`,
                   }} />
                 ))}
                 {weather === "storm" && <span className="i3d-lightning" />}
