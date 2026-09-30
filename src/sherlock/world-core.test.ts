@@ -14,6 +14,15 @@ describe("SHERLOCK S-001 world core", () => {
     expect(new Set(first.log.events.map((event) => event.id)).size).toBe(first.log.events.length);
   });
 
+  it("keeps the hidden layer canonical but distinct from observability", () => {
+    const world = start();
+    expect(world.hidden.aloisia).toMatchObject({ kind: "incarnate", observable: true, place: "observatoire" });
+    expect(world.hidden.feuch).toMatchObject({ kind: "presence", observable: false, state: "unknown" });
+    expect(world.hidden["fee-belette"]).toMatchObject({ kind: "presence", observable: false, place: "reboot" });
+    expect(world.hidden["sator-network"]).toMatchObject({ kind: "artifact", observable: true, place: "sator" });
+    expect(world.hidden.moscovium).toMatchObject({ kind: "resource", observable: false, depth: "deep", state: "present" });
+  });
+
   it("rejects illegal movement and unknown actors", () => {
     expect(() => runCycle(start(), [{ actor: "observer-a", kind: "move", to: "fournaise" }])).toThrow("Invalid movement");
     expect(() => runCycle(start(), [{ actor: "missing", kind: "wait" }])).toThrow("Unknown character");
