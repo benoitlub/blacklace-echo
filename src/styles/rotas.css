@@ -125,3 +125,10 @@
   .i3d-cloud,.i3d-bird,.i3d-boat,.i3d-smoke,.i3d-ember,.i3d-stars span,.holowall-tile{animation:none!important}
   .island3d-scene{transition:none}
 }
+
+
+/* Progressive Blacklace depth: island -> Rotas -> place */
+.rotas-final-hotspot{transition:opacity .35s ease,filter .35s ease,transform .35s ease}
+.rotas-final-hotspot.is-dimmed{opacity:.18;filter:blur(1px) saturate(.5);pointer-events:none}
+.rotas-place-detail{margin-top:14px;padding:12px 14px;border:1px solid rgba(89,240,224,.28);border-radius:12px;background:rgba(5,18,24,.52);color:#d9fffa;font-size:.86rem;line-height:1.45}
+.rotas-depth-path{margin-top:12px;color:#69eadc;font-size:.68rem;letter-spacing:.13em;text-transform:uppercase;opacity:.78}
