@@ -31,6 +31,14 @@ describe("SHERLOCK S-001 world core", () => {
     expect(JSON.stringify(initial)).toBe(before);
   });
 
+  it("emits an encounter only when residents newly converge", () => {
+    const initial = initialWorld([{ id: "a", place: "port" }, { id: "b", place: "rotas" }]);
+    const first = runCycle(initial, [{ actor: "a", kind: "move", to: "rotas" }]);
+    expect(first.events.filter(event => event.type === "characters.met")).toHaveLength(1);
+    const second = runCycle(first.state, [{ actor: "a", kind: "wait" }]);
+    expect(second.events.filter(event => event.type === "characters.met")).toHaveLength(0);
+  });
+
   it("rejects duplicate IDs and invalid cycle counts", () => {
     expect(() => initialWorld([{ id: "same", place: "port" }, { id: "same", place: "rotas" }])).toThrow();
     expect(() => runControl(start(), -1)).toThrow();
