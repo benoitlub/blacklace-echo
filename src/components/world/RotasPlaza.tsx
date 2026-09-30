@@ -5,6 +5,7 @@ import TransparentAsset from "./TransparentAsset";
 
 type Props = { entering: boolean; onBack: () => void };
 type RotasSpotId = "eye" | "tea" | "prohibited" | "market" | "stalls" | "coast" | "fountain";
+type RotasDepth = "district" | "place";
 
 type RotasSpot = {
   id: RotasSpotId;
@@ -15,6 +16,7 @@ type RotasSpot = {
   note: string;
   mood: string;
   detail: string;
+  depth?: RotasDepth;
 };
 
 const ROTAS_SPOTS: RotasSpot[] = [
@@ -30,6 +32,7 @@ const ROTAS_SPOTS: RotasSpot[] = [
 export default function RotasPlaza({ entering, onBack }: Props) {
   const [selectedSpot, setSelectedSpot] = useState<RotasSpot | null>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [depth, setDepth] = useState<RotasDepth>("district");
   const sparks = useMemo(() => Array.from({ length: 18 }), []);
   const birds = useMemo(() => Array.from({ length: 5 }), []);
 
@@ -51,7 +54,7 @@ export default function RotasPlaza({ entering, onBack }: Props) {
         {birds.map((_, i) => <span key={i} style={{ top: `${16 + i * 9}%`, animationDelay: `${-i * 4}s`, animationDuration: `${24 + i * 5}s` }}>⌁</span>)}
       </div>
 
-      <button className="rotas-back" onClick={onBack}>Retour carte</button>
+      <button className="rotas-back" onClick={() => { if (depth === "place") { setDepth("district"); setSelectedSpot(null); } else onBack(); }}>{depth === "place" ? "Retour Rotas" : "Retour carte"}</button>
 
       <div
         className="rotas-board-shell rotas-board-shell--final"
@@ -67,11 +70,11 @@ export default function RotasPlaza({ entering, onBack }: Props) {
           {ROTAS_SPOTS.map((spot) => (
             <button
               key={spot.id}
-              className={`rotas-final-hotspot rotas-final-hotspot--${spot.id} ${selectedSpot?.id === spot.id ? "is-selected" : ""}`}
+              className={`rotas-final-hotspot rotas-final-hotspot--${spot.id} ${selectedSpot?.id === spot.id ? "is-selected" : ""} ${depth === "place" && selectedSpot?.id !== spot.id ? "is-dimmed" : ""}`}
               style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
               type="button"
               title={spot.note}
-              onClick={() => setSelectedSpot(spot)}
+              onClick={() => { setSelectedSpot(spot); setDepth("place"); }}
             >
               <span />
               <strong>{spot.label}</strong>
@@ -84,11 +87,13 @@ export default function RotasPlaza({ entering, onBack }: Props) {
         {selectedSpot ? (
           <>
             <button className="rotas-panel-close" onClick={() => setSelectedSpot(null)}>×</button>
-            <span className="section-kicker">POINT D’INTÉRÊT</span>
+            <span className="section-kicker">{depth === "place" ? "ZOOM · LIEU" : "POINT D’INTÉRÊT"}</span>
             <h2>{selectedSpot.label}</h2>
             <p className="rotas-kind">{selectedSpot.kind}</p>
             <p>{selectedSpot.note}</p>
             <small>{selectedSpot.mood}</small>
+            <div className="rotas-place-detail">{selectedSpot.detail}</div>
+            <div className="rotas-depth-path">ÎLE → ROTAS → {selectedSpot.label.toUpperCase()}</div>
           </>
         ) : (
           <>
