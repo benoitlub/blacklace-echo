@@ -324,7 +324,17 @@ const BlacklaceMap = () => {
                       className={`i3d-char i3d-char--sherlock ${presence.moving ? "is-moving" : ""} ${selectedActor === presence.actor ? "is-selected" : ""} ${labelLeft ? "label-left" : "label-right"}`}
                       style={{ left: `${position.x + offsetX}%`, top: `${position.y + offsetY}%`, ["--c" as any]: color, ["--label-dy" as any]: `${labelDy}px` }}
                       title={`${ACTOR_NAMES[presence.actor] ?? presence.actor} · ${location.label} · cycle ${presence.cycle}`}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${ACTOR_NAMES[presence.actor] ?? presence.actor}, ${location.label}, cycle ${presence.cycle}`}
+                      onPointerDown={(event) => event.stopPropagation()}
                       onClick={(event) => { event.stopPropagation(); setSelectedActor(current => current === presence.actor ? null : presence.actor); }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSelectedActor(current => current === presence.actor ? null : presence.actor);
+                        }
+                      }}
                     >
                       <span className="i3d-char-trail" />
                       <span className="i3d-char-dot" />
