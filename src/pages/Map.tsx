@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BackgroundLayers } from "@/blacklace/Layers";
 import RotasPlaza from "@/components/world/RotasPlaza";
 import "@/styles/rotas.css";
-import { ISLAND_LOCATIONS, ISLAND_LOCATION_BY_ID } from "@/blacklace/island-geography";
+import { ISLAND_LOCATIONS, ISLAND_LOCATION_BY_ID, islandRoute, type RoutePoint } from "@/blacklace/island-geography";
 import { parsePublicFeed, type PublicWorldEntry } from "@/blacklace/sherlock-feed";
 import type { PlaceId } from "@/sherlock/world-core";
 
@@ -14,7 +14,7 @@ const HOLOWALL_LABELS = ["ROTAS", "SATOR", "FEUCH", "ALOISIA", "SIGNAL", "BRUME"
 type Weather = "clear" | "rain" | "storm" | "fog";
 type Time = "dawn" | "day" | "dusk" | "night";
 type MapView = "map" | "zooming-rotas" | "rotas";
-type SherlockPresence = { actor: string; place: PlaceId; cycle: number; moving: boolean };
+type SherlockPresence = { actor: string; place: PlaceId; cycle: number; moving: boolean; travelPoint?: RoutePoint };
 const PLACE_IDS = new Set(ISLAND_LOCATIONS.map(location => location.id));
 const isPlaceId = (value: string): value is PlaceId => PLACE_IDS.has(value as PlaceId);
 const ACTOR_NAMES: Record<string, string> = {
@@ -111,21 +111,26 @@ const BlacklaceMap = () => {
           } else if (entry.kind === "moved" && isPlaceId(entry.from) && isPlaceId(entry.to)) {
             const from = entry.from;
             const to = entry.to;
-            // Reconstruct the verified origin first; the CSS transition then visualises the trip to the verified destination.
-            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: from, cycle: entry.cycle, moving: true } }));
-            const timer = window.setTimeout(() => {
-              if (!active) return;
-              setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: to, cycle: entry.cycle, moving: true } }));
-              const settle = window.setTimeout(() => {
+            const points = islandRoute(from, to);
+            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: from, cycle: entry.cycle, moving: true, travelPoint: points[0] } }));
+            const legMs = Math.max(420, Math.floor(4200 / Math.max(1, points.length - 1)));
+            points.slice(1).forEach((point, index) => {
+              const timer = window.setTimeout(() => {
                 if (!active) return;
-                setPresences(current => {
-                  const presence = current[entry.actor];
-                  return presence ? { ...current, [entry.actor]: { ...presence, moving: false } } : current;
-                });
-              }, 4200);
-              movementTimers.add(settle);
-            }, 80);
-            movementTimers.add(timer);
+                const finalLeg = index === points.length - 2;
+                setPresences(current => ({
+                  ...current,
+                  [entry.actor]: {
+                    actor: entry.actor,
+                    place: finalLeg ? to : from,
+                    cycle: entry.cycle,
+                    moving: !finalLeg,
+                    travelPoint: finalLeg ? undefined : point,
+                  },
+                }));
+              }, 80 + legMs * (index + 1));
+              movementTimers.add(timer);
+            });
           }
         }
         setSherlockStatus("live");
@@ -302,12 +307,13 @@ const BlacklaceMap = () => {
 
                 {presenceLayout.map(({ presence, offsetX, offsetY, labelLeft, labelDy }) => {
                   const location = ISLAND_LOCATION_BY_ID[presence.place];
+                  const position = presence.travelPoint ?? location;
                   const color = ACTOR_COLORS[presence.actor] ?? "#ffffff";
                   return (
                     <div
                       key={presence.actor}
                       className={`i3d-char i3d-char--sherlock ${presence.moving ? "is-moving" : ""} ${labelLeft ? "label-left" : "label-right"}`}
-                      style={{ left: `${location.x + offsetX}%`, top: `${location.y + offsetY}%`, ["--c" as any]: color, ["--label-dy" as any]: `${labelDy}px` }}
+                      style={{ left: `${position.x + offsetX}%`, top: `${position.y + offsetY}%`, ["--c" as any]: color, ["--label-dy" as any]: `${labelDy}px` }}
                       title={`${ACTOR_NAMES[presence.actor] ?? presence.actor} · ${location.label} · cycle ${presence.cycle}`}
                     >
                       <span className="i3d-char-trail" />
