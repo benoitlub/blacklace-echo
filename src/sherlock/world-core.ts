@@ -87,6 +87,11 @@ export function runCycle(state: WorldState, actions: readonly ProposedAction[]):
   for (let i = 0; i < actors.length; i++) {
     for (let j = i + 1; j < actors.length; j++) {
       if (actors[i].place !== actors[j].place) continue;
+      // A meeting is an arrival event, not a heartbeat: residents who were
+      // already together before this cycle do not "meet" again every cycle.
+      const beforeA = state.characters[actors[i].id];
+      const beforeB = state.characters[actors[j].id];
+      if (beforeA?.place === beforeB?.place) continue;
       const encounter: WorldEvent = {
         id: `${cycle}:${events.length}`,
         cycle,
