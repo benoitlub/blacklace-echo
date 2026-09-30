@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { BackgroundLayers } from "@/blacklace/Layers";
+import { parsePublicFeed, describeWorldEntry, type PublicWorldEntry } from "@/blacklace/sherlock-feed";
 
 type Msg = { role: "user" | "aloisia"; content: string };
 const STORAGE_KEY = "blacklace_aloisia_private_chat_v1";
@@ -25,7 +26,18 @@ const Aloisia = () => {
   });
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [worldEntries, setWorldEntries] = useState<PublicWorldEntry[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const endpoint = import.meta.env.VITE_SHERLOCK_PUBLIC_FEED_URL;
+    if (!endpoint) return;
+    let alive = true;
+    const refresh = async () => { try { const response = await fetch(endpoint, { credentials: "omit", cache: "no-store" }); if (!response.ok) return; const entries = parsePublicFeed(await response.json()); if (alive) setWorldEntries(entries); } catch {} };
+    void refresh();
+    const poll = window.setInterval(() => void refresh(), 15000);
+    return () => { alive = false; window.clearInterval(poll); };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-30)));
@@ -35,15 +47,22 @@ const Aloisia = () => {
   async function askAloisia(content: string): Promise<string> {
     try {
       const ctx = history.slice(-10).map((m) => `${m.role}: ${m.content}`).join("\n");
+      const world = worldEntries.slice(-20).map(entry => describeWorldEntry(entry).text).join("\\n");
       const r = await fetch("/.netlify/functions/aloisia-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: content, context: ctx }),
+        body: JSON.stringify({ message: content, context: ctx, worldContext: world }),
       });
       if (!r.ok) throw new Error("offline");
       const data = await r.json();
       return data.reply || "Le signal est revenu vide.";
     } catch {
+      if (worldEntries.length) {
+        const q = content.toLowerCase();
+        const moved = worldEntries.filter(entry => entry.kind === "moved");
+        const relevant = q.includes("déplac") || q.includes("boug") || q.includes("qui") ? moved : worldEntries;
+        if (relevant.length) return relevant.slice(-6).map(entry => describeWorldEntry(entry).text).join(" ");
+      }
       return fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)];
     }
   }
@@ -95,7 +114,7 @@ const Aloisia = () => {
 
           <section className="aloisia-chat-panel">
             <div className="aloisia-chat-header">
-              <span><span className="live-dot" />CANAL PRIVÉ // MÉMOIRE LOCALE ACTIVE</span>
+              <span><span className="live-dot" />CANAL PRIVÉ // SHERLOCK {worldEntries.length ? "CONNECTÉ" : "EN ATTENTE"} // MÉMOIRE LOCALE ACTIVE</span>
               <button type="button" onClick={clearAll}>Effacer</button>
             </div>
             <div className="aloisia-messages" ref={listRef}>
