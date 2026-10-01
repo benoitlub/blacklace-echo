@@ -79,11 +79,14 @@ export default {
         }
         // Presence is state, not only activity: publish a verified snapshot for every
         // resident so newly-added or currently-idle characters are visible immediately.
-        const latestByActor = new Map(
-          entries.flatMap(entry => entry.kind === "met"
-            ? entry.actors.map(actor => [actor, entry] as const)
-            : [[entry.actor, entry] as const])
-        );
+        const latestByActor = new Map<string, PublicEntry>();
+        for (const entry of entries) {
+          if (entry.kind === "met") {
+            for (const actor of entry.actors) latestByActor.set(actor, entry);
+          } else {
+            latestByActor.set(entry.actor, entry);
+          }
+        }
         for (const character of Object.values(session.state.characters)) {
           if (!latestByActor.has(character.id)) entries.push({
             id: `presence:${session.state.cycle}:${character.id}`,
