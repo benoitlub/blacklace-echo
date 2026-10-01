@@ -14,7 +14,7 @@ const HOLOWALL_LABELS = ["ROTAS", "SATOR", "FEUCH", "ALOISIA", "SIGNAL", "BRUME"
 type Weather = "clear" | "rain" | "storm" | "fog";
 type Time = "dawn" | "day" | "dusk" | "night";
 type MapView = "map" | "zooming-rotas" | "rotas";
-type SherlockPresence = { actor: string; place: PlaceId; cycle: number; moving: boolean; travelPoint?: RoutePoint };
+type SherlockPresence = { actor: string; place: PlaceId; cycle: number; moving: boolean; travelPoint?: RoutePoint; activity?: string; intention?: string; lastEvent?: string };
 const PLACE_IDS = new Set(ISLAND_LOCATIONS.map(location => location.id));
 const isPlaceId = (value: string): value is PlaceId => PLACE_IDS.has(value as PlaceId);
 const ACTOR_NAMES: Record<string, string> = {
@@ -108,12 +108,12 @@ const BlacklaceMap = () => {
           seenSherlockEvents.current.add(key);
           if (entry.kind === "waited" && isPlaceId(entry.place)) {
             const place = entry.place;
-            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place, cycle: entry.cycle, moving: false } }));
+            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place, cycle: entry.cycle, moving: false, activity: entry.activity, intention: entry.intention, lastEvent: entry.id.startsWith("presence:") ? current[entry.actor]?.lastEvent : `Reste à ${ISLAND_LOCATION_BY_ID[place].label}` } }));
           } else if (entry.kind === "moved" && isPlaceId(entry.from) && isPlaceId(entry.to)) {
             const from = entry.from;
             const to = entry.to;
             const points = islandRoute(from, to);
-            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: from, cycle: entry.cycle, moving: true, travelPoint: points[0] } }));
+            setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place: from, cycle: entry.cycle, moving: true, travelPoint: points[0], activity: entry.activity, intention: entry.intention, lastEvent: `Se déplace vers ${ISLAND_LOCATION_BY_ID[to].label}` } }));
             const legMs = Math.max(420, Math.floor(4200 / Math.max(1, points.length - 1)));
             points.slice(1).forEach((point, index) => {
               const timer = window.setTimeout(() => {
@@ -127,11 +127,22 @@ const BlacklaceMap = () => {
                     cycle: entry.cycle,
                     moving: !finalLeg,
                     travelPoint: finalLeg ? undefined : point,
+                    activity: entry.activity,
+                    intention: entry.intention,
+                    lastEvent: `S'est déplacé vers ${ISLAND_LOCATION_BY_ID[to].label}`,
                   },
                 }));
               }, 80 + legMs * (index + 1));
               movementTimers.add(timer);
             });
+          } else if (entry.kind === "met" && isPlaceId(entry.place)) {
+            for (const actor of entry.actors) {
+              const other = entry.actors.find(candidate => candidate !== actor) ?? "";
+              setPresences(current => current[actor] ? ({
+                ...current,
+                [actor]: { ...current[actor], cycle: entry.cycle, lastEvent: `A rencontré ${ACTOR_NAMES[other] ?? other} à ${ISLAND_LOCATION_BY_ID[entry.place as PlaceId].label}` },
+              }) : current);
+            }
           }
         }
         setSherlockStatus("live");
@@ -199,6 +210,7 @@ const BlacklaceMap = () => {
   const tiles = useMemo(() => Array.from({ length: 18 }), []);
   const stars = useMemo(() => Array.from({ length: 42 }), []);
   const activeZone = HOTSPOTS.find(h => h.id === active);
+  const selectedPresence = selectedActor ? presences[selectedActor] : undefined;
   const presenceLayout = useMemo(() => {
     const groups = new Map<PlaceId, SherlockPresence[]>();
     Object.values(presences).forEach(p => groups.set(p.place, [...(groups.get(p.place) ?? []), p]));
@@ -367,6 +379,19 @@ const BlacklaceMap = () => {
               <span className="sherlock-map-dot" />
               SHERLOCK {sherlockStatus === "live" ? `LIVE · ${Object.keys(presences).length} PRÉSENCE(S)` : sherlockStatus === "connecting" ? "CONNEXION…" : sherlockStatus === "unavailable" ? "HORS SIGNAL" : "OFF"}
             </div>
+          )}
+
+          {selectedPresence && view === "map" && (
+            <aside className="sherlock-resident-card" style={{ ["--c" as any]: ACTOR_COLORS[selectedPresence.actor] ?? "#fff" }}>
+              <button className="sherlock-resident-close" onClick={() => setSelectedActor(null)} aria-label="Fermer">×</button>
+              <span className="section-kicker">RÉSIDENT · CYCLE {selectedPresence.cycle}</span>
+              <h3>{ACTOR_NAMES[selectedPresence.actor] ?? selectedPresence.actor}</h3>
+              <strong>{ISLAND_LOCATION_BY_ID[selectedPresence.place].label}</strong>
+              {selectedPresence.moving && <p>EN DÉPLACEMENT</p>}
+              {selectedPresence.activity && <p>Activité · {selectedPresence.activity}</p>}
+              {selectedPresence.intention && <p>Intention · {selectedPresence.intention}</p>}
+              {selectedPresence.lastEvent && <p className="sherlock-resident-event">{selectedPresence.lastEvent}</p>}
+            </aside>
           )}
 
           {activeZone && view === "map" && (
