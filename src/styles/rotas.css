@@ -215,3 +215,22 @@
     padding:8px 12px;
   }
 }
+
+
+/* Live Sherlock resident card */
+.sherlock-resident-card{
+  position:absolute; right:18px; bottom:22px; z-index:90;
+  width:min(310px,calc(100vw - 28px)); padding:16px 18px;
+  border:1px solid color-mix(in srgb,var(--c) 62%,transparent);
+  border-radius:14px; background:rgba(2,7,12,.88);
+  box-shadow:0 0 28px color-mix(in srgb,var(--c) 18%,transparent);
+  backdrop-filter:blur(14px); color:#eefcff;
+}
+.sherlock-resident-card h3{margin:4px 28px 5px 0;color:var(--c);letter-spacing:.1em}
+.sherlock-resident-card strong{font-size:11px;letter-spacing:.08em}
+.sherlock-resident-card p{margin:7px 0 0;font-size:11px;line-height:1.35;opacity:.84}
+.sherlock-resident-card .sherlock-resident-event{margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.12);opacity:1}
+.sherlock-resident-close{position:absolute;right:10px;top:8px;border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer}
+@media(max-width:720px){
+  .sherlock-resident-card{position:fixed;left:14px;right:14px;bottom:14px;width:auto;padding:14px 16px;z-index:120}
+}
