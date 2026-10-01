@@ -10,6 +10,37 @@ const intro: Msg = {
   content: "Je suis là, Benoît. Dépose le fragment. Je le lirai comme une marée intérieure avant de le redistribuer dans l'île.",
 };
 
+
+function factualWorldAnswer(question: string, entries: PublicWorldEntry[]): string | null {
+  if (!entries.length) return null;
+  const q = question.toLowerCase();
+  const real = entries.filter(entry => !entry.id.startsWith("presence:"));
+  const names: Record<string, string> = { "marie-jeanne":"Marie Jeanne", natasha:"Natasha", marty:"Marty", slobodane:"Slobodane", lolo:"Lolo", nikolas:"Nikolas", ludmila:"Ludmila", max:"Max" };
+  const mentioned = Object.keys(names).find(id => q.includes(id.replace("-", " ")) || q.includes(names[id].toLowerCase()));
+  if (mentioned) {
+    const actorEntries = entries.filter(entry => entry.kind === "met" ? entry.actors.includes(mentioned) : entry.actor === mentioned);
+    const latest = actorEntries.at(-1);
+    if (latest) return describeWorldEntry(latest).text;
+  }
+  if (/où|ou est|position|trouve/.test(q)) {
+    const latestByActor = new Map<string, PublicWorldEntry>();
+    for (const entry of entries) {
+      if (entry.kind === "met") continue;
+      latestByActor.set(entry.actor, entry);
+    }
+    if (latestByActor.size) return Array.from(latestByActor.values()).map(entry => describeWorldEntry(entry).text).join(" ");
+  }
+  if (/rencontr|crois|ensemble/.test(q)) {
+    const meetings = real.filter(entry => entry.kind === "met");
+    return meetings.length ? meetings.slice(-6).map(entry => describeWorldEntry(entry).text).join(" ") : "Sherlock n'a enregistré aucune rencontre récente.";
+  }
+  if (/passé|passe|quoi|événement|evenement|boug|déplac|deplac/.test(q)) {
+    const facts = real.length ? real : entries;
+    return facts.slice(-8).map(entry => describeWorldEntry(entry).text).join(" ");
+  }
+  return null;
+}
+
 const fallbackReplies = [
   "Je garde ce fragment. Il rejoindra la brume avant la prochaine marée.",
   "Reçu. La clairière SATOR s'en souvient déjà.",
@@ -45,6 +76,8 @@ const Aloisia = () => {
   }, [history]);
 
   async function askAloisia(content: string): Promise<string> {
+    const factual = factualWorldAnswer(content, worldEntries);
+    if (factual) return factual;
     try {
       const ctx = history.slice(-10).map((m) => `${m.role}: ${m.content}`).join("\n");
       const world = worldEntries.slice(-20).map(entry => describeWorldEntry(entry).text).join("\\n");
