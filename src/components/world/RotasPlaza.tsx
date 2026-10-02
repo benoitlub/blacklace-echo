@@ -37,8 +37,10 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
   const sparks = useMemo(() => Array.from({ length: 18 }), []);
   const birds = useMemo(() => Array.from({ length: 5 }), []);
   const residentPositions = useMemo(() => [
-    { x: 44, y: 54 }, { x: 57, y: 52 }, { x: 36, y: 64 }, { x: 64, y: 65 },
-    { x: 48, y: 70 }, { x: 29, y: 49 }, { x: 71, y: 49 }, { x: 52, y: 41 },
+    { x: 48, y: 48, zone: "fontaine" }, { x: 38, y: 58, zone: "marché" },
+    { x: 61, y: 58, zone: "échoppes" }, { x: 29, y: 43, zone: "salon de thé" },
+    { x: 72, y: 44, zone: "Pro.Hibited" }, { x: 51, y: 34, zone: "Maison de l’Œil" },
+    { x: 46, y: 68, zone: "place basse" }, { x: 57, y: 69, zone: "place basse" },
   ], []);
 
   const updateTilt = (clientX: number, clientY: number, target: HTMLElement) => {
@@ -87,12 +89,14 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
                   key={resident.actor}
                   className="rotas-resident"
                   type="button"
-                  style={{ left: `${pos.x}%`, top: `${pos.y}%`, ["--resident-color" as string]: resident.color } as CSSProperties}
+                  style={{ left: `${pos.x}%`, top: `${pos.y}%`, ["--resident-color" as string]: resident.color, ["--resident-delay" as string]: `${-(index * 0.63)}s` } as CSSProperties}
                   title={resident.lastEvent ?? resident.intention ?? resident.name}
+                  onClick={() => setSelectedSpot(null)}
                 >
                   <span className="rotas-resident-body"><i/><b/></span>
                   <strong>{resident.name}</strong>
-                  {resident.activity && <small>{resident.activity}</small>}
+                  <small>{resident.activity ? `${resident.activity} · ${pos.zone}` : pos.zone}</small>
+                  <em>{resident.lastEvent ?? resident.intention ?? "Présence Sherlock confirmée"}</em>
                 </button>
               );
             })}
