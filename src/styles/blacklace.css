@@ -561,3 +561,35 @@ body.bl-glitch-pro .bl-video-frame{animation:blFreeze .55s cubic-bezier(.2,.7,.2
   55%{transform:scale(1.006)}
   100%{transform:scale(1)}
 }
+
+
+/* HoloMap scale pass: the island should occupy the viewport, not float as a thumbnail. */
+.map-page--full{width:min(1720px,99vw)}
+.map-page--full .holo-map-stage{width:100%}
+.island3d-stage{
+  height:min(84vh,940px);
+  min-height:620px;
+  margin-top:10px;
+  perspective:1900px;
+}
+.i3d-island img{
+  width:94%;
+  max-width:1480px;
+}
+.i3d-shadow{width:76%;bottom:6%}
+@media(max-width:720px){
+  .map-page--full{width:100vw}
+  .map-page--full .holo-map-stage{min-height:calc(100svh - 72px)}
+  .island3d-stage{
+    height:calc(100svh - 72px);
+    min-height:560px;
+    margin-top:0;
+    border-radius:0;
+    perspective:1300px;
+  }
+  .i3d-island img{
+    width:112%;
+    max-width:none;
+  }
+  .i3d-shadow{width:92%;bottom:8%}
+}
