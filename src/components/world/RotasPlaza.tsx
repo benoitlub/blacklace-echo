@@ -65,8 +65,15 @@ export default function RotasPlaza({ entering, onBack }: Props) {
       >
         <div className="rotas-board-shadow" />
         <div className="rotas-board rotas-board--final">
-          <TransparentAsset className="rotas-final-board-img" src={ROTAS_BOARD_IMAGE} alt="Plateau final composé de Rotas" />
+          <TransparentAsset className="rotas-final-board-img" src={ROTAS_BOARD_IMAGE} alt="Plateau de Rotas" />
           <div className="rotas-final-glow" aria-hidden />
+          <div className="rotas-vertical-village" aria-hidden>
+            <div className="rotas-building rotas-building--tea"><span className="rotas-dome"/><i>SALON DE THÉ</i></div>
+            <div className="rotas-building rotas-building--eye"><span className="rotas-dome rotas-dome--eye"/><i>MAISON DE L’ŒIL</i></div>
+            <div className="rotas-building rotas-building--shop"><span className="rotas-dome"/><i>BOUTIQUE</i></div>
+            <div className="rotas-stall rotas-stall--market"><span/><i>MARCHÉ</i></div>
+            <div className="rotas-stall rotas-stall--east"><span/></div>
+          </div>
           {ROTAS_SPOTS.map((spot) => (
             <button
               key={spot.id}
