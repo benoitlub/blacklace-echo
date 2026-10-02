@@ -254,3 +254,39 @@
     max-width:92px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
 }
+
+
+/* Rotas village: restore architectural verticality over the tilted ground plane. */
+.rotas-board--final{transform-style:preserve-3d}
+.rotas-final-board-img{transform-origin:50% 62%;backface-visibility:hidden}
+.rotas-final-hotspot{
+  transform:translate(-50%,-50%) translateZ(28px) rotateX(calc(var(--board-upright, 0deg)));
+  transform-style:preserve-3d;
+}
+.rotas-final-hotspot strong{
+  transform:translateY(-100%) rotateX(-12deg);
+  transform-origin:50% 100%;
+}
+/* Upright architectural silhouettes: counter-perspective keeps façades visually vertical. */
+.rotas-board--final::before,
+.rotas-board--final::after{
+  content:"";position:absolute;pointer-events:none;z-index:4;
+  bottom:31%;width:16%;height:30%;
+  border:1px solid rgba(0,229,255,.2);
+  background:linear-gradient(180deg,rgba(5,34,38,.05),rgba(3,16,20,.35));
+  box-shadow:0 18px 32px rgba(0,0,0,.28);
+  transform-origin:50% 100%;
+  transform:translateZ(34px) rotateX(14deg);
+  clip-path:polygon(10% 100%,10% 28%,28% 10%,72% 10%,90% 28%,90% 100%);
+  opacity:.48;
+}
+.rotas-board--final::before{left:16%}
+.rotas-board--final::after{right:14%}
+@media(max-width:720px){
+  .rotas-board-shell--final{perspective:1100px}
+  .rotas-board--final{transform:rotateX(48deg) rotateZ(-1deg) !important;transform-origin:50% 68%}
+  .rotas-final-board-img{filter:saturate(1.08) contrast(1.04)}
+  .rotas-final-hotspot{transform:translate(-50%,-50%) translateZ(34px) rotateX(-48deg)}
+  .rotas-final-hotspot strong{transform:none}
+  .rotas-board--final::before,.rotas-board--final::after{transform:translateZ(42px) rotateX(-48deg);opacity:.62}
+}
