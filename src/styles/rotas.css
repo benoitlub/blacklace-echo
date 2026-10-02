@@ -330,3 +330,19 @@
   .rotas-resident{width:40px;height:56px;margin:-56px 0 0 -20px;transform:rotateX(-48deg) translateZ(72px)}
   .rotas-resident strong{font-size:7px}
 }
+
+
+/* Rotas residents: local life rather than static pins. */
+.rotas-resident{animation-delay:var(--resident-delay)}
+.rotas-resident em{
+  position:absolute;left:50%;bottom:58px;width:132px;padding:5px 7px;
+  transform:translate(-50%,5px);border:1px solid rgba(255,255,255,.12);border-radius:7px;
+  background:rgba(2,7,12,.9);font-style:normal;font-size:7px;line-height:1.25;
+  opacity:0;pointer-events:none;transition:.18s ease;
+}
+.rotas-resident:is(:hover,:focus-visible) em{opacity:1;transform:translate(-50%,0)}
+.rotas-resident:nth-child(3n+1){animation-name:rotasResidentWanderA}
+.rotas-resident:nth-child(3n+2){animation-name:rotasResidentWanderB}
+@keyframes rotasResidentWanderA{0%,100%{translate:0 0}35%{translate:7px -3px}70%{translate:-4px 2px}}
+@keyframes rotasResidentWanderB{0%,100%{translate:0 0}45%{translate:-6px -2px}75%{translate:4px 2px}}
+@media(prefers-reduced-motion:reduce){.rotas-resident{animation:none}}
