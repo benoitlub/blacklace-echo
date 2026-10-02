@@ -309,3 +309,24 @@
   .rotas-building--eye{width:28%;height:35%}
   .rotas-building--tea,.rotas-building--shop{width:20%;height:23%}
 }
+
+
+/* Sherlock residents physically inhabit the Rotas 2.5D scene. */
+.rotas-live-residents{position:absolute;inset:0;z-index:8;pointer-events:none;transform-style:preserve-3d}
+.rotas-resident{
+  position:absolute;z-index:8;width:34px;height:50px;margin:-50px 0 0 -17px;
+  border:0;background:transparent;color:#fff;pointer-events:auto;cursor:pointer;
+  transform:rotateX(-48deg) translateZ(64px);transform-origin:50% 100%;
+  filter:drop-shadow(0 8px 6px rgba(0,0,0,.55));
+  animation:rotasResidentIdle 3.2s ease-in-out infinite;
+}
+.rotas-resident-body{position:absolute;left:50%;bottom:8px;width:14px;height:25px;transform:translateX(-50%);border-radius:45% 45% 38% 38%;background:linear-gradient(180deg,var(--resident-color),rgba(5,14,20,.92));box-shadow:0 0 12px var(--resident-color)}
+.rotas-resident-body i{position:absolute;left:50%;top:-8px;width:10px;height:10px;transform:translateX(-50%);border-radius:50%;background:var(--resident-color)}
+.rotas-resident-body b{position:absolute;left:50%;bottom:-4px;width:18px;height:5px;transform:translateX(-50%);border-radius:50%;background:rgba(0,0,0,.5)}
+.rotas-resident strong{position:absolute;left:50%;bottom:38px;transform:translateX(-50%);padding:2px 5px;border:1px solid color-mix(in srgb,var(--resident-color) 55%,transparent);border-radius:4px;background:rgba(2,7,12,.82);font-size:7px;letter-spacing:.08em;white-space:nowrap}
+.rotas-resident small{position:absolute;left:50%;top:48px;transform:translateX(-50%);font-size:6px;letter-spacing:.06em;opacity:.7;white-space:nowrap}
+@keyframes rotasResidentIdle{0%,100%{translate:0 0}50%{translate:0 -3px}}
+@media(max-width:720px){
+  .rotas-resident{width:40px;height:56px;margin:-56px 0 0 -20px;transform:rotateX(-48deg) translateZ(72px)}
+  .rotas-resident strong{font-size:7px}
+}
