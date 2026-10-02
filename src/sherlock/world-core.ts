@@ -11,6 +11,8 @@ export type HiddenEntityState = {
   place?: PlaceId;
   depth?: "surface" | "shallow" | "deep";
   state: "dormant" | "present" | "active" | "unknown";
+  mood?: "quiet" | "curious" | "playful" | "restless" | "watchful" | "charged" | "unknown";
+  influence?: readonly PlaceId[];
   description: string;
 };
 export type WorldEvent =
@@ -32,12 +34,12 @@ export type WorldLog = { initial: WorldState; events: WorldEvent[] };
 export type ProposedAction = { actor: CharacterId; kind: "move"; to: PlaceId } | { actor: CharacterId; kind: "wait" };
 
 export const BLACKLACE_HIDDEN: readonly HiddenEntityState[] = [
-  { id: "aloisia", kind: "incarnate", observable: true, place: "observatoire", state: "present", description: "Version incarnée d'Aloisia sur l'île." },
-  { id: "lili", kind: "incarnate", observable: true, place: "rotas", state: "present", description: "Présence incarnée de Lili sur Blacklace." },
-  { id: "feuch", kind: "presence", observable: false, place: "fournaise", state: "unknown", description: "Présence Feuch; ses manifestations doivent être observées avant d'être affirmées." },
-  { id: "fee-belette", kind: "presence", observable: false, place: "reboot", state: "unknown", description: "Présence de la Fée Belette associée au Reboot." },
-  { id: "sator-network", kind: "artifact", observable: true, place: "sator", state: "dormant", description: "Réseau persistant de carrés SATOR répartis dans l'île." },
-  { id: "moscovium", kind: "resource", observable: false, depth: "deep", state: "present", description: "Moscovium présent dans les profondeurs de l'île; non observable directement depuis la surface." },
+  { id: "aloisia", kind: "incarnate", observable: true, place: "observatoire", state: "present", mood: "curious", influence: ["observatoire", "rotas"], description: "Version incarnée d'Aloisia sur l'île." },
+  { id: "lili", kind: "incarnate", observable: true, place: "rotas", state: "present", mood: "quiet", influence: ["rotas"], description: "Présence incarnée de Lili sur Blacklace." },
+  { id: "feuch", kind: "presence", observable: false, place: "fournaise", state: "unknown", mood: "unknown", influence: ["fournaise", "institute"], description: "Présence Feuch; ses manifestations doivent être observées avant d'être affirmées." },
+  { id: "fee-belette", kind: "presence", observable: false, place: "reboot", state: "unknown", mood: "unknown", influence: ["reboot", "sator"], description: "Présence de la Fée Belette associée au Reboot." },
+  { id: "sator-network", kind: "artifact", observable: true, place: "sator", state: "dormant", mood: "watchful", influence: ["sator", "reboot"], description: "Réseau persistant de carrés SATOR répartis dans l'île." },
+  { id: "moscovium", kind: "resource", observable: false, depth: "deep", state: "present", mood: "quiet", description: "Moscovium présent dans les profondeurs de l'île; non observable directement depuis la surface." },
 ];
 
 export const PLACES: readonly PlaceId[] = ["port", "rotas", "max", "ludmila", "sator", "institute", "fournaise", "reboot", "observatoire"];
@@ -150,4 +152,31 @@ export function runControl(initial: WorldState, cycles: number): { state: WorldS
     events.push(...result.events);
   }
   return { state, log: { initial, events } };
+}
+
+
+export type WorldSignal = {
+  source: HiddenEntityId;
+  place: PlaceId;
+  observable: boolean;
+  mood: NonNullable<HiddenEntityState["mood"]>;
+  intensity: number;
+  trace: string;
+};
+
+/** Deterministic projection of environmental influence. It describes traces,
+ * never a hidden entity's unobserved intention or cause. */
+export function worldSignals(state: WorldState): WorldSignal[] {
+  const signals: WorldSignal[] = [];
+  for (const entity of Object.values(state.hidden ?? {})) {
+    if (!entity.place || !entity.influence?.length) continue;
+    const residents = Object.values(state.characters).filter(character => entity.influence?.includes(character.place)).length;
+    const intensity = Math.min(3, (entity.state === "active" ? 2 : entity.state === "present" ? 1 : 0) + (residents > 0 ? 1 : 0));
+    if (intensity === 0 && !entity.observable) continue;
+    const trace = entity.observable
+      ? `${entity.id} · ${entity.mood ?? "unknown"}`
+      : `anomalie locale · niveau ${intensity}`;
+    signals.push({ source: entity.id, place: entity.place, observable: entity.observable, mood: entity.mood ?? "unknown", intensity, trace });
+  }
+  return signals;
 }
