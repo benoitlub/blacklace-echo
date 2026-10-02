@@ -35,8 +35,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter basename="/blacklace-echo">
         <RouteRestorer />
-        <div className="bl-build-marker">ROTAS v1.1 // PLATEAU FINAL COMPOSÉ // HOTSPOTS OK</div>
-        <div className="bl-build-footer">BUILD 2026-06-10 // IMAGE COMPOSÉE + CLICS POI</div>
+        <div className="bl-build-marker">BLACKLACE ISLAND // SHERLOCK WORLD SIGNAL</div>
+        <div className="bl-build-footer">MONDE VIVANT // ÉVÉNEMENTS VÉRIFIÉS PAR SHERLOCK</div>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/map" element={<Map />} />
