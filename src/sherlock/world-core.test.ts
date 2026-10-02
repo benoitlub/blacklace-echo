@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyEvent, initialWorld, replay, runControl, runCycle } from "./world-core";
+import {applyEvent, initialWorld, replay, runControl, runCycle, worldSignals } from "./world-core";
 
 describe("SHERLOCK S-001 world core", () => {
   const start = () => initialWorld([{ id: "observer-a", place: "port" }, { id: "observer-b", place: "rotas" }]);
@@ -51,5 +51,18 @@ describe("SHERLOCK S-001 world core", () => {
   it("rejects duplicate IDs and invalid cycle counts", () => {
     expect(() => initialWorld([{ id: "same", place: "port" }, { id: "same", place: "rotas" }])).toThrow();
     expect(() => runControl(start(), -1)).toThrow();
+  });
+});
+
+
+describe("world signals", () => {
+  it("projects cult-place influence without revealing hidden causes", () => {
+    const state = initialWorld([{ id: "visitor", place: "fournaise" }]);
+    const signals = worldSignals(state);
+    const feuch = signals.find(signal => signal.source === "feuch");
+    expect(feuch?.observable).toBe(false);
+    expect(feuch?.intensity).toBeGreaterThan(0);
+    expect(feuch?.trace).toContain("anomalie locale");
+    expect(feuch?.trace).not.toContain("feuch");
   });
 });
