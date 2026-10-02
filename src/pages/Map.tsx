@@ -411,7 +411,18 @@ const BlacklaceMap = () => {
       </main>
 
       {(view === "zooming-rotas" || view === "rotas") && (
-        <RotasPlaza entering={view === "zooming-rotas"} onBack={backToMap} />
+        <RotasPlaza
+          entering={view === "zooming-rotas"}
+          onBack={backToMap}
+          residents={Object.values(presences).filter(presence => presence.place === "rotas").map(presence => ({
+            actor: presence.actor,
+            name: ACTOR_NAMES[presence.actor] ?? presence.actor.toUpperCase(),
+            color: ACTOR_COLORS[presence.actor] ?? "#00e5ff",
+            activity: presence.activity,
+            intention: presence.intention,
+            lastEvent: presence.lastEvent,
+          }))}
+        />
       )}
     </>
   );
