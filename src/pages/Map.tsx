@@ -211,6 +211,8 @@ const BlacklaceMap = () => {
   const stars = useMemo(() => Array.from({ length: 42 }), []);
   const activeZone = HOTSPOTS.find(h => h.id === active);
   const selectedPresence = selectedActor ? presences[selectedActor] : undefined;
+  const currentCycle = Object.values(presences).reduce((max, presence) => Math.max(max, presence.cycle), 0);
+  const latestPresence = Object.values(presences).sort((a, b) => b.cycle - a.cycle).find(presence => presence.lastEvent);
   const presenceLayout = useMemo(() => {
     const groups = new Map<PlaceId, SherlockPresence[]>();
     Object.values(presences).forEach(p => groups.set(p.place, [...(groups.get(p.place) ?? []), p]));
@@ -375,10 +377,13 @@ const BlacklaceMap = () => {
           </div>
 
           {view === "map" && (
-            <div className={`sherlock-map-status is-${sherlockStatus}`}>
-              <span className="sherlock-map-dot" />
-              SHERLOCK {sherlockStatus === "live" ? `LIVE · ${Object.keys(presences).length} PRÉSENCE(S)` : sherlockStatus === "connecting" ? "CONNEXION…" : sherlockStatus === "unavailable" ? "HORS SIGNAL" : "OFF"}
-            </div>
+            <>
+              <div className={`sherlock-map-status is-${sherlockStatus}`}>
+                <span className="sherlock-map-dot" />
+                {sherlockStatus === "live" ? `CYCLE ${currentCycle} · ${Object.keys(presences).length} HABITANTS · SHERLOCK LIVE` : sherlockStatus === "connecting" ? "SHERLOCK · CONNEXION…" : sherlockStatus === "unavailable" ? "SHERLOCK · HORS SIGNAL" : "SHERLOCK · OFF"}
+              </div>
+              {latestPresence?.lastEvent && <div className="sherlock-world-ticker"><span>DERNIER ÉVÉNEMENT</span>{ACTOR_NAMES[latestPresence.actor] ?? latestPresence.actor} · {latestPresence.lastEvent}</div>}
+            </>
           )}
 
           {selectedPresence && view === "map" && (
