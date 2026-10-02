@@ -3,7 +3,8 @@ import type { CSSProperties } from "react";
 import { ROTAS_BOARD_IMAGE } from "@/assets/rotasBoardImage";
 import TransparentAsset from "./TransparentAsset";
 
-type Props = { entering: boolean; onBack: () => void };
+type RotasResident = { actor: string; name: string; color: string; activity?: string; intention?: string; lastEvent?: string };
+type Props = { entering: boolean; onBack: () => void; residents?: RotasResident[] };
 type RotasSpotId = "eye" | "tea" | "prohibited" | "market" | "stalls" | "coast" | "fountain";
 type RotasDepth = "district" | "place";
 
@@ -29,12 +30,16 @@ const ROTAS_SPOTS: RotasSpot[] = [
   { id: "fountain", label: "Fontaine centrale", kind: "carrefour", x: 51, y: 48, note: "Le cœur de la place. Les chemins tournent autour comme s’ils hésitaient.", mood: "mosaïque spirale, eau claire, bancs et murmures", detail: "Point de spawn, journal de lieu, choix des directions." },
 ];
 
-export default function RotasPlaza({ entering, onBack }: Props) {
+export default function RotasPlaza({ entering, onBack, residents = [] }: Props) {
   const [selectedSpot, setSelectedSpot] = useState<RotasSpot | null>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [depth, setDepth] = useState<RotasDepth>("district");
   const sparks = useMemo(() => Array.from({ length: 18 }), []);
   const birds = useMemo(() => Array.from({ length: 5 }), []);
+  const residentPositions = useMemo(() => [
+    { x: 44, y: 54 }, { x: 57, y: 52 }, { x: 36, y: 64 }, { x: 64, y: 65 },
+    { x: 48, y: 70 }, { x: 29, y: 49 }, { x: 71, y: 49 }, { x: 52, y: 41 },
+  ], []);
 
   const updateTilt = (clientX: number, clientY: number, target: HTMLElement) => {
     const rect = target.getBoundingClientRect();
@@ -73,6 +78,24 @@ export default function RotasPlaza({ entering, onBack }: Props) {
             <div className="rotas-building rotas-building--shop"><span className="rotas-dome"/><i>BOUTIQUE</i></div>
             <div className="rotas-stall rotas-stall--market"><span/><i>MARCHÉ</i></div>
             <div className="rotas-stall rotas-stall--east"><span/></div>
+          </div>
+          <div className="rotas-live-residents" aria-label={`${residents.length} habitants Sherlock présents à Rotas`}>
+            {residents.map((resident, index) => {
+              const pos = residentPositions[index % residentPositions.length];
+              return (
+                <button
+                  key={resident.actor}
+                  className="rotas-resident"
+                  type="button"
+                  style={{ left: `${pos.x}%`, top: `${pos.y}%`, ["--resident-color" as string]: resident.color } as CSSProperties}
+                  title={resident.lastEvent ?? resident.intention ?? resident.name}
+                >
+                  <span className="rotas-resident-body"><i/><b/></span>
+                  <strong>{resident.name}</strong>
+                  {resident.activity && <small>{resident.activity}</small>}
+                </button>
+              );
+            })}
           </div>
           {ROTAS_SPOTS.map((spot) => (
             <button
