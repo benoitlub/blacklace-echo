@@ -290,3 +290,22 @@
   .rotas-final-hotspot strong{transform:none}
   .rotas-board--final::before,.rotas-board--final::after{transform:translateZ(42px) rotateX(-48deg);opacity:.62}
 }
+
+
+/* Rotas 2.5D scene graph: ground stays tilted; architecture stands upright. */
+.rotas-vertical-village{position:absolute;inset:0;z-index:5;pointer-events:none;transform-style:preserve-3d}
+.rotas-building,.rotas-stall{position:absolute;transform-origin:50% 100%;transform:translate(-50%,-100%) rotateX(-48deg) translateZ(48px);filter:drop-shadow(0 18px 14px rgba(0,0,0,.38))}
+.rotas-building{width:19%;height:25%;border:1px solid rgba(221,190,111,.6);border-radius:48% 48% 12% 12%;background:linear-gradient(90deg,#b99b65 0 9%,#0b696c 10% 88%,#c5a66c 89%);box-shadow:inset 0 0 0 4px rgba(7,42,43,.42),inset 0 -28px 28px rgba(0,0,0,.28)}
+.rotas-building--eye{left:50%;top:31%;width:24%;height:32%}
+.rotas-building--tea{left:28%;top:43%;width:17%;height:21%}
+.rotas-building--shop{left:73%;top:44%;width:17%;height:21%}
+.rotas-dome{position:absolute;left:8%;right:8%;top:-34%;height:52%;border-radius:50% 50% 18% 18%;background:radial-gradient(circle at 35% 25%,#2ca7a4,#07585d 58%,#032d34 100%);border:2px solid #b99b65}
+.rotas-dome--eye:after{content:"◉";position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);color:#d8c282;text-shadow:0 0 9px #00e5ff;font-size:clamp(12px,2.2vw,25px)}
+.rotas-building i,.rotas-stall i{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);font-style:normal;font-size:clamp(5px,.7vw,9px);letter-spacing:.1em;color:#e8d8a9;white-space:nowrap}
+.rotas-stall{width:13%;height:11%;background:linear-gradient(165deg,#0b7375,#d1b875 48%,#07575c 52%);border:1px solid #b99b65;clip-path:polygon(50% 0,100% 30%,92% 100%,8% 100%,0 30%)}
+.rotas-stall--market{left:39%;top:66%}.rotas-stall--east{left:61%;top:66%}
+@media(max-width:720px){
+  .rotas-building,.rotas-stall{transform:translate(-50%,-100%) rotateX(-48deg) translateZ(58px)}
+  .rotas-building--eye{width:28%;height:35%}
+  .rotas-building--tea,.rotas-building--shop{width:20%;height:23%}
+}
