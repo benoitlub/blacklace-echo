@@ -1,6 +1,6 @@
 import { createSession, ensureSessionCharacters, loadSession } from "./persistence";
 import type { D1Database } from "./persistence";
-import { initialWorld } from "./world-core";
+import { initialWorld, worldSignals } from "./world-core";
 import type { CharacterState, PlaceId } from "./world-core";
 import { commitOctopusCycle } from "./octopus-cycle";
 import { createOctopusHttpExecutor } from "./octopus-http";
@@ -99,7 +99,10 @@ export default {
           });
         }
         const publicEntries = entries.slice(-20);
-        return new Response(JSON.stringify({ entries: publicEntries }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
+        const signals = worldSignals(session.state).map(signal => signal.observable
+          ? signal
+          : { place: signal.place, observable: false, intensity: signal.intensity, trace: signal.trace });
+        return new Response(JSON.stringify({ entries: publicEntries, signals }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
       } catch { return json({ error: "Public feed unavailable" }, 503); }
     }
     if (!url.pathname.startsWith("/api/sherlock/")) return json({ error: "Not found" }, 404);
