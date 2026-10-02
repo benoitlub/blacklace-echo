@@ -234,3 +234,23 @@
 @media(max-width:720px){
   .sherlock-resident-card{position:fixed;left:14px;right:14px;bottom:14px;width:auto;padding:14px 16px;z-index:120}
 }
+
+
+/* HoloMap live world telemetry */
+.sherlock-world-ticker{
+  position:absolute; left:50%; bottom:18px; z-index:75; transform:translateX(-50%);
+  max-width:min(720px,calc(100vw - 32px)); padding:8px 13px;
+  border:1px solid rgba(0,229,255,.22); border-radius:10px;
+  background:rgba(2,7,12,.78); backdrop-filter:blur(10px);
+  font-size:9px; letter-spacing:.08em; color:#dffaff; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.sherlock-world-ticker span{color:#00e5ff;margin-right:9px;font-weight:700}
+@media(max-width:720px){
+  .sherlock-map-status{top:auto !important;bottom:58px !important}
+  .sherlock-world-ticker{position:fixed;left:12px;right:12px;bottom:12px;transform:none;max-width:none;font-size:8px}
+  .i3d-char--sherlock .i3d-char-name{
+    display:block !important; visibility:visible !important; opacity:1 !important;
+    max-width:92px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+}
