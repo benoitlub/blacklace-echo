@@ -34,7 +34,7 @@ export type WorldLog = { initial: WorldState; events: WorldEvent[] };
 export type ProposedAction = { actor: CharacterId; kind: "move"; to: PlaceId } | { actor: CharacterId; kind: "wait" };
 
 export const BLACKLACE_HIDDEN: readonly HiddenEntityState[] = [
-  { id: "aloisia", kind: "consciousness", observable: false, state: "active", mood: "curious", influence: PLACES, description: "Conscience diffuse de Blacklace Island. Aloisia est l'île; elle n'est pas localisable." },
+  { id: "aloisia", kind: "consciousness", observable: false, state: "active", mood: "curious", influence: ["port", "rotas", "max", "ludmila", "sator", "institute", "fournaise", "reboot", "observatoire"], description: "Conscience diffuse de Blacklace Island. Aloisia est l'île; elle n'est pas localisable." },
   { id: "lili", kind: "incarnate", observable: true, place: "rotas", state: "present", mood: "curious", influence: ["rotas"], description: "Incarnation locale choisie par Aloisia lorsqu'elle vit parmi les habitants." },
   { id: "feuch", kind: "presence", observable: false, place: "fournaise", state: "unknown", mood: "unknown", influence: ["fournaise", "institute"], description: "Présence Feuch; ses manifestations doivent être observées avant d'être affirmées." },
   { id: "fee-belette", kind: "presence", observable: false, place: "reboot", state: "unknown", mood: "unknown", influence: ["reboot", "sator"], description: "Présence de la Fée Belette associée au Reboot." },
