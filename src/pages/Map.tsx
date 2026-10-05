@@ -4,7 +4,7 @@ import { BackgroundLayers } from "@/blacklace/Layers";
 import RotasPlaza from "@/components/world/RotasPlaza";
 import "@/styles/rotas.css";
 import { ISLAND_LOCATIONS, ISLAND_LOCATION_BY_ID, islandRoute, type RoutePoint } from "@/blacklace/island-geography";
-import { parsePublicFeed, type PublicWorldEntry } from "@/blacklace/sherlock-feed";
+import { parsePublicFeed, parsePublicSignals, type PublicWorldEntry } from "@/blacklace/sherlock-feed";
 import type { PlaceId } from "@/sherlock/world-core";
 
 const HOTSPOTS = ISLAND_LOCATIONS;
@@ -43,6 +43,7 @@ const BlacklaceMap = () => {
   const [view, setView] = useState<MapView>("map");
   const [weather, setWeather] = useState<Weather>("clear");
   const [time, setTime] = useState<Time>("day");
+  const [worldSignals, setWorldSignals] = useState<ReturnType<typeof parsePublicSignals>>([]);
   const [sherlockStatus, setSherlockStatus] = useState<"off" | "connecting" | "live" | "unavailable">("off");
   const [presences, setPresences] = useState<Record<string, SherlockPresence>>({});
   const [selectedActor, setSelectedActor] = useState<string | null>(null);
@@ -313,6 +314,18 @@ const BlacklaceMap = () => {
                     animationDelay: `${-i * 14}s`,
                   }}>⛵</span>
                 ))}
+
+                {worldSignals.map((signal, index) => {
+                  const location = ISLAND_LOCATION_BY_ID[signal.place as PlaceId];
+                  if (!location || signal.intensity <= 0) return null;
+                  return <span
+                    key={`${signal.place}:${index}`}
+                    className={`i3d-world-signal i3d-world-signal--${signal.intensity}`}
+                    style={{ left: `${location.x}%`, top: `${location.y}%` }}
+                    title={signal.trace}
+                    aria-label={`Signal à ${location.label}: ${signal.trace}`}
+                  ><i/><b>{signal.observable ? signal.trace : `ANOMALIE · ${signal.intensity}`}</b></span>;
+                })}
 
                 {HOTSPOTS.map(h => (
                   <button
