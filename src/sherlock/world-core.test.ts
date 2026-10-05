@@ -16,7 +16,10 @@ describe("SHERLOCK S-001 world core", () => {
 
   it("keeps the hidden layer canonical but distinct from observability", () => {
     const world = start();
-    expect(world.hidden.aloisia).toMatchObject({ kind: "incarnate", observable: true, place: "observatoire" });
+    expect(world.hidden.aloisia).toMatchObject({ kind: "consciousness", observable: false, state: "active" });
+    expect(world.hidden.aloisia.place).toBeUndefined();
+    expect(world.hidden.lili).toMatchObject({ kind: "incarnate", observable: true, place: "rotas" });
+    expect(world.hidden.lili.description).toContain("Aloisia");
     expect(world.hidden.feuch).toMatchObject({ kind: "presence", observable: false, state: "unknown" });
     expect(world.hidden["fee-belette"]).toMatchObject({ kind: "presence", observable: false, place: "reboot" });
     expect(world.hidden["sator-network"]).toMatchObject({ kind: "artifact", observable: true, place: "sator" });
@@ -56,6 +59,13 @@ describe("SHERLOCK S-001 world core", () => {
 
 
 describe("world signals", () => {
+  it("never localises diffuse Aloisia but can localise Lili", () => {
+    const signals = worldSignals(initialWorld([{ id: "visitor", place: "rotas" }]));
+    expect(signals.some(signal => signal.source === "aloisia")).toBe(false);
+    expect(signals.find(signal => signal.source === "lili")).toMatchObject({ place: "rotas", observable: true });
+  });
+
+
   it("projects cult-place influence without revealing hidden causes", () => {
     const state = initialWorld([{ id: "visitor", place: "fournaise" }]);
     const signals = worldSignals(state);
