@@ -29,6 +29,26 @@ describe("Sherlock Octopus HTTP boundary", () => {
     expect(mission.prompt).toContain('"actor":"marie-jeanne"');
   });
 
+  it("passes an unexplained local anomaly without leaking Feuch", async () => {
+    const localRequest: DecisionRequest = {
+      ...request,
+      state: initialWorld([{ id: "marie-jeanne", place: "fournaise" }]),
+    };
+    const fetcher = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+      const mission = JSON.parse(String(init?.body));
+      return new Response(JSON.stringify({
+        status: "completed", operationId: mission.operationId,
+        output: { action: { actor: "marie-jeanne", kind: "wait" } },
+      }), { status: 200 });
+    });
+    await createOctopusHttpExecutor({ endpoint: "https://octopus.example/mission", fetcher: fetcher as typeof fetch })(localRequest);
+    const mission = JSON.parse(String(fetcher.mock.calls[0][1]?.body));
+    expect(mission.context.metadata.localSignals).toContainEqual(expect.objectContaining({ trace: "unexplained local anomaly" }));
+    const signalText = JSON.stringify(mission.context.metadata.localSignals);
+    expect(signalText).not.toContain("feuch");
+    expect(mission.prompt).toContain("never infer or name a hidden cause");
+  });
+
   it("rejects incomplete missions instead of inventing an action", async () => {
     const decide = createOctopusHttpExecutor({
       endpoint: "https://octopus.example/mission",
