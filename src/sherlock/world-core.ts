@@ -1,7 +1,7 @@
 /** SHERLOCK S-001: deterministic, model-free world simulation. No lore is canonized here. */
 export type PlaceId = "port" | "rotas" | "max" | "ludmila" | "sator" | "institute" | "fournaise" | "reboot" | "observatoire";
 export type CharacterId = string;
-export type HiddenEntityKind = "incarnate" | "presence" | "artifact" | "resource";
+export type HiddenEntityKind = "consciousness" | "incarnate" | "presence" | "artifact" | "resource";
 export type HiddenEntityId = "aloisia" | "lili" | "feuch" | "fee-belette" | "sator-network" | "moscovium";
 export type HiddenEntityState = {
   id: HiddenEntityId;
@@ -34,8 +34,8 @@ export type WorldLog = { initial: WorldState; events: WorldEvent[] };
 export type ProposedAction = { actor: CharacterId; kind: "move"; to: PlaceId } | { actor: CharacterId; kind: "wait" };
 
 export const BLACKLACE_HIDDEN: readonly HiddenEntityState[] = [
-  { id: "aloisia", kind: "incarnate", observable: true, place: "observatoire", state: "present", mood: "curious", influence: ["observatoire", "rotas"], description: "Version incarnée d'Aloisia sur l'île." },
-  { id: "lili", kind: "incarnate", observable: true, place: "rotas", state: "present", mood: "quiet", influence: ["rotas"], description: "Présence incarnée de Lili sur Blacklace." },
+  { id: "aloisia", kind: "consciousness", observable: false, state: "active", mood: "curious", influence: PLACES, description: "Conscience diffuse de Blacklace Island. Aloisia est l'île; elle n'est pas localisable." },
+  { id: "lili", kind: "incarnate", observable: true, place: "rotas", state: "present", mood: "curious", influence: ["rotas"], description: "Incarnation locale choisie par Aloisia lorsqu'elle vit parmi les habitants." },
   { id: "feuch", kind: "presence", observable: false, place: "fournaise", state: "unknown", mood: "unknown", influence: ["fournaise", "institute"], description: "Présence Feuch; ses manifestations doivent être observées avant d'être affirmées." },
   { id: "fee-belette", kind: "presence", observable: false, place: "reboot", state: "unknown", mood: "unknown", influence: ["reboot", "sator"], description: "Présence de la Fée Belette associée au Reboot." },
   { id: "sator-network", kind: "artifact", observable: true, place: "sator", state: "dormant", mood: "watchful", influence: ["sator", "reboot"], description: "Réseau persistant de carrés SATOR répartis dans l'île." },
@@ -169,6 +169,8 @@ export type WorldSignal = {
 export function worldSignals(state: WorldState): WorldSignal[] {
   const signals: WorldSignal[] = [];
   for (const entity of Object.values(state.hidden ?? {})) {
+    // Aloisia is the island itself: her diffuse state must never become a map marker.
+    // Only Lili, her chosen incarnation, is localisable among residents.
     if (!entity.place || !entity.influence?.length) continue;
     const residents = Object.values(state.characters).filter(character => entity.influence?.includes(character.place)).length;
     const intensity = Math.min(3, (entity.state === "active" ? 2 : entity.state === "present" ? 1 : 0) + (residents > 0 ? 1 : 0));
