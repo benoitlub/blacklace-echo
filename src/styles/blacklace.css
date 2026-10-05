@@ -618,3 +618,27 @@ body.bl-glitch-pro .bl-video-frame{animation:blFreeze .55s cubic-bezier(.2,.7,.2
   .i3d-world-signal i{filter:drop-shadow(0 0 5px currentColor)}
 }
 @media(prefers-reduced-motion:reduce){.i3d-world-signal i{animation:none}}
+
+
+/* Mobile HoloMap composition: fill the useful viewport with the island plane.
+   Scale the plane (not only the raster) so residents, hotspots and signals stay registered. */
+@media(max-width:720px){
+  .map-page--full .island3d-stage{
+    height:calc(100svh - 54px);
+    min-height:680px;
+    overflow:hidden;
+  }
+  .map-page--full .i3d-island{
+    width:100%;
+    transform:translateY(-2%) scale(1.38);
+    transform-origin:50% 46%;
+  }
+  .map-page--full .i3d-island img{
+    width:100%;
+    max-width:none;
+  }
+  .map-page--full .i3d-shadow{
+    width:108%;
+    bottom:4%;
+  }
+}
