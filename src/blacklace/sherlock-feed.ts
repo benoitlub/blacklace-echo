@@ -4,6 +4,8 @@ export type PublicWorldEntry =
   | { id: string; cycle: number; actor: string; kind: "moved"; from: string; to: string; activity?: string; intention?: string }
   | { id: string; cycle: number; actors: readonly [string, string]; kind: "met"; place: string };
 
+export type PublicWorldSignal = { place: string; observable: boolean; intensity: number; trace: string; source?: string; mood?: string };
+
 const validPlace = (value: unknown): value is string => typeof value === "string" && value.length > 0 && value.length <= 80;
 
 export function parsePublicFeed(payload: unknown): PublicWorldEntry[] {
@@ -45,4 +47,18 @@ export function describeWorldEntry(entry: PublicWorldEntry): { name: string; tex
     return { name: names[entry.actor] ?? "SHERLOCK", text: `Cycle ${entry.cycle} : ${name} se déplace de ${places[entry.from] ?? entry.from} vers ${places[entry.to] ?? entry.to}.` };
   }
   return { name: names[entry.actor] ?? "SHERLOCK", text: `Cycle ${entry.cycle} : ${name} reste à ${places[entry.place] ?? entry.place}.` };
+}
+
+
+export function parsePublicSignals(payload: unknown): PublicWorldSignal[] {
+  if (!payload || typeof payload !== "object" || !("signals" in payload) || !Array.isArray(payload.signals)) return [];
+  return payload.signals.filter((signal: unknown): signal is PublicWorldSignal => {
+    if (!signal || typeof signal !== "object") return false;
+    const s = signal as Record<string, unknown>;
+    return validPlace(s.place) && typeof s.observable === "boolean" &&
+      Number.isSafeInteger(s.intensity) && (s.intensity as number) >= 0 && (s.intensity as number) <= 3 &&
+      typeof s.trace === "string" && s.trace.length > 0 && s.trace.length <= 160 &&
+      (s.source === undefined || typeof s.source === "string") &&
+      (s.mood === undefined || typeof s.mood === "string");
+  });
 }
