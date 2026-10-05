@@ -593,3 +593,28 @@ body.bl-glitch-pro .bl-video-frame{animation:blFreeze .55s cubic-bezier(.2,.7,.2
   }
   .i3d-shadow{width:92%;bottom:8%}
 }
+
+
+/* Sherlock environmental signals: the island itself visibly reacts. */
+.i3d-world-signal{
+  position:absolute;z-index:30;width:0;height:0;transform:translateZ(62px);
+  pointer-events:auto;color:#8ffcff;
+}
+.i3d-world-signal i{
+  position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;
+  border:1px solid currentColor;box-shadow:0 0 18px currentColor,inset 0 0 14px currentColor;
+  opacity:.38;animation:worldSignalPulse 3.4s ease-in-out infinite;
+}
+.i3d-world-signal b{
+  position:absolute;left:13px;top:11px;max-width:150px;padding:3px 6px;border-radius:5px;
+  background:rgba(2,7,12,.78);font-size:7px;letter-spacing:.09em;white-space:nowrap;
+  opacity:.7;font-weight:600;
+}
+.i3d-world-signal--2 i{width:58px;height:58px;left:-29px;top:-29px;opacity:.5}
+.i3d-world-signal--3 i{width:76px;height:76px;left:-38px;top:-38px;opacity:.65;animation-duration:1.8s}
+@keyframes worldSignalPulse{0%,100%{scale:.82;opacity:.25}50%{scale:1.14;opacity:.72}}
+@media(max-width:720px){
+  .i3d-world-signal b{display:none}
+  .i3d-world-signal i{filter:drop-shadow(0 0 5px currentColor)}
+}
+@media(prefers-reduced-motion:reduce){.i3d-world-signal i{animation:none}}
