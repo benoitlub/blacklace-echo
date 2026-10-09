@@ -55,7 +55,11 @@ export async function commitOctopusCycle(
   if (decision.source !== "octopus" || !decision.operationId?.trim()) {
     throw new Error("Unverified Octopus decision");
   }
-  if (!allowedActions.some(action => JSON.stringify(action) === JSON.stringify(decision.action))) {
+  if (!allowedActions.some(action =>
+    action.actor === decision.action.actor &&
+    action.kind === decision.action.kind &&
+    (action.kind === "wait" || (decision.action.kind === "move" && action.to === decision.action.to))
+  )) {
     throw new Error("Decision is not an allowed action");
   }
   const result = runCycle(session.state, [decision.action]);
