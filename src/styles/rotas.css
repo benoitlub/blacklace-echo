@@ -346,3 +346,22 @@
 @keyframes rotasResidentWanderA{0%,100%{translate:0 0}35%{translate:7px -3px}70%{translate:-4px 2px}}
 @keyframes rotasResidentWanderB{0%,100%{translate:0 0}45%{translate:-6px -2px}75%{translate:4px 2px}}
 @media(prefers-reduced-motion:reduce){.rotas-resident{animation:none}}
+
+
+/* Rotas mobile: keep the village visible and make information contextual. */
+@media(max-width:720px){
+  .rotas-board-shell--final{top:38%;width:118vw}
+  .rotas-street-panel:not(.is-open){
+    left:16px;right:16px;bottom:112px;top:auto;
+    max-height:115px;overflow:hidden;padding:10px 14px;
+    border-radius:16px;
+    background:rgba(3,13,21,.83);
+  }
+  .rotas-street-panel:not(.is-open) .section-kicker{font-size:9px}
+  .rotas-street-panel:not(.is-open) h2{font-size:22px;margin:0}
+  .rotas-street-panel:not(.is-open) p{display:none}
+  .rotas-back{bottom:42px;right:16px;padding:9px 13px;font-size:11px}
+  .rotas-vertical-village .rotas-building{filter:drop-shadow(0 8px 8px rgba(0,0,0,.35))}
+  .rotas-building--eye{height:30%}
+  .rotas-resident strong{font-size:7px}
+}
