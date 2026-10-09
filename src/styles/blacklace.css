@@ -642,3 +642,33 @@ body.bl-glitch-pro .bl-video-frame{animation:blFreeze .55s cubic-bezier(.2,.7,.2
     bottom:4%;
   }
 }
+
+
+/* Mobile map polish: retain the enlarged terrain, contain labels and reduce visual noise. */
+@media(max-width:720px){
+  .map-page--full .i3d-hotspot .i3d-label{
+    max-width:108px;
+    white-space:normal;
+    overflow-wrap:break-word;
+    line-height:1.25;
+    font-size:8px;
+    padding:5px 7px;
+  }
+  .map-page--full .i3d-hotspot:nth-of-type(n) {touch-action:manipulation}
+  .map-page--full .i3d-char--sherlock .i3d-char-name{
+    max-width:74px;
+    font-size:7px;
+  }
+  .map-page--full .i3d-char--sherlock:not(.is-selected):not(.is-moving) .i3d-char-name{
+    opacity:0 !important;
+    visibility:hidden !important;
+  }
+  .map-page--full .i3d-char--sherlock:is(.is-selected,.is-moving) .i3d-char-name{
+    opacity:1 !important;
+    visibility:visible !important;
+  }
+  .map-page--full .i3d-char--sherlock .i3d-char-trail{opacity:.18}
+  .map-page--full .i3d-world-signal i{opacity:.22}
+  .map-page--full .sherlock-world-ticker{bottom:10px;max-width:calc(100vw - 24px)}
+  .map-page--full .sherlock-map-status{bottom:52px !important}
+}
