@@ -73,7 +73,9 @@ export async function commitOctopusCycle(
       throw new Error("Unverified Octopus decision");
   }
   if (!permitted(decision.action)) {
-    throw new Error("Decision is not an allowed action");
+    const proposed = decision.action;
+    const allowed = allowedActions.map(action => action.kind === "wait" ? "wait" : `move:${action.to}`);
+    throw new Error(`Decision is not an allowed action (expected actor=${actorId}, proposed actor=${proposed.actor}, kind=${proposed.kind}${proposed.kind === "move" ? `, to=${proposed.to}` : ""}; allowed=${allowed.join(",")})`);
   }
   const result = runCycle(session.state, [decision.action]);
   await appendCycle(db, sessionId, session.state.cycle, result.events, { operationId: decision.operationId, source: decision.source, actorId, action: decision.action });
