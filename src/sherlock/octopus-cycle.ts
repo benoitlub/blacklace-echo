@@ -46,7 +46,7 @@ export async function commitOctopusCycle(
   const session = await loadSession(db, sessionId);
   if (!session) throw new Error("Session not found");
   const allowedActions = allowedActionsFor(session.state, actorId);
-  const decision = await decide({
+  let decision = await decide({
     sessionId,
     cycle: session.state.cycle + 1,
     state: session.state,
@@ -55,11 +55,24 @@ export async function commitOctopusCycle(
   if (decision.source !== "octopus" || !decision.operationId?.trim()) {
     throw new Error("Unverified Octopus decision");
   }
-  if (!allowedActions.some(action =>
-    action.actor === decision.action.actor &&
-    action.kind === decision.action.kind &&
-    (action.kind === "wait" || (decision.action.kind === "move" && action.to === decision.action.to))
-  )) {
+  const permitted = (action: ProposedAction) => allowedActions.some(candidate =>
+    candidate.actor === action.actor &&
+    candidate.kind === action.kind &&
+    (candidate.kind === "wait" || (action.kind === "move" && candidate.to === action.to))
+  );
+  // A model may return a plausible but forbidden move. Ask Octopus once more;
+  // never substitute a scripted action or bypass the authoritative rules.
+  if (!permitted(decision.action)) {
+    decision = await decide({
+      sessionId,
+      cycle: session.state.cycle + 1,
+      state: session.state,
+      allowedActions,
+    });
+    if (decision.source !== "octopus" || !decision.operationId?.trim())
+      throw new Error("Unverified Octopus decision");
+  }
+  if (!permitted(decision.action)) {
     throw new Error("Decision is not an allowed action");
   }
   const result = runCycle(session.state, [decision.action]);
