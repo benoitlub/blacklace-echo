@@ -8,6 +8,8 @@ import { parsePublicFeed, parsePublicSignals, type PublicWorldEntry } from "@/bl
 import type { PlaceId } from "@/sherlock/world-core";
 
 const HOTSPOTS = ISLAND_LOCATIONS;
+// Project geographic anchors into the visible island footprint, not the full sky/stage.
+const islandScreenY = (y: number) => 29 + y * 0.43;
 
 const HOLOWALL_LABELS = ["ROTAS", "SATOR", "FEUCH", "ALOISIA", "SIGNAL", "BRUME"];
 
@@ -321,7 +323,7 @@ const BlacklaceMap = () => {
                   return <span
                     key={`${signal.place}:${index}`}
                     className={`i3d-world-signal i3d-world-signal--${signal.intensity}`}
-                    style={{ left: `${location.x}%`, top: `${location.y}%` }}
+                    style={{ left: `${location.x}%`, top: `${islandScreenY(location.y)}%` }}
                     title={signal.trace}
                     aria-label={`Signal à ${location.label}: ${signal.trace}`}
                   ><i/><b>{signal.observable ? signal.trace : `ANOMALIE · ${signal.intensity}`}</b></span>;
@@ -331,7 +333,7 @@ const BlacklaceMap = () => {
                   <button
                     key={h.id}
                     className={`i3d-hotspot ${active === h.id ? "is-on" : ""}`}
-                    style={{ left: `${h.x}%`, top: `${h.y}%`, ["--c" as any]: h.color }}
+                    style={{ left: `${h.x}%`, top: `${islandScreenY(h.y)}%`, ["--c" as any]: h.color }}
                     onClick={() => enterZone(h.id)}
                     title={`${h.label} — ${h.status}`}
                   >
@@ -349,7 +351,7 @@ const BlacklaceMap = () => {
                     <div
                       key={presence.actor}
                       className={`i3d-char i3d-char--sherlock ${presence.moving ? "is-moving" : ""} ${selectedActor === presence.actor ? "is-selected" : ""} ${labelLeft ? "label-left" : "label-right"}`}
-                      style={{ left: `${position.x + offsetX}%`, top: `${position.y + offsetY}%`, ["--c" as any]: color, ["--label-dy" as any]: `${labelDy}px` }}
+                      style={{ left: `${position.x + offsetX}%`, top: `${islandScreenY(position.y + offsetY)}%`, ["--c" as any]: color, ["--label-dy" as any]: `${labelDy}px` }}
                       title={`${ACTOR_NAMES[presence.actor] ?? presence.actor} · ${location.label} · cycle ${presence.cycle}`}
                       role="button"
                       tabIndex={0}
