@@ -53,6 +53,7 @@ export function createOctopusHttpExecutor(config: OctopusHttpConfig): DecisionEx
     const operationId = crypto.randomUUID();
     const actorId = request.allowedActions[0]?.actor;
     const actorPlace = actorId ? request.state.characters[actorId]?.place : undefined;
+    const publicState = { cycle: request.state.cycle, characters: request.state.characters };
     const localSignals = worldSignals(request.state)
       .filter(signal => actorPlace && (signal.place === actorPlace || request.state.hidden[signal.source]?.influence?.includes(actorPlace)))
       .map(signal => signal.observable
@@ -64,11 +65,11 @@ export function createOctopusHttpExecutor(config: OctopusHttpConfig): DecisionEx
       body: JSON.stringify({
         operationId,
         title: "Sherlock character decision",
-        objective: "Choose exactly one permitted action. Return JSON with an action object; do not invent places.",
+        objective: "Choose exactly one permitted action. Copy its actor, kind and destination exactly; do not invent places. To remain in the current place choose wait, NEVER move to the current place.",
         requiredCapabilities: ["copy.generate"],
         context: { id: `sherlock:${request.sessionId}:${request.cycle}`, label: "Blacklace world cycle",
-          metadata: { sessionId: request.sessionId, cycle: request.cycle, state: request.state, allowedActions: request.allowedActions, localSignals } },
-        prompt: `You are deciding only for ${request.allowedActions[0]?.actor}. Character drive: ${CHARACTER_DRIVES[request.allowedActions[0]?.actor] ?? "Explore Blacklace according to the current situation."} Choose exactly one action from this JSON array. The drive influences the choice but never overrides allowedActions. Return ONLY JSON {"action":<chosen action>}: ${JSON.stringify(request.allowedActions)}. Locally observable signals: ${JSON.stringify(localSignals)}. You may react to these observations, but never infer or name a hidden cause that is not present in the signal trace. Current world state: ${JSON.stringify(request.state)}`,
+          metadata: { sessionId: request.sessionId, cycle: request.cycle, state: publicState, allowedActions: request.allowedActions, localSignals } },
+        prompt: `You are deciding only for ${request.allowedActions[0]?.actor}. Character drive: ${CHARACTER_DRIVES[request.allowedActions[0]?.actor] ?? "Explore Blacklace according to the current situation."} Choose exactly one action from this JSON array. The drive influences the choice but never overrides allowedActions. Staying in the current place requires kind wait, never a move to the same place. Return ONLY JSON {"action":<chosen action>}: ${JSON.stringify(request.allowedActions)}. Locally observable signals: ${JSON.stringify(localSignals)}. You may react to these observations, but never infer or name a hidden cause that is not present in the signal trace. Current observable world state: ${JSON.stringify(publicState)}`,
       }),
     });
     if (!response.ok) {
