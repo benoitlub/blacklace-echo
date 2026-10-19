@@ -120,6 +120,7 @@ const BlacklaceMap = () => {
           const key = `${entry.cycle}:${entry.id}`;
           if (seenSherlockEvents.current.has(key)) continue;
           seenSherlockEvents.current.add(key);
+          if (seenSherlockEvents.current.size > 600) seenSherlockEvents.current = new Set([...seenSherlockEvents.current].slice(-300));
           if (entry.kind === "waited" && isPlaceId(entry.place)) {
             stopActorTimers(entry.actor);
             const place = entry.place;
@@ -165,7 +166,7 @@ const BlacklaceMap = () => {
         }
         setSherlockStatus("live");
       } catch {
-        if (active) setSherlockStatus("unavailable");
+        if (active && !controller.signal.aborted) setSherlockStatus("unavailable");
       }
     }
 
