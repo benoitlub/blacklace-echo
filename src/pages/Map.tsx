@@ -50,6 +50,7 @@ const BlacklaceMap = () => {
   const [presences, setPresences] = useState<Record<string, SherlockPresence>>({});
   const [selectedActor, setSelectedActor] = useState<string | null>(null);
   const seenSherlockEvents = useRef(new Set<string>());
+  const actorTimers = useRef(new Map<string, Set<number>>());
   const stageRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const islandRef = useRef<HTMLDivElement>(null);
@@ -81,11 +82,15 @@ const BlacklaceMap = () => {
       scene.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
       raf = requestAnimationFrame(loop);
     };
-    stage.addEventListener("mousemove", onMove);
+    // Pointer events cover touch, pen and mouse; no perpetual touch rotation.
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType === "mouse" || event.buttons === 1) onMove(event as unknown as MouseEvent);
+    };
+    stage.addEventListener("pointermove", onPointerMove);
     stage.addEventListener("mouseleave", onLeave);
     loop();
     return () => {
-      stage.removeEventListener("mousemove", onMove);
+      stage.removeEventListener("pointermove", onPointerMove);
       stage.removeEventListener("mouseleave", onLeave);
       cancelAnimationFrame(raf);
     };
@@ -97,22 +102,31 @@ const BlacklaceMap = () => {
     let active = true;
     const controller = new AbortController();
     const movementTimers = new Set<number>();
+    const stopActorTimers = (actor: string) => {
+      actorTimers.current.get(actor)?.forEach(timer => { window.clearTimeout(timer); movementTimers.delete(timer); });
+      actorTimers.current.delete(actor);
+    };
     setSherlockStatus("connecting");
 
     async function refresh() {
       try {
         const response = await fetch(endpoint, { signal: controller.signal, credentials: "omit", cache: "no-store" });
         if (!response.ok) throw new Error("Feed unavailable");
-        const entries = parsePublicFeed(await response.json());
+        const payload = await response.json();
+        const entries = parsePublicFeed(payload);
+        setWorldSignals(parsePublicSignals(payload));
         if (!active) return;
         for (const entry of entries) {
           const key = `${entry.cycle}:${entry.id}`;
           if (seenSherlockEvents.current.has(key)) continue;
           seenSherlockEvents.current.add(key);
+          if (seenSherlockEvents.current.size > 600) seenSherlockEvents.current = new Set([...seenSherlockEvents.current].slice(-300));
           if (entry.kind === "waited" && isPlaceId(entry.place)) {
+            stopActorTimers(entry.actor);
             const place = entry.place;
             setPresences(current => ({ ...current, [entry.actor]: { actor: entry.actor, place, cycle: entry.cycle, moving: false, activity: entry.activity, intention: entry.intention, lastEvent: entry.id.startsWith("presence:") ? current[entry.actor]?.lastEvent : `Reste à ${ISLAND_LOCATION_BY_ID[place].label}` } }));
           } else if (entry.kind === "moved" && isPlaceId(entry.from) && isPlaceId(entry.to)) {
+            stopActorTimers(entry.actor);
             const from = entry.from;
             const to = entry.to;
             const points = islandRoute(from, to);
@@ -137,6 +151,8 @@ const BlacklaceMap = () => {
                 }));
               }, 80 + legMs * (index + 1));
               movementTimers.add(timer);
+              if (!actorTimers.current.has(entry.actor)) actorTimers.current.set(entry.actor, new Set());
+              actorTimers.current.get(entry.actor)!.add(timer);
             });
           } else if (entry.kind === "met" && isPlaceId(entry.place)) {
             for (const actor of entry.actors) {
@@ -150,7 +166,7 @@ const BlacklaceMap = () => {
         }
         setSherlockStatus("live");
       } catch {
-        if (active) setSherlockStatus("unavailable");
+        if (active && !controller.signal.aborted) setSherlockStatus("unavailable");
       }
     }
 
@@ -161,6 +177,7 @@ const BlacklaceMap = () => {
       controller.abort();
       window.clearInterval(poll);
       movementTimers.forEach(timer => window.clearTimeout(timer));
+      actorTimers.current.clear();
     };
   }, []);
 
