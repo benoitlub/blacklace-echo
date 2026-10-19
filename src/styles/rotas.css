@@ -365,3 +365,12 @@
   .rotas-building--eye{height:30%}
   .rotas-resident strong{font-size:7px}
 }
+
+/* Sherlock UX — minimum accessible tap target; overlays cannot swallow taps. */
+.i3d-char--sherlock{min-width:44px;min-height:44px;touch-action:manipulation}
+.i3d-char--sherlock:focus-visible{outline:2px solid #fff;outline-offset:4px;border-radius:50%}
+.i3d-char--sherlock .i3d-char-name{pointer-events:none}
+@media (max-width:720px){
+  .i3d-char--sherlock{width:44px;height:44px;margin:-22px 0 0 -22px}
+  .i3d-char--sherlock .i3d-char-name{max-width:84px;font-size:10px}
+}
