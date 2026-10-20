@@ -365,3 +365,18 @@
   .rotas-building--eye{height:30%}
   .rotas-resident strong{font-size:7px}
 }
+
+/* Mobile Rotas readability: avoid compressed perspective and competing labels. */
+@media(max-width:720px){
+  .rotas-board-shell--final{top:43%;width:155vw;max-width:none;}
+  .rotas-board--final{transform:rotateX(22deg) rotateZ(-1deg) !important;}
+  .rotas-vertical-village{display:none;}
+  .rotas-final-hotspot{transform:translate(-50%,-50%) rotateX(-22deg);min-width:36px;min-height:36px;}
+  .rotas-final-hotspot strong{display:none;}
+  .rotas-final-hotspot:is(:focus-visible,.is-selected) strong{display:block;font-size:10px;white-space:nowrap;background:rgba(2,9,16,.9);padding:5px 8px;border-radius:8px;}
+  .rotas-resident{transform:rotateX(-22deg) translateZ(24px);}
+  .rotas-resident strong,.rotas-resident small{display:none;}
+  .rotas-resident:is(:focus-visible,:hover) strong{display:block;font-size:11px;}
+  .rotas-street-panel:not(.is-open){bottom:78px;max-height:74px;}
+  .rotas-back{bottom:18px;}
+}
