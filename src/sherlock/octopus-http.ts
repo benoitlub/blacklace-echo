@@ -79,7 +79,13 @@ export function createOctopusHttpExecutor(config: OctopusHttpConfig): DecisionEx
     const payload: unknown = await response.json();
     if (!record(payload) || payload.status !== "completed" || payload.operationId !== operationId)
       throw new Error("Octopus mission was not completed or operation ID mismatched");
-    const action = decodeOutput(payload.output);
+    const proposed = decodeOutput(payload.output);
+    // Octopus sometimes encodes "stay here" as a move to its current place.
+    // This is a semantic normalization, not a fabricated route or a fallback
+    // decision: the agent explicitly chose not to change locations.
+    const action: ProposedAction = proposed.kind === "move" && proposed.actor === actorId && proposed.to === actorPlace
+      ? { actor: proposed.actor, kind: "wait" }
+      : proposed;
     return { action, operationId, source: "octopus" };
   };
 }
