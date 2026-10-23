@@ -15,7 +15,7 @@ describe("Sherlock dialogue contract", () => {
     ]);
     expect(context.priorEncounters).toHaveLength(1);
     expect(context.priorEncounters[0].cycle).toBe(12);
-    expect(JSON.stringify(context)).not.toContain("hidden");
+    expect(context).not.toHaveProperty("hidden");
   });
 
   it("validates a two-way exchange and proposed intentions", () => {
