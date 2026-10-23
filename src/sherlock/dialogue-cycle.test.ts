@@ -18,7 +18,7 @@ describe("Sherlock dialogue generation boundary", () => {
     const result = await proposeEncounterDialogue(encounter, [], generate);
     expect(result.turns).toHaveLength(2);
     expect(generate).toHaveBeenCalledOnce();
-    expect(generate.mock.calls[0][0].place).toBe("rotas");
+    expect(generate).toHaveBeenCalledWith(expect.objectContaining({ place: "rotas" }));
   });
 
   it("rejects invented speakers without committing a dialogue", async () => {
