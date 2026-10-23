@@ -4,6 +4,7 @@ import { initialWorld, worldSignals } from "./world-core";
 import type { CharacterState, PlaceId } from "./world-core";
 import { commitOctopusCycle } from "./octopus-cycle";
 import { createOctopusHttpExecutor } from "./octopus-http";
+import { loadDialogues } from "./dialogue-persistence";
 
 export interface SherlockBindings {
   SHERLOCK_DB?: D1Database;
@@ -122,6 +123,14 @@ export default {
     const match = url.pathname.match(/^\/api\/sherlock\/sessions\/([^/]+)(?:\/(cycles))?$/);
     if (!match || !validId(match[1])) return json({ error: "Not found" }, 404);
     const sessionId = match[1];
+    if (request.method === "GET" && !match[2] && url.searchParams.get("view") === "dialogues") {
+      try {
+        const session = await loadSession(db, sessionId);
+        if (!session) return json({ error: "Session not found" }, 404);
+        const dialogues = await loadDialogues(db, sessionId);
+        return json({ sessionId, dialogues });
+      } catch (error) { return json({ error: errorMessage(error) }, 503); }
+    }
     if (request.method === "GET" && !match[2]) {
       try {
         const session = await loadSession(db, sessionId);
