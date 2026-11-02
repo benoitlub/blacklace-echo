@@ -371,7 +371,7 @@
   .rotas-board-shell--final{top:43%;width:155vw;max-width:none;}
   .rotas-board--final{transform:rotateX(22deg) rotateZ(-1deg) !important;}
   .rotas-vertical-village{display:none;}
-  .rotas-final-hotspot{transform:translate(-50%,-50%) rotateX(-22deg);min-width:36px;min-height:36px;}
+  .rotas-final-hotspot{transform:translate(-50%,-50%) rotateX(-22deg);min-width:44px;min-height:44px;}
   .rotas-final-hotspot strong{display:none;}
   .rotas-final-hotspot:is(:focus-visible,.is-selected) strong{display:block;font-size:10px;white-space:nowrap;background:rgba(2,9,16,.9);padding:5px 8px;border-radius:8px;}
   .rotas-resident{transform:rotateX(-22deg) translateZ(24px);}
