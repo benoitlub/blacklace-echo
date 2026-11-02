@@ -25,6 +25,8 @@ try {
       await visit.waitFor();
       await page.waitForFunction(()=>document.querySelector('.rv-scene')?.complete && document.querySelector('.rv-scene')?.naturalWidth > 0);
       assert.equal(await page.locator('main.map-page').evaluate(el=>el.inert),true,'Background must be inert');
+      assert.equal(await page.locator('.bl-build-marker').isVisible(),false,'Build marker must not cover the visit');
+      assert.equal(await page.locator('.bl-build-footer').isVisible(),false,'Build footer must not cover the visit');
       await page.screenshot({path:`qa-output/rotas-${device.name}.png`});
       const actions = page.locator('.rv-place-actions');
       await actions.getByRole('button',{name:'Fontaine centrale'}).click();
@@ -76,6 +78,13 @@ try {
       await page.waitForTimeout(1400);
       assert.equal(await page.locator('.rotas-visit').count(),0,'Returning must cancel delayed arrival');
       assert.equal(await page.locator('main.map-page').evaluate(el=>el.inert),false);
+      if(device.name==='mobile') {
+        await page.emulateMedia({reducedMotion:'no-preference'});
+        await page.getByRole('button',{name:'Village de Rotas',exact:true}).click();
+        await page.getByRole('button',{name:'← HoloMap',exact:true}).click();
+        await page.waitForTimeout(1400);
+        assert.equal(await page.locator('.rotas-visit').count(),0,'Early return must cancel the arrival timer');
+      }
       assert.deepEqual(errors,[],'Browser runtime errors');
       console.log(`Rotas ${device.name}: scene navigation, images, zoom, keyboard, residents, return passed`);
     } catch(error) {
