@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 const target = 'http://127.0.0.1:4173/blacklace-echo/map';
 let ready = false;
 for (let attempt = 0; attempt < 120; attempt++) {
-  try { if ((await fetch(new URL('./', target), {headers:{Accept:'text/html'}})).ok()) { ready = true; break; } } catch {}
+  try { if ((await fetch(new URL('./', target), {headers:{Accept:'text/html'}})).ok) { ready = true; break; } } catch {}
   await new Promise(resolve => setTimeout(resolve, 250));
 }
 assert.ok(ready, 'Built application did not start');
