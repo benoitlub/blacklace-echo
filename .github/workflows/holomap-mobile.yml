@@ -24,10 +24,10 @@ jobs:
       - name: Check the built site on a mobile viewport
         run: |
           npx vite preview --host 127.0.0.1 --port 4173 > /tmp/qa-vite.log 2>&1 &
-          node scripts/mobile-smoke.mjs
+          node scripts/mobile-smoke.mjs || { cat /tmp/qa-vite.log; exit 1; }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: mobile-browser-check
-          path: .qa/
+          path: qa-output/
           if-no-files-found: ignore

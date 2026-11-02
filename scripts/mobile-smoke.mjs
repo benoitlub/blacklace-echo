@@ -4,7 +4,7 @@ const require = createRequire('/tmp/qa-playwright/package.json');
 const { chromium } = require('playwright');
 const target = 'http://127.0.0.1:4173/blacklace-echo/map';
 let ready = false;
-for (let attempt = 0; attempt < 40; attempt++) {
+for (let attempt = 0; attempt < 120; attempt++) {
   try { if ((await fetch(target)).ok()) { ready = true; break; } } catch {}
   await new Promise(resolve => setTimeout(resolve, 250));
 }
@@ -21,7 +21,7 @@ try {
   if (errors.length) throw new Error('Runtime errors: '+errors.join('; '));
   const width = await page.evaluate(()=>document.documentElement.scrollWidth);
   if(width > 405) throw new Error('Horizontal overflow: '+width);
-  await mkdir('.qa',{recursive:true});
-  await page.screenshot({path:'.qa/mobile.png',fullPage:true});
+  await mkdir('qa-output',{recursive:true});
+  await page.screenshot({path:'qa-output/mobile.png',fullPage:true});
   console.log('Built application mobile smoke passed');
 } finally { await browser.close(); }
