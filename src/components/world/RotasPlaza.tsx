@@ -188,13 +188,13 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
             onLoad={() => setImageLoading(false)} onError={() => { setImageError(true); setImageLoading(false); }} />
           <div className="rv-sunlight" aria-hidden="true" />
           {sceneId === "square" && <div className="rv-water" style={{ left: "51%", top: "61%" }} aria-hidden="true"><i /><i /><i /></div>}
-          {scene.stops.map((stop) => <button key={stop.id} type="button" className={`rv-hotspot ${selected?.id === stop.id ? "is-selected" : ""}`}
+          {scene.stops.map((stop) => <button key={stop.id} tabIndex={-1} type="button" className={`rv-hotspot ${selected?.id === stop.id ? "is-selected" : ""}`}
             style={{ left: `${stop.x}%`, top: `${stop.y}%` }} onClick={() => observe(stop)} aria-label={stop.label} title={stop.label}>
             <span>{stop.destination ? "↗" : "+"}</span><strong>{stop.label}</strong>
           </button>)}
           {sceneId === "square" && residents.map((person, i) => {
             const pos = RESIDENT_POSITIONS[i % RESIDENT_POSITIONS.length];
-            return <button key={person.actor} className="rv-resident" type="button" aria-label={`Observer ${person.name}`} title={person.name}
+            return <button key={person.actor} className="rv-resident" tabIndex={-1} type="button" aria-label={`Observer ${person.name}`} title={person.name}
               style={{ left: `${pos.x + Math.floor(i / RESIDENT_POSITIONS.length) * 2}%`, top: `${pos.y}%`, "--resident-color": person.color } as CSSProperties}
               onClick={() => { setSelectedActor(person.actor); setSelected(null); setShowResidents(true); }}><span /><strong>{person.name}</strong></button>;
           })}

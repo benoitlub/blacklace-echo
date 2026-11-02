@@ -209,7 +209,7 @@ const BlacklaceMap = () => {
     };
   }, []);
 
-  const arrivalTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const arrivalTimer = useRef<number | null>(null);
   useEffect(() => () => { if (arrivalTimer.current) clearTimeout(arrivalTimer.current); }, []);
 
   function enterZone(id: string) {
