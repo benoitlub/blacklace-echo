@@ -33,7 +33,12 @@ jobs:
       - run: npm install
       - run: npm test -- src/sherlock src/blacklace
       - run: npx tsc --noEmit -p tsconfig.app.json
-      - name: Deploy existing Worker (do not run D1 migrations)
+      - name: Apply Sherlock D1 migrations
+        run: npx --yes wrangler@4 d1 migrations apply blacklace-sherlock --remote --config wrangler.sherlock.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Deploy Sherlock Worker
         run: npx --yes wrangler@4 deploy --config wrangler.sherlock.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

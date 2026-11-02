@@ -49,6 +49,39 @@ describe("Sherlock Octopus HTTP boundary", () => {
     expect(mission.prompt).toContain("never infer or name a hidden cause");
   });
 
+  it("normalizes a self-move to wait while preserving the Octopus provenance", async () => {
+    const localRequest: DecisionRequest = {
+      ...request,
+      state: initialWorld([{ id: "max", place: "rotas" }]),
+      allowedActions: [{ actor: "max", kind: "wait" }, { actor: "max", kind: "move", to: "port" }],
+    };
+    const decide = createOctopusHttpExecutor({
+      endpoint: "https://octopus.example/mission",
+      fetcher: (async (_url: string | URL | Request, init?: RequestInit) => new Response(JSON.stringify({
+        status: "completed", operationId: JSON.parse(String(init?.body)).operationId,
+        output: { action: { actor: "max", kind: "move", to: "rotas" } },
+      }), { status: 200 })) as typeof fetch,
+    });
+    const result = await decide(localRequest);
+    expect(result.action).toEqual({ actor: "max", kind: "wait" });
+    expect(result.source).toBe("octopus");
+    expect(result.operationId).toBeTruthy();
+  });
+
+  it("does not expose hidden entities in the mission payload", async () => {
+    const fetcher = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+      const mission = JSON.parse(String(init?.body));
+      return new Response(JSON.stringify({
+        status: "completed", operationId: mission.operationId,
+        output: { action: { actor: "marie-jeanne", kind: "wait" } },
+      }), { status: 200 });
+    });
+    await createOctopusHttpExecutor({ endpoint: "https://octopus.example/mission", fetcher: fetcher as typeof fetch })(request);
+    const mission = JSON.parse(String(fetcher.mock.calls[0][1]?.body));
+    expect(mission.context.metadata.state).not.toHaveProperty("hidden");
+    expect(mission.prompt).not.toContain('"hidden"');
+  });
+
   it("rejects incomplete missions instead of inventing an action", async () => {
     const decide = createOctopusHttpExecutor({
       endpoint: "https://octopus.example/mission",
