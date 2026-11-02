@@ -4,11 +4,12 @@ const require = createRequire('/tmp/qa-playwright/package.json');
 const { chromium } = require('playwright');
 const target = 'http://127.0.0.1:4173/blacklace-echo/map';
 let ready = false;
+let lastReadiness = 'not-started';
 for (let attempt = 0; attempt < 120; attempt++) {
-  try { if ((await fetch(target)).ok()) { ready = true; break; } } catch {}
+  try { const response = await fetch(new URL('./', target), {headers:{Accept:'text/html'}}); lastReadiness=String(response.status); if (response.ok) { ready = true; break; } } catch (error) { lastReadiness=error.message; }
   await new Promise(resolve => setTimeout(resolve, 250));
 }
-if (!ready) throw new Error('Built application did not start');
+if (!ready) throw new Error('Built application did not start: '+lastReadiness);
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
