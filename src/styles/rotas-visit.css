@@ -14,3 +14,4 @@
 
 body.rotas-visiting .bl-build-marker,body.rotas-visiting .bl-build-footer{display:none!important}
 .rv-place-actions button{flex:0 0 auto}
+.rotas-visit .rv-stops button[aria-current]{color:#12332e;background:#e8d5a7;border-color:#e8d5a7}
