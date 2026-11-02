@@ -20,7 +20,7 @@ try {
     try {
       const response = await page.goto(target,{waitUntil:'networkidle'});
       assert.ok(response?.ok(), 'Page failed to load');
-      await page.getByRole('button',{name:'ROTAS',exact:true}).click();
+      await page.getByRole('button',{name:'Village de Rotas',exact:true}).click();
       const visit = page.getByRole('dialog',{name:'La place de Rotas'});
       await visit.waitFor();
       await page.waitForFunction(()=>document.querySelector('.rv-scene')?.complete && document.querySelector('.rv-scene')?.naturalWidth > 0);
