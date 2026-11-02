@@ -1,142 +1,227 @@
-import { useMemo, useState } from "react";
-import type { CSSProperties } from "react";
-import { ROTAS_BOARD_IMAGE } from "@/assets/rotasBoardImage";
-import TransparentAsset from "./TransparentAsset";
+import { useEffect, useRef, useState } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import "@/styles/rotas-visit.css";
 
 type RotasResident = { actor: string; name: string; color: string; activity?: string; intention?: string; lastEvent?: string };
 type Props = { entering: boolean; onBack: () => void; residents?: RotasResident[] };
-type RotasSpotId = "eye" | "tea" | "prohibited" | "market" | "stalls" | "coast" | "fountain";
-type RotasDepth = "district" | "place";
-
-type RotasSpot = {
-  id: RotasSpotId;
-  label: string;
-  kind: string;
-  x: number;
-  y: number;
-  note: string;
-  mood: string;
-  detail: string;
-  depth?: RotasDepth;
+type SceneId = "square" | "tea" | "market" | "stairs" | "coast" | "shop";
+type Stop = { id: string; label: string; x: number; y: number; destination?: SceneId; description: string };
+type Scene = { title: string; subtitle: string; ratio: number; stops: Stop[] };
+const SCENES: Record<SceneId, Scene> = {
+  square: { title: "La place de Rotas", subtitle: "Pierre dorée, dômes turquoise et chemins en spirale", ratio: 4 / 3, stops: [
+    { id: "eye", label: "Maison de l’Œil", x: 57, y: 36, description: "Le grand dôme et son œil sculpté veillent sur la place. Observez les volumes de pierre claire, le cuivre et la végétation qui gagne les toitures." },
+    { id: "tea", label: "Salon de thé", x: 25, y: 43, destination: "tea", description: "Rejoindre les terrasses du salon de thé." },
+    { id: "shop", label: "Boutique", x: 84, y: 48, destination: "shop", description: "Se rapprocher des vitrines et des étals." },
+    { id: "fountain", label: "Fontaine centrale", x: 51, y: 61, description: "L’eau et les mosaïques marquent le cœur de Rotas. Autour du bassin, les spirales relient les chemins et les terrasses." },
+    { id: "market", label: "Marché", x: 37, y: 73, destination: "market", description: "Descendre vers les échoppes du marché." },
+  ] },
+  tea: { title: "Les terrasses du thé", subtitle: "Auvents turquoise et petits passages fleuris", ratio: 9 / 16, stops: [
+    { id: "tables", label: "Observer la terrasse", x: 61, y: 45, description: "Des tables se nichent sous les auvents. Les lanternes, les poteries et les plantes prolongent le salon jusque dans la rue." },
+    { id: "stairs", label: "Vers les escaliers", x: 30, y: 39, destination: "stairs", description: "Monter entre les terrasses." },
+  ] },
+  market: { title: "La rue du marché", subtitle: "Échoppes, fontaine et lumière de la côte", ratio: 9 / 16, stops: [
+    { id: "stalls", label: "Observer les étals", x: 18, y: 56, description: "Bois sculpté, auvents rayés, fruits et céramiques : le marché reprend les couleurs et les matières de la place." },
+    { id: "square", label: "Rejoindre la place", x: 53, y: 49, destination: "square", description: "Retrouver la fontaine centrale." },
+    { id: "coast", label: "Vers la côte", x: 39, y: 25, destination: "coast", description: "Poursuivre la promenade vers la mer." },
+  ] },
+  stairs: { title: "Les escaliers fleuris", subtitle: "Rotas se découvre aussi en hauteur", ratio: 9 / 16, stops: [
+    { id: "bridge", label: "Observer la passerelle", x: 65, y: 36, description: "Escaliers, arches et passerelles relient les niveaux. Les pavés à spirales accompagnent la montée entre les façades végétales." },
+    { id: "tea", label: "Vers le salon de thé", x: 23, y: 51, destination: "tea", description: "Retrouver les terrasses." },
+    { id: "coast", label: "Descendre vers la mer", x: 77, y: 48, destination: "coast", description: "Prendre le passage ouvert sur la côte." },
+  ] },
+  coast: { title: "Le passage de la côte", subtitle: "Sous les arches, la mer apparaît", ratio: 9 / 16, stops: [
+    { id: "sea", label: "Observer la mer", x: 57, y: 53, description: "Entre les façades de Rotas, le passage s’ouvre sur l’eau. La pierre chaude et les lanternes répondent au bleu de la côte." },
+    { id: "stairs", label: "Remonter les escaliers", x: 28, y: 36, destination: "stairs", description: "Revenir vers les niveaux hauts." },
+    { id: "market", label: "Vers le marché", x: 50, y: 74, destination: "market", description: "Retrouver les échoppes." },
+  ] },
+  shop: { title: "La rue des boutiques", subtitle: "Vitrines, cuivre patiné et portes turquoise", ratio: 9 / 16, stops: [
+    { id: "window", label: "Observer la vitrine", x: 25, y: 48, description: "Objets, étoffes et petits ornements se mêlent au bois et au cuivre. Cette promenade permet d’observer la boutique ; aucun achat n’est déclenché." },
+    { id: "market", label: "Vers le marché", x: 64, y: 62, destination: "market", description: "Suivre les pavés en spirale." },
+  ] },
 };
-
-const ROTAS_SPOTS: RotasSpot[] = [
-  { id: "eye", label: "Maison de l’Œil", kind: "archives vivantes", x: 50, y: 21, note: "La grande porte du Feuch Institut local. Tout ce qui observe finit ici.", mood: "verre turquoise, cuivre patiné, silence qui prend des notes", detail: "Hall, terminal Aloisia, bibliothèque-ruche, registre des anomalies." },
-  { id: "tea", label: "Salon de thé", kind: "ruelle chaude", x: 26, y: 36, note: "Tables basses, thé trop lucide, plantes qui ont probablement un avis.", mood: "ombre douce, vapeur, conversations minuscules", detail: "Façade Tea, terrasse, première rencontre PNJ, menu des infusions absurdes." },
-  { id: "prohibited", label: "Pro.Hibited", kind: "boutique de Natasha", x: 75, y: 38, note: "La boutique Pro.Hibited de Natasha : cartes, objets interdits à moitié, avatars et souvenirs qui refusent d’être seulement des souvenirs.", mood: "enseigne dorée, rideaux turquoise, vitrines fumées, rire bleu derrière le comptoir", detail: "Cartes Pro.Hibited, objets à examiner, avatars, posters Blacklace Dice, accès vers le loft de Natasha." },
-  { id: "market", label: "Marché", kind: "place marchande", x: 33, y: 58, note: "Épices, fruits bleus, fausses cartes et rumeurs vendues sans garantie.", mood: "voix, tissus turquoise, paniers, odeur de mer", detail: "Stands, vendeurs, annonces du jour, mini-quêtes de collecte." },
-  { id: "stalls", label: "Échoppes", kind: "passages secondaires", x: 60, y: 58, note: "Des petites portes, des lanternes, des raccourcis et un chat fiscalement douteux.", mood: "ruelle étroite, pierres claires, secrets dans les angles", detail: "Ruelles verticales, escaliers, portes fermées, indices SATOR." },
-  { id: "coast", label: "Accès côte", kind: "sortie vers la mer", x: 54, y: 82, note: "Escaliers vers le ponton, embruns, mouettes et promesses de départ.", mood: "lumière basse, eau turquoise, bois humide", detail: "Ponton, Port Porsa Rotas, transition vers la côte et la mangrove." },
-  { id: "fountain", label: "Fontaine centrale", kind: "carrefour", x: 51, y: 48, note: "Le cœur de la place. Les chemins tournent autour comme s’ils hésitaient.", mood: "mosaïque spirale, eau claire, bancs et murmures", detail: "Point de spawn, journal de lieu, choix des directions." },
-];
+const SCENE_IDS = Object.keys(SCENES) as SceneId[];
+const RESIDENT_POSITIONS = [{ x: 48, y: 66 }, { x: 62, y: 63 }, { x: 35, y: 56 }, { x: 74, y: 59 }, { x: 44, y: 78 }, { x: 64, y: 77 }];
+const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+type Camera = { zoom: number; x: number; y: number };
 
 export default function RotasPlaza({ entering, onBack, residents = [] }: Props) {
-  const [selectedSpot, setSelectedSpot] = useState<RotasSpot | null>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [depth, setDepth] = useState<RotasDepth>("district");
-  const sparks = useMemo(() => Array.from({ length: 18 }), []);
-  const birds = useMemo(() => Array.from({ length: 5 }), []);
-  const residentPositions = useMemo(() => [
-    { x: 48, y: 48, zone: "fontaine" }, { x: 38, y: 58, zone: "marché" },
-    { x: 61, y: 58, zone: "échoppes" }, { x: 29, y: 43, zone: "salon de thé" },
-    { x: 72, y: 44, zone: "Pro.Hibited" }, { x: 51, y: 34, zone: "Maison de l’Œil" },
-    { x: 46, y: 68, zone: "place basse" }, { x: 57, y: 69, zone: "place basse" },
-  ], []);
+  const [sceneId, setSceneId] = useState<SceneId>("square");
+  const scene = SCENES[sceneId];
+  const [dragging, setDragging] = useState(false);
+  const [camera, setCamera] = useState<Camera>({ zoom: 1, x: .5, y: .5 });
+  const [size, setSize] = useState({ width: 1, height: 1 });
+  const [selected, setSelected] = useState<Stop | null>(null);
+  const [selectedActor, setSelectedActor] = useState<string | null>(null);
+  const [showResidents, setShowResidents] = useState(false);
+  const [night, setNight] = useState(false);
+  const [sound, setSound] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const viewport = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLElement>(null);
+  const back = useRef<HTMLButtonElement>(null);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const gesture = useRef<{ camera: Camera; x: number; y: number; distance: number } | null>(null);
+  const audio = useRef<AudioContext | null>(null);
+  const cameraRef = useRef(camera);
+  cameraRef.current = camera;
+  const resident = residents.find(item => item.actor === selectedActor);
+  const baseHeight = Math.max(size.height, size.width / scene.ratio);
+  const baseWidth = baseHeight * scene.ratio;
+  const width = baseWidth * camera.zoom;
+  const height = baseHeight * camera.zoom;
+  const offsetX = clamp(size.width / 2 - camera.x * width, size.width - width, 0);
+  const offsetY = clamp(size.height / 2 - camera.y * height, size.height - height, 0);
 
-  const updateTilt = (clientX: number, clientY: number, target: HTMLElement) => {
-    const rect = target.getBoundingClientRect();
-    const nx = ((clientX - rect.left) / rect.width - 0.5) * 2;
-    const ny = ((clientY - rect.top) / rect.height - 0.5) * 2;
-    setTilt({ x: Math.max(-1, Math.min(1, nx)), y: Math.max(-1, Math.min(1, ny)) });
-  };
+  useEffect(() => {
+    const target = viewport.current;
+    if (!target) return;
+    const observer = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      setSize({ width, height });
+    });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    const map = document.querySelector<HTMLElement>("main.map-page");
+    const previousInert = map?.inert ?? false;
+    if (map) map.inert = true;
+    document.body.style.overflow = "hidden";
+    back.current?.focus();
+    return () => {
+      if (map) map.inert = previousInert;
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, []);
+
+  // Optional generated water/wind texture. Audio starts only after a button press.
+  useEffect(() => {
+    if (!sound || !audio.current) return;
+    const context = audio.current;
+    const buffer = context.createBuffer(1, context.sampleRate * 4, context.sampleRate);
+    const samples = buffer.getChannelData(0);
+    for (let i = 0; i < samples.length; i++) samples[i] = (Math.random() * 2 - 1) * .18;
+    const source = context.createBufferSource(); source.buffer = buffer; source.loop = true;
+    const filter = context.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.value = sceneId === "coast" ? 650 : 1100;
+    const gain = context.createGain(); gain.gain.setValueAtTime(0, context.currentTime); gain.gain.linearRampToValueAtTime(.13, context.currentTime + .7);
+    source.connect(filter).connect(gain).connect(context.destination); source.start();
+    return () => { source.stop(); source.disconnect(); filter.disconnect(); gain.disconnect(); };
+  }, [sound, sceneId]);
+  useEffect(() => () => { void audio.current?.close(); }, []);
+
+  function go(id: SceneId) {
+    if (id === sceneId) { reset(); return; }
+    setSceneId(id); setSelected(null); setSelectedActor(null); setShowResidents(false);
+    setCamera({ zoom: 1, x: .5, y: .5 }); setImageError(false); setImageLoading(true);
+    pointers.current.clear(); gesture.current = null; setDragging(false);
+    requestAnimationFrame(() => viewport.current?.focus());
+  }
+  function observe(stop: Stop) {
+    if (stop.destination) { go(stop.destination); return; }
+    setSelected(stop); setSelectedActor(null); setShowResidents(false);
+    setCamera({ zoom: 1.65, x: stop.x / 100, y: stop.y / 100 });
+  }
+  function zoom(delta: number) { setCamera(value => ({ ...value, zoom: clamp(value.zoom + delta, 1, 2.5) })); }
+  function reset() { setCamera({ zoom: 1, x: .5, y: .5 }); setSelected(null); setSelectedActor(null); setShowResidents(false); }
+  function pointerMetrics() {
+    const points = [...pointers.current.values()];
+    if (!points.length) return null;
+    return { x: points.reduce((n,p) => n + p.x, 0) / points.length, y: points.reduce((n,p) => n + p.y, 0) / points.length,
+      distance: points.length > 1 ? Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y) : 0 };
+  }
+  function startGesture() { const metrics = pointerMetrics(); gesture.current = metrics ? { ...metrics, camera: cameraRef.current } : null; }
+  function pointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if ((event.target as HTMLElement).closest("button") || event.button > 0) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    event.currentTarget.setPointerCapture(event.pointerId); setDragging(true); startGesture();
+  }
+  function pointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!pointers.current.has(event.pointerId) || !gesture.current) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const metrics = pointerMetrics()!; const initial = gesture.current;
+    const nextZoom = initial.distance && metrics.distance ? clamp(initial.camera.zoom * metrics.distance / initial.distance, 1, 2.5) : initial.camera.zoom;
+    const w = baseWidth * nextZoom, h = baseHeight * nextZoom;
+    const startX = clamp(size.width / 2 - initial.camera.x * baseWidth * initial.camera.zoom, size.width - baseWidth * initial.camera.zoom, 0);
+    const startY = clamp(size.height / 2 - initial.camera.y * baseHeight * initial.camera.zoom, size.height - baseHeight * initial.camera.zoom, 0);
+    const rect = event.currentTarget.getBoundingClientRect();
+    const px = initial.x - rect.left, py = initial.y - rect.top;
+    const nextX = px - (px - startX) * nextZoom / initial.camera.zoom + metrics.x - initial.x;
+    const nextY = py - (py - startY) * nextZoom / initial.camera.zoom + metrics.y - initial.y;
+    setCamera({ zoom: nextZoom, x: (size.width / 2 - clamp(nextX, size.width - w, 0)) / w, y: (size.height / 2 - clamp(nextY, size.height - h, 0)) / h });
+  }
+  function pointerEnd(event: ReactPointerEvent<HTMLDivElement>) { pointers.current.delete(event.pointerId); setDragging(pointers.current.size > 0); startGesture(); }
+  async function toggleSound() {
+    if (sound) { setSound(false); return; }
+    try {
+      if (!audio.current) audio.current = new AudioContext();
+      await audio.current.resume(); setSound(true);
+    } catch { setSound(false); }
+  }
 
   return (
-    <section className={entering ? "rotas-plaza is-entering" : "rotas-plaza is-ready"}>
-      <div className="rotas-space" />
-      <div className="rotas-glow" />
-      <div className="rotas-stars" aria-hidden>
-        {sparks.map((_, i) => <span key={i} style={{ left: `${8 + (i * 19) % 86}%`, top: `${12 + (i * 31) % 70}%`, animationDelay: `${i * .18}s` }} />)}
-      </div>
-      <div className="rotas-birds" aria-hidden>
-        {birds.map((_, i) => <span key={i} style={{ top: `${16 + i * 9}%`, animationDelay: `${-i * 4}s`, animationDuration: `${24 + i * 5}s` }}>⌁</span>)}
-      </div>
-
-      <button className="rotas-back" onClick={() => { if (depth === "place") { setDepth("district"); setSelectedSpot(null); } else onBack(); }}>{depth === "place" ? "Retour Rotas" : "Retour carte"}</button>
-
-      <div
-        className="rotas-board-shell rotas-board-shell--final"
-        aria-label="Plateau flottant final de Rotas"
-        style={{ "--rx": tilt.x, "--ry": tilt.y } as CSSProperties}
-        onPointerMove={(event) => updateTilt(event.clientX, event.clientY, event.currentTarget)}
-        onPointerLeave={() => setTilt({ x: 0, y: 0 })}
-      >
-        <div className="rotas-board-shadow" />
-        <div className="rotas-board rotas-board--final">
-          <TransparentAsset className="rotas-final-board-img" src={ROTAS_BOARD_IMAGE} alt="Plateau de Rotas" />
-          <div className="rotas-final-glow" aria-hidden />
-          <div className="rotas-vertical-village" aria-hidden>
-            <div className="rotas-building rotas-building--tea"><span className="rotas-dome"/><i>SALON DE THÉ</i></div>
-            <div className="rotas-building rotas-building--eye"><span className="rotas-dome rotas-dome--eye"/><i>MAISON DE L’ŒIL</i></div>
-            <div className="rotas-building rotas-building--shop"><span className="rotas-dome"/><i>BOUTIQUE</i></div>
-            <div className="rotas-stall rotas-stall--market"><span/><i>MARCHÉ</i></div>
-            <div className="rotas-stall rotas-stall--east"><span/></div>
-          </div>
-          <div className="rotas-live-residents" aria-label={`${residents.length} habitants Sherlock présents à Rotas`}>
-            {residents.map((resident, index) => {
-              const pos = residentPositions[index % residentPositions.length];
-              return (
-                <button
-                  key={resident.actor}
-                  className="rotas-resident"
-                  type="button"
-                  style={{ left: `${pos.x}%`, top: `${pos.y}%`, ["--resident-color" as string]: resident.color, ["--resident-delay" as string]: `${-(index * 0.63)}s` } as CSSProperties}
-                  title={resident.lastEvent ?? resident.intention ?? resident.name}
-                  onClick={() => setSelectedSpot(null)}
-                >
-                  <span className="rotas-resident-body"><i/><b/></span>
-                  <strong>{resident.name}</strong>
-                  <small>{resident.activity ? `${resident.activity} · ${pos.zone}` : pos.zone}</small>
-                  <em>{resident.lastEvent ?? resident.intention ?? "Présence Sherlock confirmée"}</em>
-                </button>
-              );
-            })}
-          </div>
-          {ROTAS_SPOTS.map((spot) => (
-            <button
-              key={spot.id}
-              className={`rotas-final-hotspot rotas-final-hotspot--${spot.id} ${selectedSpot?.id === spot.id ? "is-selected" : ""} ${depth === "place" && selectedSpot?.id !== spot.id ? "is-dimmed" : ""}`}
-              style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
-              type="button"
-              title={spot.note}
-              onClick={() => { setSelectedSpot(spot); setDepth("place"); }}
-            >
-              <span />
-              <strong>{spot.label}</strong>
-            </button>
-          ))}
+    <section ref={root} role="dialog" aria-modal="true" aria-labelledby="rotas-visit-title"
+      className={`rotas-visit ${dragging ? "rv-is-dragging" : ""} ${night ? "rotas-visit--night" : ""} ${entering ? "rotas-visit--entering" : ""}`}
+      onKeyDown={event => {
+        if (event.key === "Escape") { event.stopPropagation(); if (selected || selectedActor || showResidents) reset(); else if (sceneId !== "square") go("square"); else onBack(); }
+        if (event.key === "Tab") {
+          const items = Array.from(root.current?.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex="0"]') ?? []).filter(el => el.getClientRects().length > 0);
+          const first = items[0], last = items[items.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+        }
+      }}>
+      <div ref={viewport} className="rv-viewport" tabIndex={0} aria-label="Décor de Rotas. Flèches pour déplacer la vue, plus et moins pour zoomer, touche Origine pour recentrer."
+        onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerEnd}
+        onKeyDown={event => {
+          if (event.target !== event.currentTarget) return;
+          const moves: Record<string, [number, number]> = { ArrowLeft: [-.06, 0], ArrowRight: [.06, 0], ArrowUp: [0, -.06], ArrowDown: [0, .06] };
+          if (moves[event.key]) { event.preventDefault(); const [x,y] = moves[event.key]; setCamera(c => ({ ...c, x: clamp(c.x + x, 0, 1), y: clamp(c.y + y, 0, 1) })); }
+          if (["+", "=", "-", "Home"].includes(event.key)) { event.preventDefault(); if (event.key === "Home") reset(); else zoom(event.key === "-" ? -.25 : .25); }
+        }}>
+        <div className="rv-canvas" style={{ width, height, transform: `translate3d(${offsetX}px, ${offsetY}px, 0)` }}>
+          <img key={sceneId} src={`${import.meta.env.BASE_URL}assets/rotas/${sceneId}.webp`} alt={scene.subtitle} className="rv-scene" draggable={false}
+            onLoad={() => setImageLoading(false)} onError={() => { setImageError(true); setImageLoading(false); }} />
+          <div className="rv-sunlight" aria-hidden="true" />
+          {sceneId === "square" && <div className="rv-water" style={{ left: "51%", top: "61%" }} aria-hidden="true"><i /><i /><i /></div>}
+          {scene.stops.map((stop) => <button key={stop.id} type="button" className={`rv-hotspot ${selected?.id === stop.id ? "is-selected" : ""}`}
+            style={{ left: `${stop.x}%`, top: `${stop.y}%` }} onClick={() => observe(stop)} aria-label={stop.label} title={stop.label}>
+            <span>{stop.destination ? "↗" : "+"}</span><strong>{stop.label}</strong>
+          </button>)}
+          {sceneId === "square" && residents.map((person, i) => {
+            const pos = RESIDENT_POSITIONS[i % RESIDENT_POSITIONS.length];
+            return <button key={person.actor} className="rv-resident" type="button" aria-label={`Observer ${person.name}`} title={person.name}
+              style={{ left: `${pos.x + Math.floor(i / RESIDENT_POSITIONS.length) * 2}%`, top: `${pos.y}%`, "--resident-color": person.color } as CSSProperties}
+              onClick={() => { setSelectedActor(person.actor); setSelected(null); setShowResidents(true); }}><span /><strong>{person.name}</strong></button>;
+          })}
         </div>
       </div>
-
-      <aside className={`rotas-street-panel ${selectedSpot ? "is-open" : ""}`} aria-live="polite">
-        {selectedSpot ? (
-          <>
-            <button className="rotas-panel-close" onClick={() => setSelectedSpot(null)}>×</button>
-            <span className="section-kicker">{depth === "place" ? "ZOOM · LIEU" : "POINT D’INTÉRÊT"}</span>
-            <h2>{selectedSpot.label}</h2>
-            <p className="rotas-kind">{selectedSpot.kind}</p>
-            <p>{selectedSpot.note}</p>
-            <small>{selectedSpot.mood}</small>
-            <div className="rotas-place-detail">{selectedSpot.detail}</div>
-            <div className="rotas-depth-path">ÎLE → ROTAS → {selectedSpot.label.toUpperCase()}</div>
-          </>
-        ) : (
-          <>
-            <span className="section-kicker">PROMENADE</span>
-            <h2>Rotas</h2>
-            <p>Une place suspendue entre mer, lanternes, archives et chemins trop bien décorés pour être entièrement honnêtes.</p>
-          </>
-        )}
-      </aside>
+      <div className="rv-vignette" aria-hidden="true" />
+      <header className="rv-header">
+        <button ref={back} type="button" onClick={onBack} className="rv-back">← HoloMap</button>
+        <div><span className="rv-eyebrow">BLACKLACE · PROMENADE</span><h1 id="rotas-visit-title">{scene.title}</h1></div>
+        <div className="rv-atmosphere"><button type="button" aria-pressed={night} onClick={() => setNight(!night)}>{night ? "☀ Jour" : "☾ Soir"}</button><button type="button" aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? "Son activé" : "Activer le son"}</button></div>
+      </header>
+      {(imageLoading || imageError) && <p className="rv-image-status" role="status">{imageError ? "Le décor n’a pas pu être chargé. Les étapes restent accessibles ci-dessous." : "Ouverture du passage…"}</p>}
+      <div className="rv-camera" aria-label="Commandes de la vue"><button type="button" aria-label="Zoom avant" disabled={camera.zoom >= 2.5} onClick={() => zoom(.25)}>+</button><output aria-label="Niveau de zoom">{Math.round(camera.zoom * 100)} %</output><button type="button" aria-label="Zoom arrière" disabled={camera.zoom <= 1} onClick={() => zoom(-.25)}>−</button><button type="button" aria-label="Recentrer la vue" onClick={reset}>⌖</button></div>
+      {(selected || showResidents) && <aside className="rv-note" aria-label={selected ? "Détail du lieu" : "Habitants de Rotas"}>
+        <button className="rv-note-close" type="button" aria-label="Fermer le détail" onClick={() => { setSelected(null); setSelectedActor(null); setShowResidents(false); }}>×</button>
+        {selected ? <><span className="rv-eyebrow">PRENDRE LE TEMPS D’OBSERVER</span><h2>{selected.label}</h2><p>{selected.description}</p></> : <>
+          <span className="rv-eyebrow">PRÉSENCES SHERLOCK · PLACE DE ROTAS</span><h2>{resident?.name ?? "Les habitants"}</h2>
+          {resident ? <><p>{resident.activity ? `Activité : ${resident.activity}` : "Aucune activité précisée dans le signal reçu."}</p>{resident.intention && <p>Intention : {resident.intention}</p>}{resident.lastEvent && <p>{resident.lastEvent}</p>}</> : <p>{residents.length ? "Choisissez un habitant pour lire son activité reçue de Sherlock." : "Aucune présence reçue pour Rotas actuellement."}</p>}
+          <div className="rv-resident-list">{residents.map(person => <button key={person.actor} type="button" aria-pressed={person.actor === selectedActor} onClick={() => setSelectedActor(person.actor)}>{person.name}</button>)}</div>
+        </>}
+      </aside>}
+      <footer className="rv-footer">
+        <div className="rv-walk-heading"><span>{sceneId === "square" ? "À votre rythme" : "Île / Rotas / " + scene.title}</span><button type="button" onClick={() => { setShowResidents(!showResidents); setSelected(null); setSelectedActor(null); }}>Habitants · {residents.length}</button></div>
+        <nav className="rv-stops" aria-label="Étapes de la promenade">{SCENE_IDS.map(id => <button key={id} type="button" aria-current={sceneId === id ? "location" : undefined} onClick={() => go(id)}>{id === "square" ? "La place" : id === "tea" ? "Salon de thé" : id === "market" ? "Marché" : id === "stairs" ? "Escaliers" : id === "coast" ? "La côte" : "Boutiques"}</button>)}</nav>
+        <div className="rv-place-actions" aria-label="Points d’intérêt de cette étape">{scene.stops.map(stop => <button key={stop.id} type="button" onClick={() => observe(stop)}>{stop.label} {stop.destination ? "↗" : "+"}</button>)}</div>
+        <p className="rv-help">Glissez pour regarder autour de vous · Pincez ou utilisez + / − pour vous rapprocher</p>
+      </footer>
     </section>
   );
 }

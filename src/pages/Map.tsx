@@ -209,17 +209,24 @@ const BlacklaceMap = () => {
     };
   }, []);
 
+  const arrivalTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (arrivalTimer.current) clearTimeout(arrivalTimer.current); }, []);
+
   function enterZone(id: string) {
     if (id === "rotas") {
       setActive(null);
       setView("zooming-rotas");
-      window.setTimeout(() => setView("rotas"), 1200);
+      if (arrivalTimer.current) clearTimeout(arrivalTimer.current);
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      arrivalTimer.current = window.setTimeout(() => { setView("rotas"); arrivalTimer.current = null; }, reduced ? 0 : 1200);
       return;
     }
     setActive(active === id ? null : id);
   }
 
   function backToMap() {
+    if (arrivalTimer.current) clearTimeout(arrivalTimer.current);
+    arrivalTimer.current = null;
     setView("map");
     setActive(null);
   }
@@ -466,3 +473,4 @@ const BlacklaceMap = () => {
 };
 
 export default BlacklaceMap;
+
