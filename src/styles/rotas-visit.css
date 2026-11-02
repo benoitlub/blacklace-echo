@@ -11,3 +11,6 @@
 .rv-canvas{transition:transform .65s cubic-bezier(.2,.7,.2,1),width .65s,height .65s}.rv-is-dragging .rv-canvas{transition:none}
 @media(prefers-reduced-motion:reduce){.rv-canvas{transition:none}}
 @media(max-height:520px){.rv-walk-heading{display:flex;position:absolute;right:84px;bottom:114px;margin:0}.rv-walk-heading>span{display:none}.rv-walk-heading button{background:#112e2def}}
+
+body.rotas-visiting .bl-build-marker,body.rotas-visiting .bl-build-footer{display:none!important}
+.rv-place-actions button{flex:0 0 auto}

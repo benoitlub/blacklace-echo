@@ -91,10 +91,13 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
     const previousInert = map?.inert ?? false;
     if (map) map.inert = true;
     document.body.style.overflow = "hidden";
+    const hadVisitClass = document.body.classList.contains("rotas-visiting");
+    document.body.classList.add("rotas-visiting");
     back.current?.focus();
     return () => {
       if (map) map.inert = previousInert;
       document.body.style.overflow = previousOverflow;
+      if (!hadVisitClass) document.body.classList.remove("rotas-visiting");
       if (previousFocus?.isConnected) previousFocus.focus();
     };
   }, []);
