@@ -100,6 +100,7 @@ const BlacklaceMap = () => {
     const endpoint = import.meta.env.VITE_SHERLOCK_PUBLIC_FEED_URL;
     if (!endpoint) return;
     let active = true;
+    let refreshing = false;
     const controller = new AbortController();
     const movementTimers = new Set<number>();
     const stopActorTimers = (actor: string) => {
@@ -109,13 +110,15 @@ const BlacklaceMap = () => {
     setSherlockStatus("connecting");
 
     async function refresh() {
+      if (!active || refreshing) return;
+      refreshing = true;
       try {
         const response = await fetch(endpoint, { signal: controller.signal, credentials: "omit", cache: "no-store" });
         if (!response.ok) throw new Error("Feed unavailable");
         const payload = await response.json();
         const entries = parsePublicFeed(payload);
-        setWorldSignals(parsePublicSignals(payload));
         if (!active) return;
+        setWorldSignals(parsePublicSignals(payload));
         for (const entry of entries) {
           const key = `${entry.cycle}:${entry.id}`;
           if (seenSherlockEvents.current.has(key)) continue;
@@ -167,6 +170,8 @@ const BlacklaceMap = () => {
         setSherlockStatus("live");
       } catch {
         if (active && !controller.signal.aborted) setSherlockStatus("unavailable");
+      } finally {
+        refreshing = false;
       }
     }
 
