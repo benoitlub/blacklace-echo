@@ -20,6 +20,9 @@ try {
     try {
       const response = await page.goto(target,{waitUntil:'networkidle'});
       assert.ok(response?.ok(), 'Page failed to load');
+      await page.getByRole('heading',{name:'Welcome to Blacklace Island',exact:true}).waitFor();
+      assert.equal(await page.getByRole('button',{name:'Village de Rotas',exact:true}).count(),0,'Places must wait for the arrival sequence');
+      await page.getByRole('button',{name:'Avancer sur le quai'}).click();
       await page.getByRole('button',{name:'Village de Rotas',exact:true}).click();
       const visit = page.getByRole('dialog',{name:'La place de Rotas'});
       await visit.waitFor();
