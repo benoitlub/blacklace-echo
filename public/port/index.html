@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10151c">
+<title>Le Seuil · Arrivée à Blacklace Island</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;color:#ffeccc;background:#07131f;font-synthesis:none}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+button,a{font:inherit}
+button{cursor:pointer}
+a{color:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3px}
+[hidden]{display:none!important}
+#port{--px:0;--py:0;position:relative;width:100%;height:100dvh;min-height:360px;overflow:hidden;isolation:isolate;background:#112b38}
+.landscape{position:absolute;inset:-4%;background-size:cover;background-position:center center;transform:translate(calc(var(--px)*-1.25vw),calc(var(--py)*-.9vh)) scale(1.07);transition:opacity 1.3s ease;will-change:transform}
+.day{background-image:url("port-jour.webp")}
+.night{background-image:url("port-nuit.webp");opacity:0}
+#port[data-night="true"] .day{opacity:0}
+#port[data-night="true"] .night{opacity:1}
+#port:before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,#06141e40 0%,transparent 34%,transparent 57%,#07131cb8 100%)}
+.fog{position:absolute;inset:-15%;z-index:2;pointer-events:none;opacity:.55;background:radial-gradient(ellipse at 42% 67%,#d3e4df73,transparent 45%);filter:blur(28px);animation:fog 11s ease-in-out infinite alternate;transition:opacity 2s ease}
+@keyframes fog{to{transform:translateX(9%);opacity:.26}}
+#port[data-phase="welcome"] .fog,#port[data-phase="explore"] .fog{opacity:.11}
+.window{position:absolute;inset:0;z-index:3;perspective:750px;pointer-events:none}
+.title-rig{position:absolute;left:50%;top:46%;width:min(94vw,1200px);transform-style:preserve-3d;transform:translate3d(-50%,-50%,0) rotateY(calc(var(--px)*-2deg));transition:transform 7s cubic-bezier(.2,.71,.2,1),opacity 1.7s 5s;filter:drop-shadow(0 15px 30px #0009)}
+#port[data-phase="crossing"] .title-rig{transform:translate3d(-50%,-50%,790px) rotateY(2deg);opacity:0}
+#port[data-phase="welcome"] .title-rig,#port[data-phase="explore"] .title-rig{opacity:0;visibility:hidden}
+.title-layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;white-space:nowrap;text-align:center;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.6rem,8.4vw,9.5rem);font-weight:900;line-height:1;letter-spacing:.012em;color:#8a5626;text-shadow:1px 3px #251909;transform:translateZ(calc(var(--z)*-2.8px));-webkit-text-stroke:1px #281b13}
+.title-face{position:relative;z-index:2;text-align:center;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.6rem,8.4vw,9.5rem);font-weight:900;white-space:nowrap;line-height:1;letter-spacing:.012em;color:#f3d49b;text-shadow:0 3px 0 #98642c,0 5px 14px #000a,0 0 26px #d8b87870;-webkit-text-stroke:1px #f9e2b0;transform:translateZ(7px)}
+.topbar,.lowerbar,.welcome,.start{position:absolute;z-index:9}
+.glass{background:rgba(9,17,26,.52);border:1px solid #f7d69650;box-shadow:0 8px 30px #0005;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:17px}
+.topbar{top:max(12px,env(safe-area-inset-top));left:clamp(9px,2vw,24px);right:clamp(9px,2vw,24px);display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 15px;transition:opacity .7s ease}
+.brand{display:flex;gap:9px;align-items:center;text-decoration:none}.brand strong{font:700 clamp(.86rem,1.55vw,1.15rem) Georgia,serif;letter-spacing:.06em}.brand small{display:block;opacity:.7;font-size:.7rem}.eye{font-size:1.55rem;color:#ffd98b}
+.actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.pill{border:1px solid #dfc39268;background:#08151f9e;color:#fff0d6;min-height:40px;border-radius:12px;padding:7px 12px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.pill:hover{background:#b18a4645}
+.start{left:50%;bottom:clamp(28px,10vh,120px);transform:translateX(-50%);text-align:center;width:min(94vw,540px);padding:17px}
+.start p{margin:4px 0 12px;color:#f0dcb8}.start button{border:1px solid #e6ba67;background:#a5722c;color:white;border-radius:12px;min-height:48px;padding:10px 22px;font-weight:700}
+#port[data-phase="crossing"] .start,#port[data-phase="welcome"] .start,#port[data-phase="explore"] .start{display:none}
+#port[data-phase="quay"] .topbar .explore-only,#port[data-phase="crossing"] .topbar .explore-only{display:none}
+.lowerbar{bottom:max(12px,env(safe-area-inset-bottom));left:clamp(9px,2vw,24px);right:clamp(9px,2vw,24px);display:flex;justify-content:space-between;align-items:end;gap:12px;opacity:0;pointer-events:none;transform:translateY(16px);transition:opacity .9s,transform .9s}
+#port[data-phase="welcome"] .lowerbar,#port[data-phase="explore"] .lowerbar{opacity:1;pointer-events:auto;transform:none}
+.places{display:flex;align-items:center;flex-wrap:wrap;gap:7px;max-width:65%}
+.settings{display:flex;gap:7px}
+.welcome{bottom:calc(74px + env(safe-area-inset-bottom));left:max(14px,3vw);width:min(850px,calc(100% - 28px));display:flex;align-items:center;gap:12px;padding:14px;opacity:0;pointer-events:none;transform:translateY(20px);transition:opacity .7s,transform .7s}
+#port[data-phase="welcome"] .welcome{opacity:1;pointer-events:auto;transform:none}
+.portrait{width:clamp(90px,17vw,170px);height:clamp(90px,17vw,170px);object-fit:cover;object-position:50% 25%;flex:none;border-radius:50%;border:2px solid #e4b96577;background:#283a45}
+.speech{flex:1;min-width:0}.speech h2{margin:0;font:700 1.35rem Georgia,serif;color:#ffdc92}.speech small{color:#f0cf99}.speech p{line-height:1.5;margin:9px 0 12px;max-width:66ch}.dialogue-actions{display:flex;gap:8px;flex-wrap:wrap}
+#port[data-phase="explore"] .welcome{display:none}
+#port[data-phase="quay"] .title-rig{animation:float 7s ease-in-out infinite alternate}
+@keyframes float{to{translate:0 -7px}}
+#port[data-phase="crossing"] .landscape{animation:advance 7s ease-in-out both}
+@keyframes advance{to{scale:1.17}}
+#port[data-phase="explore"] .places{animation:emerge .8s ease both}
+@keyframes emerge{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
+#port:not([data-phase="explore"]) .places{visibility:hidden}
+.status{font-size:.74rem;color:#e1c89a}
+@media(max-width:650px){
+  .topbar{padding:6px 9px}.brand strong{font-size:.82rem}.brand small{font-size:.6rem}
+  .actions .pill{min-height:38px;padding:5px 8px;font-size:.8rem}
+  .actions .explore-only{display:none}
+  .title-rig{top:42%;width:100%}.title-face,.title-layer{font-size:clamp(2rem,9.1vw,5rem);letter-spacing:-.015em}
+  .welcome{bottom:calc(72px + env(safe-area-inset-bottom));padding:9px;gap:8px}
+  .portrait{width:79px;height:91px}
+  .speech h2{font-size:1.03rem}.speech p{font-size:.85rem;line-height:1.3;margin:6px 0}
+  .dialogue-actions .pill{font-size:.8rem;min-height:36px;padding:6px 9px}
+  .lowerbar{align-items:stretch;gap:6px}
+  .places{max-width:100%;overflow-x:auto;flex-wrap:nowrap}
+  .places .pill{flex:none}
+  .settings{gap:4px}.settings .pill{padding:6px 8px;font-size:.8rem}
+  .start{bottom:calc(30px + env(safe-area-inset-bottom))}
+}
+@media(max-height:470px){
+ .topbar{padding:4px 8px}.welcome{bottom:61px}.portrait{height:70px;width:70px}.speech p{font-size:.8rem;margin:3px 0}.lowerbar{bottom:5px}.title-rig{top:40%}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+ .landscape{transform:none}.title-rig{transform:translate3d(-50%,-50%,0)}
+}
+</style>
+</head>
+<body>
+<main id="port" data-phase="quay" data-night="false">
+  <div class="landscape day" role="img" aria-label="Quai de Porsa Rotas, vue diurne du village et de la Fournaise de Feuch"></div>
+  <div class="landscape night" role="img" aria-label="Quai de Porsa Rotas, vue nocturne de l'île"></div>
+  <div class="fog" aria-hidden="true"></div>
+  <div class="window" aria-hidden="true"><div class="title-rig" id="title-rig"><div class="title-face">BLACKLACE ISLAND</div></div></div>
+  <header class="topbar glass">
+    <a href="../" class="brand" aria-label="Accueil Blacklace Echo"><span class="eye">◉</span><span><strong>BLACKLACE ISLAND</strong><small>Porsa Rotas · Le Seuil</small></span></a>
+    <div class="actions">
+      <a href="../map" class="pill explore-only">HoloMap</a>
+      <button id="night-toggle" type="button" class="pill" aria-pressed="false">☾ Nuit</button>
+      <button id="skip" type="button" class="pill">Passer l'intro</button>
+    </div>
+  </header>
+  <section class="start glass" aria-label="Entrée sur l'île">
+    <p>La mer vous a conduit jusqu'ici. Le reste appartient à l'île.</p>
+    <button id="enter" type="button">Entrer sur Blacklace Island →</button>
+  </section>
+  <section id="welcome" class="welcome glass" role="region" aria-label="Accueil de Marie Jeanne" aria-live="polite">
+    <img class="portrait" src="marie-jeanne.webp" alt="Marie Jeanne, habitante accueillante du port de Porsa Rotas">
+    <div class="speech">
+      <h2>MARIE JEANNE</h2>
+      <small>Accueil du port · Porsa Rotas</small>
+      <p id="dialogue">Ah ! Enfin quelqu'un ! Bienvenue sur Blacklace Island. Ne vous inquiétez pas pour le volcan… Il fait ça depuis des années.</p>
+      <div class="dialogue-actions"><button id="next" class="pill" type="button">Continuer le dialogue →</button><button id="explore" class="pill" type="button">Explorer l'île ↗</button></div>
+    </div>
+  </section>
+  <footer class="lowerbar" aria-label="Accès aux lieux">
+    <div class="places"><a class="pill" href="../map">⌖ Rotas</a><a class="pill" href="../map">☕ Max Liberty</a><a class="pill" href="../feuch-institute/">◉ Feuch Institute</a><a class="pill" href="../map">◈ HoloMap</a></div>
+    <div class="settings"><button id="recenter" class="pill" type="button" title="Recentrer la perspective">◎</button><span class="status glass" style="padding:10px">Vue fenêtre · tactile / souris</span></div>
+  </footer>
+</main>
+<script>
+'use strict';
+const root=document.querySelector('#port'), rig=document.querySelector('#title-rig');
+const reduced=matchMedia('(prefers-reduced-motion:reduce)');
+const lines=[
+"Ah ! Enfin quelqu'un ! Bienvenue sur Blacklace Island. Ne vous inquiétez pas pour le volcan… Il fait ça depuis des années.",
+"Moi, c’est Marie Jeanne. Si vous cherchez quelque chose de normal, vous vous êtes probablement trompé de bateau.",
+"Vous pouvez commencer par Rotas, prendre un verre chez Max Liberty ou monter jusqu’au Feuch Institute. Et si vous croisez quelqu’un qui parle à une pierre… laissez-le finir."
+];
+const fragment=document.createDocumentFragment();
+for(let i=14;i>0;i--){let layer=document.createElement('div');layer.className='title-layer';layer.style.setProperty('--z',i);layer.textContent='BLACKLACE ISLAND';fragment.append(layer)}
+rig.prepend(fragment);
+let phase='quay',line=0,timer=null,activePointer=null;
+function setPhase(p){phase=p;root.dataset.phase=p;if(p==='welcome'){line=0;updateLine()}if(p==='explore')document.querySelector('#skip').hidden=true}
+function updateLine(){document.querySelector('#dialogue').textContent=lines[line];document.querySelector('#next').textContent=line===lines.length-1?'Terminer le dialogue →':'Continuer le dialogue →'}
+function begin(){if(phase!=='quay')return;if(reduced.matches){setPhase('welcome');return}setPhase('crossing');timer=setTimeout(()=>{timer=null;setPhase('welcome')},6900)}
+function skip(){if(timer)clearTimeout(timer);timer=null;setPhase('welcome')}
+document.querySelector('#enter').addEventListener('click',begin);
+document.querySelector('#skip').addEventListener('click',skip);
+document.querySelector('#next').addEventListener('click',()=>{if(line<lines.length-1){line++;updateLine()}else setPhase('explore')});
+document.querySelector('#explore').addEventListener('click',()=>setPhase('explore'));
+document.querySelector('#night-toggle').addEventListener('click',e=>{let night=root.dataset.night!=='true';root.dataset.night=String(night);e.currentTarget.textContent=night?'☀ Jour':'☾ Nuit';e.currentTarget.setAttribute('aria-pressed',String(night))});
+function setPointer(x,y){if(reduced.matches)return;root.style.setProperty('--px',String(Math.max(-1,Math.min(1,x))));root.style.setProperty('--py',String(Math.max(-1,Math.min(1,y))))}
+root.addEventListener('pointerdown',e=>{if(e.target.closest('button,a'))return;activePointer={x:e.clientX,y:e.clientY,id:e.pointerId}});
+root.addEventListener('pointermove',e=>{if(phase==='crossing')return;if(e.pointerType==='mouse'){setPointer((e.clientX/innerWidth-.5)*2,(e.clientY/innerHeight-.5)*2)}else if(activePointer?.id===e.pointerId){setPointer((activePointer.x-e.clientX)/100,(activePointer.y-e.clientY)/100)}});
+root.addEventListener('pointerup',()=>{activePointer=null});
+document.querySelector('#recenter').addEventListener('click',()=>setPointer(0,0));
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(phase==='crossing')skip();else if(phase==='welcome')setPhase('explore')}else if(phase==='welcome'&&e.key==='Enter'&&!e.target.closest('button,a'))document.querySelector('#next').click()});
+document.querySelectorAll('.landscape').forEach(el=>{const bg=getComputedStyle(el).backgroundImage;const match=bg.match(/url\\(["']?([^"')]+)["']?\\)/);if(!match)return;const img=new Image();img.onerror=()=>{if(el.classList.contains(root.dataset.night==='true'?'night':'day'))el.style.background='linear-gradient(150deg,#193f50,#0e1728)'};img.src=match[1]});
+</script>
+</body>
+</html>

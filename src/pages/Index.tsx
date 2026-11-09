@@ -278,9 +278,9 @@ const Index = () => {
               puis change légèrement quand personne ne regarde.
             </p>
             <div className="bl-cta-row">
-              <button className="bl-cta" type="button" onClick={() => openZone("port")}>
+              <a className="bl-cta" href={`${import.meta.env.BASE_URL}port/`}>
                 Traverser la brume
-              </button>
+              </a>
               <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
               <a className="bl-cta ghost" href={feuchInstitutePath}>Feuch Institute</a>
             </div>
