@@ -415,20 +415,36 @@ voirContenus.addEventListener('click', () => {
   content.focus({preventScroll:true});
   content.scrollIntoView({behavior:reduced.matches ? 'auto' : 'smooth'});
 });
-nuit.addEventListener('click', () => {
-  const nocturne = nuit.getAttribute('aria-pressed') !== 'true';
-  nuit.setAttribute('aria-pressed', String(nocturne));
-  nuit.textContent = nocturne ? 'Nuit active' : 'Nuit';
-  stage.dataset.nocturne = String(nocturne);
+// Aloisia's shared ambience signal; local visitor controls remain available.
+const ALOISIA_AMBIENCE_KEY = 'blacklace_aloisia_ambience_v1';
+function setAmbience(night, unstable) {
+  nuit.setAttribute('aria-pressed', String(night));
+  nuit.textContent = night ? 'Nuit active' : 'Nuit';
+  stage.dataset.nocturne = String(night);
   for (const image of stage.querySelectorAll('.backdrop:not(.room-daylight), .furniture')) {
-    image.hidden = image.dataset.night === 'true' ? !nocturne : nocturne;
+    image.hidden = image.dataset.night === 'true' ? !night : night;
   }
+  instable.setAttribute('aria-pressed', String(unstable));
+  instable.textContent = unstable ? 'État instable' : 'État stable';
+  stage.dataset.unstable = String(unstable);
+}
+function receiveAloisiaAmbience() {
+  try {
+    const signal = JSON.parse(localStorage.getItem(ALOISIA_AMBIENCE_KEY) || 'null');
+    if (signal && typeof signal.night === 'boolean' && typeof signal.unstable === 'boolean') {
+      setAmbience(signal.night, signal.unstable);
+    }
+  } catch { /* invalid or unavailable local storage: keep visitor controls */ }
+}
+window.addEventListener('storage', event => {
+  if (event.key === ALOISIA_AMBIENCE_KEY) receiveAloisiaAmbience();
+});
+receiveAloisiaAmbience();
+nuit.addEventListener('click', () => {
+  setAmbience(nuit.getAttribute('aria-pressed') !== 'true', instable.getAttribute('aria-pressed') === 'true');
 });
 instable.addEventListener('click', () => {
-  const perturbation = instable.getAttribute('aria-pressed') !== 'true';
-  instable.setAttribute('aria-pressed', String(perturbation));
-  instable.textContent = perturbation ? 'État instable' : 'État stable';
-  stage.dataset.unstable = String(perturbation);
+  setAmbience(nuit.getAttribute('aria-pressed') === 'true', instable.getAttribute('aria-pressed') !== 'true');
 });
 profondeur.addEventListener('input', () => stage.style.setProperty('--depth', profondeur.valueAsNumber / 100));
 stage.addEventListener('pointerdown', event => {
