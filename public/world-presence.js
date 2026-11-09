@@ -18,9 +18,8 @@ function playNext(){if(speaking||!queued.length||!dialogueTarget)return;
  if(dialogueBox)dialogueBox.hidden=false;
  setTimeout(()=>{speaking=false;playNext()},Math.max(4200,Math.min(11000,turn.text.length*75)));
 }
-const line=document.createElement('p');line.setAttribute('aria-live','polite');el.append(line);
-if(!url){line.textContent='SHERLOCK · Flux non configuré — aucune présence simulée';return}
-let last='',timer;
+if(!url)return;
+let timer;
 async function refresh(){
  try{
   const response=await fetch(url,{credentials:'omit',cache:'no-store'});
@@ -33,20 +32,8 @@ async function refresh(){
   // First successful poll establishes baseline; only subsequently verified new turns are spoken.
   if(!window.__blacklaceDialogueReady){dialogueEntries.forEach(d=>seenTurns.add(d.id));window.__blacklaceDialogueReady=true}
   else {const fresh=dialogueEntries.filter(d=>!seenTurns.has(d.id));fresh.forEach(d=>seenTurns.add(d.id));queued.push(...fresh);playNext()}
-  const entries=payload.entries.filter(e=>{
-   if(!e||!Number.isSafeInteger(e.cycle)||e.cycle<1||!clean(e.id))return false;
-   const parts=e.id.split(':');
-   if(!((parts.length===2&&parts[0]===String(e.cycle)&&/^[1-9][0-9]*$/.test(parts[1]))||(parts.length===3&&parts[0]==='presence'&&parts[1]===String(e.cycle)&&clean(parts[2]))))return false;
-   if(e.kind==='moved')return clean(e.actor)&&clean(e.from)&&clean(e.to)&&e.from!==e.to;
-   if(e.kind==='waited')return clean(e.actor)&&clean(e.place);
-   if(e.kind==='met')return Array.isArray(e.actors)&&e.actors.length===2&&e.actors.every(clean)&&e.actors[0]!==e.actors[1]&&clean(e.place);
-   return false;
-  }).slice(-20);
-  const relevant=entries.filter(e=>e.kind==='moved'?e.to===place||e.from===place:e.place===place);
-  const e=relevant.at(-1);
-  const next=e?(e.kind==='met'?((names[e.actors[0]]||e.actors[0])+' rencontre '+(names[e.actors[1]]||e.actors[1])):(names[e.actor]||e.actor)+(e.kind==='moved'?(e.to===place?' arrive':' repart'):' est ici')):'Aucun événement récent vérifié dans ce lieu';
-  if(next!==last){line.textContent='SHERLOCK · '+next;last=next}
- }catch{line.textContent='SHERLOCK · Signal indisponible — aucune présence inventée'}
+
+ }catch{/* Keep dialogue silent when the verified feed is unavailable. */}
 }
 refresh();timer=setInterval(refresh,15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
