@@ -41,6 +41,46 @@ export default {
       return json({ service: "sherlock", status: env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS ? "configured" : "unavailable" },
         env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS ? 200 : 503);
     }
+    // Public, shared ambience state; D1 is the sole source of truth.
+    if (url.pathname === "/api/aloisia/ambience") {
+      const allowedOrigin = env.SHERLOCK_PUBLIC_ORIGIN;
+      const origin = request.headers.get("origin");
+      const cors = allowedOrigin && origin === allowedOrigin
+        ? { "access-control-allow-origin": allowedOrigin, "vary": "Origin" }
+        : {};
+      if (request.method === "OPTIONS") {
+        return new Response(null, { status: origin === allowedOrigin ? 204 : 403,
+          headers: { ...cors, "access-control-allow-methods": "GET, PUT, OPTIONS",
+            "access-control-allow-headers": "authorization, content-type" } });
+      }
+      if (!env.SHERLOCK_DB) return new Response(JSON.stringify({ error: "Ambience unavailable" }), { status: 503, headers: { "content-type": "application/json", ...cors } });
+      if (request.method === "GET") {
+        try {
+          const record = await env.SHERLOCK_DB.prepare("SELECT phase,night,unstable,source,updated_at FROM aloisia_ambience WHERE singleton=1").first();
+          if (!record) return new Response(JSON.stringify({ error: "Ambience uninitialized" }), { status: 503, headers: { "content-type": "application/json", ...cors } });
+          return new Response(JSON.stringify({ phase: record.phase, night: Boolean(record.night), unstable: Boolean(record.unstable), source: record.source, updatedAt: record.updated_at }), { headers: { "content-type": "application/json", "cache-control": "no-store", ...cors } });
+        } catch { return new Response(JSON.stringify({ error: "Ambience unavailable" }), { status: 503, headers: { "content-type": "application/json", ...cors } }); }
+      }
+      if (request.method === "PUT") {
+        if (!env.SHERLOCK_API_TOKEN || request.headers.get("authorization") !== `Bearer ${env.SHERLOCK_API_TOKEN}`) return json({ error: "Unauthorized" }, 401);
+        try {
+          const input = await request.json() as { phase?: unknown; source?: unknown };
+          const presets: Record<string, { night: number; unstable: number }> = {
+            "phase-signal": { night: 0, unstable: 0 },
+            "phase-feuch": { night: 0, unstable: 1 },
+            "phase-reboot": { night: 1, unstable: 1 },
+            "phase-sator": { night: 1, unstable: 0 },
+          };
+          if (typeof input.phase !== "string" || !Object.prototype.hasOwnProperty.call(presets, input.phase) ||
+              typeof input.source !== "string" || !/^[a-zA-Z0-9_-]{1,64}$/.test(input.source)) return json({ error: "Invalid ambience command" }, 400);
+          const preset = presets[input.phase];
+          await env.SHERLOCK_DB.prepare("UPDATE aloisia_ambience SET phase=?,night=?,unstable=?,source=?,updated_at=CURRENT_TIMESTAMP WHERE singleton=1")
+            .bind(input.phase,preset.night,preset.unstable,input.source).run();
+          return new Response(JSON.stringify({ phase: input.phase, ...{ night: Boolean(preset.night), unstable: Boolean(preset.unstable) } }), { headers: { "content-type": "application/json", ...cors } });
+        } catch { return json({ error: "Ambience update failed" }, 503); }
+      }
+      return json({ error: "Method not allowed" }, 405);
+    }
     // Opt-in, read-only projection: never expose session snapshots, IDs, operation IDs or secrets.
     if (request.method === "GET" && url.pathname === "/api/sherlock/public-feed") {
       const origin = env.SHERLOCK_PUBLIC_ORIGIN;
