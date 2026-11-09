@@ -137,6 +137,10 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
     <button class="landmark" data-place="max" data-title="MAX LIBERTY" data-destination="../map" type="button"><strong>MAX LIBERTY</strong><small>Bar · aperçu</small></button>
     <button class="landmark" data-place="sator" data-title="SATOR" data-destination="../map" type="button"><strong>SATOR</strong><small>Forêt · aperçu</small></button>
   </nav>
+  <section id="institute-portal" hidden aria-label="Feuch Institute" style="position:absolute;inset:0;z-index:80;background:#07131f">
+    <iframe id="institute-frame" title="Feuch Institute" loading="lazy" allow="fullscreen" style="width:100%;height:100%;border:0;display:block"></iframe>
+    <button id="institute-return" type="button" class="pill" style="position:absolute;top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));z-index:2;background:#07131ff0;color:#ffeccc;border:1px solid #ffeccc66;padding:10px 16px">← Retour au port</button>
+  </section>
   <div class="travel" aria-live="polite" aria-atomic="true"><div class="travel-title" id="travel-title"></div><div class="travel-note">Le paysage vous ouvre le chemin…</div></div>
   <div class="window" aria-hidden="true"><div class="title-rig" id="title-rig"><div class="title-face">BLACKLACE ISLAND</div></div></div>
   <header class="topbar glass">
@@ -237,10 +241,23 @@ document.querySelectorAll('.landmark').forEach(button=>button.addEventListener('
   if(phase!=='explore')return;
   const destination=button.dataset.destination;
   document.querySelector('#travel-title').textContent=button.dataset.title;
+  if(button.dataset.place==='institute' && document.fullscreenElement===root){
+    // Keep the same fullscreen document alive: navigation would end browser fullscreen.
+    const portal=document.querySelector('#institute-portal');
+    const frame=document.querySelector('#institute-frame');
+    frame.src=destination;
+    portal.hidden=false;
+    return;
+  }
   if(reduced.matches){window.location.assign(destination);return}
   setPhase('transition');
   setTimeout(()=>window.location.assign(destination),1700);
 }));
+document.querySelector('#institute-return').addEventListener('click',()=>{
+  const portal=document.querySelector('#institute-portal');
+  portal.hidden=true;
+  document.querySelector('#institute-frame').removeAttribute('src');
+});
 document.querySelector('#recenter').addEventListener('click',()=>{setPointer(0,0);orientationBase=null;root.style.setProperty('--hx','0');root.style.setProperty('--hy','0')});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(phase==='crossing')skip();else if(phase==='welcome')setPhase('explore')}else if(phase==='welcome'&&e.key==='Enter'&&!e.target.closest('button,a'))document.querySelector('#next').click()});
 document.querySelectorAll('.landscape').forEach(el=>{const bg=getComputedStyle(el).backgroundImage;const match=bg.match(/url\\(["']?([^"')]+)["']?\\)/);if(!match)return;const img=new Image();img.onerror=()=>{if(el.classList.contains(root.dataset.night==='true'?'night':'day'))el.style.background='linear-gradient(150deg,#193f50,#0e1728)'};img.src=match[1]});
