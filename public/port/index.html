@@ -15,16 +15,29 @@ a{color:inherit}
 button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3px}
 [hidden]{display:none!important}
 #port{--px:0;--py:0;position:relative;width:100%;height:100dvh;min-height:360px;overflow:hidden;isolation:isolate;background:#112b38}
-.landscape{position:absolute;inset:-4%;background-size:cover;background-position:center center;transform:translate(calc(var(--px)*-1.25vw),calc(var(--py)*-.9vh)) scale(1.07);transition:opacity 1.3s ease;will-change:transform}
+/* Four visual depth zones: distant background, far, middle, near and a foreground overlay.
+   Current image-derived bands are a temporary 2.5D approximation, not segmented assets. */
+.landscape{position:absolute;inset:-4%;background-size:cover;background-position:center center;transition:opacity 1.3s ease;will-change:transform}
+.landscape.base{z-index:0;transform:translate(calc((var(--px)*-.25 + var(--hx)*-.3)*1vw),calc((var(--py)*-.18 + var(--hy)*-.25)*1vh)) scale(1.06)}
+.depth{position:absolute;inset:-4%;pointer-events:none;background-size:cover;background-position:center;will-change:transform;transition:opacity 1.3s ease}
+.depth.far{z-index:1;clip-path:polygon(0 26%,100% 26%,100% 66%,0 66%);transform:translate(calc((var(--px)*-.6 + var(--hx)*-.65)*1vw),calc((var(--py)*-.45 + var(--hy)*-.5)*1vh)) scale(1.08)}
+.depth.mid{z-index:2;clip-path:polygon(0 56%,100% 56%,100% 83%,0 83%);transform:translate(calc((var(--px)*-1 + var(--hx)*-1.1)*1vw),calc((var(--py)*-.7 + var(--hy)*-.8)*1vh)) scale(1.10)}
+.depth.near{z-index:3;clip-path:polygon(0 76%,100% 76%,100% 100%,0 100%);transform:translate(calc((var(--px)*-1.55 + var(--hx)*-1.7)*1vw),calc((var(--py)*-1.05 + var(--hy)*-1.2)*1vh)) scale(1.13)}
+.depth.day{background-image:url("port-jour.webp")}
+.depth.night{background-image:url("port-nuit.webp")}
+#port[data-night="true"] .depth.day{opacity:0}
+#port[data-night="true"] .depth.night{opacity:1}
+.foreground{position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(0deg,#06141e8a,transparent 24%),radial-gradient(ellipse at 50% 106%,#b5d4ce1c,transparent 55%);transform:translate(calc(var(--px)*-2px),calc(var(--py)*-2px))}
+@media(prefers-reduced-motion:reduce){.landscape.base,.depth,.foreground{transform:none!important}}
 .day{background-image:url("port-jour.webp")}
 .night{background-image:url("port-nuit.webp");opacity:0}
 #port[data-night="true"] .day{opacity:0}
 #port[data-night="true"] .night{opacity:1}
-#port:before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,#06141e40 0%,transparent 34%,transparent 57%,#07131cb8 100%)}
-.fog{position:absolute;inset:-15%;z-index:2;pointer-events:none;opacity:.55;background:radial-gradient(ellipse at 42% 67%,#d3e4df73,transparent 45%);filter:blur(28px);animation:fog 11s ease-in-out infinite alternate;transition:opacity 2s ease}
+#port:before{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(180deg,#06141e40 0%,transparent 34%,transparent 57%,#07131cb8 100%)}
+.fog{position:absolute;inset:-15%;z-index:5;pointer-events:none;opacity:.55;background:radial-gradient(ellipse at 42% 67%,#d3e4df73,transparent 45%);filter:blur(28px);animation:fog 11s ease-in-out infinite alternate;transition:opacity 2s ease}
 @keyframes fog{to{transform:translateX(9%);opacity:.26}}
 #port[data-phase="welcome"] .fog,#port[data-phase="explore"] .fog{opacity:.11}
-.window{position:absolute;inset:0;z-index:3;perspective:750px;pointer-events:none}
+.window{position:absolute;inset:0;z-index:6;perspective:750px;pointer-events:none}
 .title-rig{position:absolute;left:50%;top:46%;width:min(94vw,1200px);transform-style:preserve-3d;transform:translate3d(-50%,-50%,0) rotateY(calc(var(--px)*-2deg));transition:transform 7s cubic-bezier(.2,.71,.2,1),opacity 1.7s 5s;filter:drop-shadow(0 15px 30px #0009)}
 #port[data-phase="crossing"] .title-rig{transform:translate3d(-50%,-50%,790px) rotateY(2deg);opacity:0}
 #port[data-phase="welcome"] .title-rig,#port[data-phase="explore"] .title-rig{opacity:0;visibility:hidden}
@@ -41,7 +54,6 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 #port:fullscreen{height:100%;min-height:100%;width:100%;background:#07131f}
 #port:fullscreen .landscape{inset:-4%}
 #port{--hx:0;--hy:0}
-.landscape{transform:translate(calc((var(--px)*-1.25 + var(--hx)*-1.4)*1vw),calc((var(--py)*-.9 + var(--hy)*-1.1)*1vh)) scale(1.10)}
 .tracking-note{font-size:.69rem;color:#e6d5b4}
 #tracking-toggle[aria-pressed="true"]{border-color:#e6ba67;background:#7c632d88}
 .start{left:50%;bottom:clamp(28px,10vh,120px);transform:translateX(-50%);text-align:center;width:min(94vw,540px);padding:17px}
@@ -89,7 +101,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 }
 
 /* Panorama as the primary spatial navigation: coordinates are provisional until art review. */
-.landmarks{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
+.landmarks{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
 #port[data-phase="explore"] .landmarks{opacity:1;pointer-events:auto}
 .landmark{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%) translate(calc(var(--px)*var(--depth)*-9px),calc(var(--py)*var(--depth)*-6px));border:1px solid #ffe8b67a;border-radius:16px;background:#0718248c;backdrop-filter:blur(9px);color:#fff1d2;padding:10px 14px;min-width:94px;min-height:48px;box-shadow:0 0 22px #f4d17c22;text-align:center;transition:background .3s,box-shadow .3s}
 .landmark:hover,.landmark:focus-visible{background:#213d4de8;box-shadow:0 0 32px #f4d17c77}
@@ -112,8 +124,12 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 </head>
 <body>
 <main id="port" data-phase="quay" data-night="false">
-  <div class="landscape day" role="img" aria-label="Quai de Porsa Rotas, vue diurne du village et de la Fournaise de Feuch"></div>
-  <div class="landscape night" role="img" aria-label="Quai de Porsa Rotas, vue nocturne de l'île"></div>
+  <div class="landscape base day" role="img" aria-label="Quai de Porsa Rotas, vue diurne du village et de la Fournaise de Feuch"></div>
+  <div class="landscape base night" role="img" aria-label="Quai de Porsa Rotas, vue nocturne de l'île"></div>
+  <div class="depth far day" aria-hidden="true"></div><div class="depth far night" aria-hidden="true"></div>
+  <div class="depth mid day" aria-hidden="true"></div><div class="depth mid night" aria-hidden="true"></div>
+  <div class="depth near day" aria-hidden="true"></div><div class="depth near night" aria-hidden="true"></div>
+  <div class="foreground" aria-hidden="true"></div>
   <div class="fog" aria-hidden="true"></div>
   <nav class="landmarks" aria-label="Explorer les lieux depuis le panorama">
     <button class="landmark" data-place="rotas" data-title="ROTAS" data-destination="../map" type="button"><strong>ROTAS</strong><small>Village · aperçu</small></button>
