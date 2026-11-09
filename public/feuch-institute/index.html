@@ -431,7 +431,7 @@ function setAmbience(night, unstable) {
 function receiveAloisiaAmbience() {
   try {
     const signal = JSON.parse(localStorage.getItem(ALOISIA_AMBIENCE_KEY) || 'null');
-    if (signal && typeof signal.night === 'boolean' && typeof signal.unstable === 'boolean') {
+    if (signal && ['phase-signal','phase-feuch','phase-reboot','phase-sator'].includes(signal.phase) && typeof signal.night === 'boolean' && typeof signal.unstable === 'boolean') {
       setAmbience(signal.night, signal.unstable);
     }
   } catch { /* invalid or unavailable local storage: keep visitor controls */ }
