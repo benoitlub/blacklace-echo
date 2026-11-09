@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Anchor, Beer, Triangle, Hexagon, Eye, Radio } from "lucide-react";
 import { BackgroundLayers, glitch } from "@/blacklace/Layers";
-import { zones, scriptedLines, videoSources, ZoneKey, appLinks } from "@/blacklace/data";
+import { zones, scriptedLines, videoSources, ZoneKey, appLinks, feuchInstitutePath } from "@/blacklace/data";
 import { characterInterventions } from "@/blacklace/character-interventions";
 import { describeWorldEntry, parsePublicFeed } from "@/blacklace/sherlock-feed";
 
@@ -282,6 +282,7 @@ const Index = () => {
                 Traverser la brume
               </button>
               <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
+              <a className="bl-cta ghost" href={feuchInstitutePath}>Feuch Institute</a>
             </div>
           </div>
         </section>
@@ -352,7 +353,7 @@ const Index = () => {
             <div className="bl-modal-fragment">{zone.fragment}</div>
             <div className={"bl-modal-actions" + (zone.mood ? " bl-modal-actions--" + zone.mood : "")}>
               {zoneOpen === "institute" && (
-                <a className="bl-modal-action is-primary" href={`${import.meta.env.BASE_URL}feuch-institute/`}>
+                <a className="bl-modal-action is-primary" href={feuchInstitutePath}>
                   Entrer dans le hall
                   <em className="bl-modal-action-hint">Visite immersive du Feuch Institute</em>
                 </a>
