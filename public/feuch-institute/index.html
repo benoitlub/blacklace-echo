@@ -416,7 +416,7 @@ voirContenus.addEventListener('click', () => {
   content.scrollIntoView({behavior:reduced.matches ? 'auto' : 'smooth'});
 });
 // Aloisia's shared ambience signal; local visitor controls remain available.
-const ALOISIA_AMBIENCE_KEY = 'blacklace_aloisia_ambience_v1';
+
 function setAmbience(night, unstable) {
   nuit.setAttribute('aria-pressed', String(night));
   nuit.textContent = night ? 'Nuit active' : 'Nuit';
@@ -428,18 +428,19 @@ function setAmbience(night, unstable) {
   instable.textContent = unstable ? 'État instable' : 'État stable';
   stage.dataset.unstable = String(unstable);
 }
-function receiveAloisiaAmbience() {
+async function receiveAloisiaAmbience() {
   try {
-    const signal = JSON.parse(localStorage.getItem(ALOISIA_AMBIENCE_KEY) || 'null');
-    if (signal && ['phase-signal','phase-feuch','phase-reboot','phase-sator'].includes(signal.phase) && typeof signal.night === 'boolean' && typeof signal.unstable === 'boolean') {
+    const response = await fetch('https://blacklace-sherlock.benoitlubert.workers.dev/api/aloisia/ambience', { cache: 'no-store' });
+    if (!response.ok) return;
+    const signal = await response.json();
+    if (['phase-signal','phase-feuch','phase-reboot','phase-sator'].includes(signal.phase) &&
+        typeof signal.night === 'boolean' && typeof signal.unstable === 'boolean') {
       setAmbience(signal.night, signal.unstable);
     }
-  } catch { /* invalid or unavailable local storage: keep visitor controls */ }
+  } catch { /* keep last displayed ambience while Worker is unavailable */ }
 }
-window.addEventListener('storage', event => {
-  if (event.key === ALOISIA_AMBIENCE_KEY) receiveAloisiaAmbience();
-});
 receiveAloisiaAmbience();
+setInterval(receiveAloisiaAmbience, 10000);
 nuit.addEventListener('click', () => {
   setAmbience(nuit.getAttribute('aria-pressed') !== 'true', instable.getAttribute('aria-pressed') === 'true');
 });
