@@ -11,7 +11,9 @@
   touch-action: pan-y;
   --port-look-x: 0;
   --port-look-y: 0;
+  --port-step: 0;
 }
+.port-arrival:is([data-phase=crossing], [data-phase=explore]) { --port-step: 1; }
 
 .port-world {
   position: absolute;
@@ -21,8 +23,8 @@
   height: max(56.25cqw, 100cqh);
   transform: translate3d(
     calc(-50% + var(--port-look-x) * max(1.6cqw, (100% - 100cqw) * .46)),
-    calc(-50% + var(--port-look-y) * 1.7cqh), 0
-  ) scale(1.06);
+    calc(-50% + var(--port-look-y) * 1.7cqh + var(--port-step) * 1cqh), 0
+  ) scale(calc(1.06 + var(--port-step) * .08));
   transition: transform .22s ease-out;
 }
 
@@ -43,7 +45,7 @@
   left: 3%;
   width: clamp(85px, 14cqw, 240px);
   filter: blur(1px) brightness(.85) drop-shadow(8px 16px 12px #0e151e99);
-  transform: translate3d(calc(var(--port-look-x) * 4cqw), calc(var(--port-look-y) * 3cqh), 0);
+  transform: translate3d(calc(var(--port-look-x) * 4cqw - var(--port-step) * 1.3cqw), calc(var(--port-look-y) * 3cqh + var(--port-step) * 3cqh), 0);
   transition: transform .22s ease-out;
   pointer-events: none;
 }
@@ -66,7 +68,8 @@
     perspective(750px) rotateX(calc(4deg + var(--port-look-y) * 6deg)) rotateY(calc(var(--port-look-x) * -8deg));
   transition: transform .22s ease-out;
 }
-.port-welcome span {
+.port-welcome-copy { display: block; }
+.port-welcome-kicker {
   display: block;
   margin-bottom: .65em;
   font: 700 clamp(.57rem, 1.05cqw, .94rem) system-ui, sans-serif;
@@ -83,6 +86,40 @@
     0 5px #4e301e, 0 9px 12px #0c1423, 0 2px 30px #07101a;
 }
 .port-arrival--night .port-welcome { color: #f8e9cd; }
+.port-arrival[data-phase=crossing] :is(.port-world, .port-foreground) {
+  transition: transform 1.25s cubic-bezier(.45, .05, .28, 1);
+}
+.port-arrival[data-phase=crossing] .port-welcome-copy {
+  animation: port-cross-title 1.25s cubic-bezier(.45, .05, .28, 1) both;
+}
+@keyframes port-cross-title {
+  0% { transform: perspective(780px) translateZ(0); opacity: 1; }
+  48% { opacity: 1; }
+  100% { transform: perspective(780px) translateZ(630px); opacity: 0; }
+}
+.port-arrival[data-phase=explore] :is(.port-place, .port-resident) {
+  animation: port-reveal .45s ease-out both;
+}
+@keyframes port-reveal { from { opacity: 0; } to { opacity: 1; } }
+.port-advance {
+  position: absolute;
+  z-index: 5;
+  top: 84%;
+  left: 50%;
+  transform: translateX(-50%);
+  min-height: 44px;
+  padding: 7px 16px;
+  border: 1px solid #e1bc79bb;
+  border-radius: 8px;
+  background: var(--bl-glass-background);
+  backdrop-filter: var(--bl-glass-blur);
+  color: var(--bl-glass-color);
+  white-space: nowrap;
+  font: 600 .9rem system-ui, sans-serif;
+  cursor: pointer;
+}
+.port-advance:hover, .port-advance:focus-visible { background: #514030ea; }
+.port-advance span { margin-left: 6px; color: #e3bd82; }
 
 .port-haze {
   position: absolute;
@@ -227,7 +264,7 @@ body:has(.holomap-window) :is(.bl-build-marker, .bl-build-footer) { display: non
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .port-world { transform: translate(-50%, -50%) scale(1.06); }
+  .port-world { transform: translate(-50%, -50%) scale(calc(1.06 + var(--port-step) * .08)); }
   .port-place { transform: translate(-50%, -100%); }
   .port-foreground { transform: none; }
   .port-welcome { transform: translate(-50%, -50%) perspective(750px) rotateX(4deg); }

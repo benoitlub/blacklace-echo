@@ -48,6 +48,8 @@ const BlacklaceMap = () => {
   const [view, setView] = useState<MapView>("map");
   const [presentation, setPresentation] = useState<"port" | "plan">("port");
   const [portNight, setPortNight] = useState(false);
+  const [portEntered, setPortEntered] = useState(false);
+  const showPlaces = presentation === "plan" || portEntered;
   const [weather, setWeather] = useState<Weather>("clear");
   const [time, setTime] = useState<Time>("day");
   const [worldSignals, setWorldSignals] = useState<ReturnType<typeof parsePublicSignals>>([]);
@@ -277,7 +279,10 @@ const BlacklaceMap = () => {
         <header className="map-topbar">
           <div className="holomap-brand"><span>Blacklace Island</span><h1>HoloMap</h1></div>
           <nav aria-label="Navigation Blacklace">
-            <button className="bl-pill" type="button" aria-pressed={presentation === "port"} onClick={() => setPresentation("port")}>Arrivée</button>
+            <button className="bl-pill" type="button" aria-pressed={presentation === "port"} onClick={() => {
+              if (presentation === "port") { setPortEntered(false); setActive(null); setSelectedActor(null); }
+              else setPresentation("port");
+            }}>Arrivée</button>
             <button className="bl-pill" type="button" aria-pressed={presentation === "plan"} aria-controls="holomap-plan" onClick={() => setPresentation("plan")}>Plan de l’île</button>
             <Link className="bl-pill" to="/atlas">Lieux & habitants</Link>
             <Link className="bl-pill" to="/">Retour live</Link>
@@ -285,14 +290,16 @@ const BlacklaceMap = () => {
         </header>
 
         <section className="holo-map-stage holo-map-stage--bare">
-          <div className="holomap-destinations">
+          {showPlaces && <div className="holomap-destinations">
             <label htmlFor="holomap-place">Explorer l’île</label>
             <select id="holomap-place" value="" onChange={event => { if (event.target.value) enterZone(event.target.value); }}>
               <option value="" disabled>Choisir un lieu</option>
               {HOTSPOTS.map(place => <option key={place.id} value={place.id}>{place.label}</option>)}
             </select>
-          </div>
+          </div>}
           {presentation === "port" && view !== "rotas" && <PortArrival
+            entered={portEntered}
+            onEnter={() => setPortEntered(true)}
             active={active}
             selectedActor={selectedActor}
             night={portNight}
@@ -449,7 +456,7 @@ const BlacklaceMap = () => {
             <div className="i3d-tint" aria-hidden />
           </div>
 
-          {view === "map" && (
+          {showPlaces && view === "map" && (
             <>
               <div className={`sherlock-map-status is-${sherlockStatus}`}>
                 <span className="sherlock-map-dot" />
@@ -459,7 +466,7 @@ const BlacklaceMap = () => {
             </>
           )}
 
-          {selectedPresence && view === "map" && (
+          {showPlaces && selectedPresence && view === "map" && (
             <aside className="sherlock-resident-card" style={{ ["--c" as any]: ACTOR_COLORS[selectedPresence.actor] ?? "#fff" }}>
               <button className="sherlock-resident-close" onClick={() => setSelectedActor(null)} aria-label="Fermer">×</button>
               <span className="section-kicker">RÉSIDENT · CYCLE {selectedPresence.cycle}</span>
@@ -472,7 +479,7 @@ const BlacklaceMap = () => {
             </aside>
           )}
 
-          {activeZone && view === "map" && (
+          {showPlaces && activeZone && view === "map" && (
             <div className="i3d-info">
               <span className="section-kicker">ZONE</span>
               <h3>{activeZone.label}</h3>
