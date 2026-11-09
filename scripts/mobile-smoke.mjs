@@ -42,9 +42,9 @@ try {
       assert.equal(await page.getByRole('button',{name:'Zoom avant',exact:true}).isDisabled(),true);
       const viewport = page.locator('.rv-viewport');
       await viewport.focus(); await page.keyboard.press('Home'); await page.keyboard.press('ArrowRight');
-      const transform = await page.locator('.rv-canvas').evaluate(el=>el.style.transform);
+      const transform = await page.locator('.rv-canvas').evaluate(el=>getComputedStyle(el).transform);
       await page.keyboard.press('ArrowLeft');
-      if(device.name==='mobile') assert.notEqual(await page.locator('.rv-canvas').evaluate(el=>el.style.transform),transform,'Keyboard pan must move the camera');
+      if(device.name==='mobile') assert.notEqual(await page.locator('.rv-canvas').evaluate(el=>getComputedStyle(el).transform),transform,'Keyboard pan must move the camera');
       for (const [label,file,title] of [['Salon de thé','tea','Les terrasses du thé'],['Marché','market','La rue du marché'],['Escaliers','stairs','Les escaliers fleuris'],['La côte','coast','Le passage de la côte'],['Boutiques','shop','La rue des boutiques'],['La place','square','La place de Rotas']]) {
         await page.getByRole('navigation',{name:'Étapes de la promenade'}).getByRole('button',{name:label,exact:true}).click();
         await page.getByRole('heading',{name:title,exact:true}).waitFor();
