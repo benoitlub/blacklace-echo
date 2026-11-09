@@ -73,6 +73,37 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
   .foliage { transform:rotate(-8deg); }
   .stage[data-unstable=true] :is(.backdrop,.furniture,.anomaly,.sigil-light,.core-light) { animation:none; transition:none; }
 }
+
+/* Immersive glass shell: scenery fills the viewport, controls float above it. */
+body { overflow-x:hidden; background:#090e12; }
+main { width:100%; max-width:none; padding:0; }
+.frame { min-height:100svh; height:100svh; overflow:hidden; isolation:isolate; }
+.stage { position:absolute; inset:0; width:100%; height:100%; aspect-ratio:auto; border:0; border-radius:0; }
+header.glass { position:absolute; inset: max(10px,env(safe-area-inset-top)) 12px auto; z-index:10; padding:9px 14px; background:rgba(9,13,18,.48); border-color:#e5c99933; }
+header nav { align-items:center; }
+header nav button { background:transparent; border-color:transparent; font-size:clamp(.77rem,1vw,.95rem); }
+header nav button:hover, header nav button[aria-pressed=true] { background:#e5b86b33; border-color:#e5b86b77; }
+.controls.glass { position:absolute; z-index:10; inset:auto 12px max(12px,env(safe-area-inset-bottom)); margin:0; padding:10px 14px; background:rgba(9,13,18,.52); }
+.frame + #mode { margin:10px 16px; }
+.room-content { max-width:1200px; margin:16px auto 32px; }
+@media (max-width:850px) {
+ .frame { height:100svh; min-height:420px; }
+ header.glass { position:absolute; inset:max(8px,env(safe-area-inset-top)) 8px auto; display:block; padding:7px 10px; }
+ header .brand { flex-direction:row; flex-wrap:wrap; gap:6px 12px; align-items:center; }
+ header .brand strong { font-size:1.02rem; }
+ header nav { display:flex; flex-wrap:nowrap; overflow-x:auto; max-width:100%; padding:4px 0; scrollbar-width:thin; }
+ header nav button { flex:0 0 auto; min-height:40px; padding:5px 10px; }
+ .controls.glass { position:absolute; inset:auto 8px max(8px,env(safe-area-inset-bottom)); max-height:32svh; overflow-y:auto; gap:5px; padding:7px 9px; }
+ .controls button { min-height:40px; }
+ .stage { touch-action:pan-y; }
+ .room-content { margin:12px 8px 24px; }
+}
+@media (max-height:550px) {
+ header.glass { padding:3px 8px; }
+ header .brand small { display:none; }
+ .controls.glass { max-height:38svh; padding:4px 8px; }
+}
+
 </style>
 </head>
 <body>
