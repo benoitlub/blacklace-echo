@@ -10,7 +10,7 @@ type ChatItem = { name: string; text: string; origin?: "archive" | "visitor" | "
 type Phase = "phase-signal" | "phase-feuch" | "phase-reboot";
 type Phase2 = Phase | "phase-sator";
 
-const AMBIENCE_KEY = "blacklace_aloisia_ambience_v1";
+const AMBIENCE_ENDPOINT = "https://blacklace-sherlock.benoitlubert.workers.dev/api/aloisia/ambience";
 const phaseButtons: { phase: Phase2; label: string }[] = [
   { phase: "phase-signal", label: "SIGNAL" },
   { phase: "phase-feuch", label: "FEUCH" },
@@ -50,15 +50,18 @@ const Index = () => {
   const isLocalSource = currentSource.type === "local";
 
   useEffect(() => {
-    const sync = () => {
+    let active = true;
+    const sync = async () => {
       try {
-        const value = JSON.parse(localStorage.getItem(AMBIENCE_KEY) || "null");
-        if (phaseButtons.some(item => item.phase === value?.phase)) setPhase(value.phase);
-      } catch { /* preserve current phase */ }
+        const response = await fetch(AMBIENCE_ENDPOINT, { cache: "no-store" });
+        if (!response.ok) return;
+        const value = await response.json();
+        if (active && phaseButtons.some(item => item.phase === value?.phase)) setPhase(value.phase);
+      } catch { /* preserve last known phase while server is unreachable */ }
     };
-    sync();
-    window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
+    void sync();
+    const interval = window.setInterval(() => void sync(), 10000);
+    return () => { active = false; window.clearInterval(interval); };
   }, []);
 
   useEffect(() => {
