@@ -1,0 +1,103 @@
+.map-page.holomap-window {
+  width: min(1760px, 100%);
+  padding: clamp(6px, 1.5vw, 22px);
+  color: #fff1d7;
+}
+
+.holomap-window .holo-map-stage {
+  position: relative;
+  border-radius: 12px;
+}
+
+.holomap-window .island3d-stage {
+  margin-top: 0;
+  border: 1px solid #e5c99945;
+  border-radius: 12px;
+  box-shadow: 0 20px 64px #070807a0;
+}
+
+.holomap-window :is(.map-topbar, .holomap-destinations, .i3d-info, .sherlock-map-status, .sherlock-world-ticker, .sherlock-resident-card) {
+  background: var(--bl-glass-background);
+  border: var(--bl-glass-border);
+  border-radius: var(--bl-glass-radius);
+  box-shadow: var(--bl-glass-shadow);
+  backdrop-filter: var(--bl-glass-blur);
+  color: var(--bl-glass-color);
+}
+
+.holomap-window .map-topbar {
+  position: absolute;
+  z-index: 55;
+  inset: clamp(14px, 2.3vw, 34px) clamp(14px, 2.3vw, 34px) auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 6px 12px;
+}
+
+.holomap-brand span {
+  color: #e2c691;
+  font: 700 .65rem system-ui, sans-serif;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.holomap-brand h1 { margin: 0; font: 600 clamp(1.15rem, 3vw, 1.65rem) Georgia, serif; }
+.holomap-window .map-topbar nav { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.holomap-window :is(.map-topbar, .i3d-info) .bl-pill,
+.holomap-destinations select {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 5px 10px;
+  border: 1px solid #f2ddba55;
+  border-radius: 8px;
+  background: #fff1da12;
+  color: #fff1d7;
+  font: 500 .8rem system-ui, sans-serif;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.holomap-window :is(.map-topbar, .i3d-info) .bl-pill:hover { background: #e5b86b38; }
+.holomap-window :is(a, button, select):focus-visible { outline: 2px solid #d7efff; outline-offset: 2px; }
+
+.holomap-destinations {
+  position: absolute;
+  z-index: 54;
+  top: 84px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 8px;
+  font: 500 .8rem system-ui, sans-serif;
+}
+.holomap-destinations select { color-scheme: dark; max-width: min(54vw, 235px); }
+.holomap-destinations option { background: #1e2120; }
+.holomap-window .holowall { opacity: .27; }
+.holomap-window .i3d-info {
+  position: absolute;
+  z-index: 53;
+  right: 12px;
+  bottom: 12px;
+  max-width: min(430px, calc(100% - 24px));
+  margin: 0;
+  gap: 8px 14px;
+}
+.holomap-window .i3d-info h3 { font: 600 1.25rem Georgia, serif; }
+.holomap-window .i3d-hotspot .i3d-label {
+  background: var(--bl-glass-background);
+  border: var(--bl-glass-border);
+  color: var(--bl-glass-color);
+}
+
+@media (max-width: 720px) {
+  .holomap-window .map-topbar { position: relative; inset: auto; margin: 0 0 5px; }
+  .holomap-window .map-topbar .bl-pill { min-height: 44px; font-size: .72rem !important; letter-spacing: normal; }
+  .holomap-destinations { top: 9px; left: 8px; }
+  .holomap-window .i3d-info { bottom: 93px; padding: 8px 10px; }
+}

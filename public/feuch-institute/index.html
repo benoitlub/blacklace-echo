@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Feuch Institute · Fenêtre sur Blacklace Island</title>
+<link rel="stylesheet" href="../assets/ui/blacklace-glass.css">
 <style>
 :root { color-scheme: dark; background:#101413; color:#f2e5c5; font:16px system-ui,sans-serif; }
 * { box-sizing:border-box; }
 body { margin:0; }
 main { width:min(100%, 1760px); margin:auto; padding:clamp(6px,1.5vw,22px); }
 .frame { position:relative; }
-.glass { color:#fff1d7; background:rgba(17,19,20,.65); border:1px solid #e5c99945; border-radius:12px; backdrop-filter:blur(10px); box-shadow:0 8px 24px #1119; }
+.glass { color:var(--bl-glass-color); background:var(--bl-glass-background); border:var(--bl-glass-border); border-radius:var(--bl-glass-radius); backdrop-filter:var(--bl-glass-blur); box-shadow:var(--bl-glass-shadow); }
 header { position:absolute; z-index:5; inset:10px 10px auto; display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; justify-content:space-between; padding:4px 12px; }
 .brand { display:flex; flex-direction:column; gap:3px; padding:4px 0; }
 .brand strong { font:600 1.2rem Georgia,serif; }
@@ -25,21 +26,22 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
 .scene img { user-select:none; -webkit-user-drag:none; }
 .backdrop, .furniture, .foliage, .anomaly { position:absolute; pointer-events:none; }
 .backdrop, .furniture { inset:0; width:100%; height:100%; object-fit:cover; }
-.backdrop, .sigil-light { transform:translate(calc(var(--x) * var(--depth) * -3.6cqw),calc(var(--y) * var(--depth) * -1.7cqw)) scale(1.11); }
+.backdrop, .sigil-light, .core-light { transform:translate(calc(var(--x) * var(--depth) * -3.6cqw),calc(var(--y) * var(--depth) * -1.7cqw)) scale(1.11); }
 .furniture { z-index:2; clip-path:url(#meubles); transform:translate(calc(var(--x) * var(--depth) * 1.05cqw),calc(var(--y) * var(--depth) * .55cqw)) scale(1.11); }
 .title { position:absolute; z-index:1; left:18%; bottom:22%; width:max-content; max-width:78%; pointer-events:none; transform:translate(calc(var(--x) * var(--depth) * 2.25cqw),calc(var(--y) * var(--depth) * 1.5cqw)) perspective(100cqw) rotateY(calc(var(--x) * var(--depth) * -6deg - 6deg)) rotateX(calc(var(--y) * var(--depth) * 4deg)); transform-origin:center; }
-#hall .title { left:50%; bottom:19%; transform:translate(calc(-50% + var(--x) * var(--depth) * 2cqw),calc(var(--y) * var(--depth) * 1.5cqw)); text-align:center; }
-#hall .title h1 { font-size:clamp(23px,4cqw,65px); }
+[data-scene=hall] .title { left:50%; bottom:19%; transform:translate(calc(-50% + var(--x) * var(--depth) * 2cqw),calc(var(--y) * var(--depth) * 1.5cqw)); text-align:center; }
+[data-scene=hall] .title h1 { font-size:clamp(23px,4cqw,65px); }
 .title p { margin:0 0 .8cqw; padding-left:.32cqw; color:#ffedc8; font-size:clamp(8px,1.18cqw,17px); letter-spacing:.21em; text-transform:uppercase; text-shadow:0 1px 3px #101713,0 1px 8px #101713,0 1px 14px #101713; font-weight:700; }
 .title h1 { margin:0; font:600 clamp(26px,6.8cqw,100px)/.94 Georgia,serif; color:#ffedc5; letter-spacing:-.045em; text-shadow:0 1px #89612c,0 2px #765024,0 3px #523915,0 4px #523915,0 7px 16px #131411,0 0 28px #211f18; }
 .foliage { z-index:3; width:25%; left:-10%; bottom:-12%; filter:blur(.15cqw) brightness(.81); transform:translate(calc(var(--x) * var(--depth) * 7cqw),calc(var(--y) * var(--depth) * 3.1cqw)) rotate(-8deg); transform-origin:left bottom; }
 .stage[data-room=hall] .foliage { display:none; }
 .anomaly { z-index:4; inset:0; opacity:0; background:radial-gradient(ellipse at 51% 78%,#bd71ff65,transparent 42%),linear-gradient(115deg,#6551e639,transparent 52%,#137f9b45); transition:opacity .6s; }
 .stage[data-unstable=true] .anomaly { opacity:.8; animation:onde 6s ease-in-out infinite alternate; }
-.stage[data-unstable=true] :is(.backdrop,.sigil-light) { animation:derive 7s ease-in-out infinite alternate; }
+.stage[data-unstable=true] :is(.backdrop,.sigil-light,.core-light) { animation:derive 7s ease-in-out infinite alternate; }
 .stage[data-unstable=true] .furniture { animation:derive-near 7s ease-in-out infinite alternate-reverse; }
 @keyframes derive-near { from { translate:-.15cqw .05cqw; } to { translate:.15cqw -.05cqw; } }
 .sigil-light { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 16% 4% at 50.5% 86.4%, #ffe2a871, #ffba482c 56%, transparent 100%); animation:sigil-breath 8s ease-in-out infinite alternate; }
+.core-light { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 7% 19% at 55% 30%, #6eeeff68, transparent); animation:sigil-breath 7s ease-in-out infinite alternate; }
 @keyframes sigil-breath { from { opacity:.1; } to { opacity:.62; } }
 .brand a { color:inherit; font-size:.72rem; text-decoration-color:#d7b77888; text-underline-offset:2px; }
 .brand-links { display:flex; gap:10px; }
@@ -48,6 +50,15 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
 .controls { position:absolute; z-index:5; inset:auto 10px 10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px 12px; padding:6px 10px; }
 .depth { display:flex; min-height:44px; gap:6px; align-items:center; }
 .depth input { width:clamp(72px,10vw,180px); accent-color:#8bd9ff; }
+.stage[data-nocturne=true] .room-daylight { filter: brightness(.56) saturate(.8); }
+.stage[data-nocturne=true] :is([data-scene=terra],[data-scene=livres],[data-scene=jeux],[data-scene=ia],[data-scene=bazar])::after { content:""; position:absolute; inset:0; pointer-events:none; background:#142b6229; }
+.room-content { margin-top:12px; padding:clamp(12px,2vw,24px); }
+.room-content h2 { margin:0; font:600 1.35rem Georgia,serif; }
+.room-content p { margin:7px 0 14px; color:#e3d0ac; }
+.room-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); gap:7px; }
+.room-links a { display:flex; flex-direction:column; gap:4px; min-height:48px; padding:8px 12px; color:inherit; border:1px solid #f2ddba35; border-radius:8px; background:#fff1da0b; text-decoration:none; }
+.room-links a:hover { background:#e5b86b38; }
+.room-links span { color:#e3d0ac; font-size:.82rem; }
 #mode { margin:8px 4px 0; color:#d8c8a7; font-size:.82rem; }
 @media (max-width:850px) {
   header { position:relative; inset:auto; margin-bottom:4px; }
@@ -55,12 +66,12 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
   button { padding-inline:8px; font-size:.85rem; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .backdrop, .furniture, .sigil-light { transform:scale(1.11); }
-  .sigil-light { animation:none; opacity:.25; }
+  .backdrop, .furniture, .sigil-light, .core-light { transform:scale(1.11); }
+  .sigil-light, .core-light { animation:none; opacity:.25; }
   .title { transform:perspective(100cqw) rotateY(-6deg); }
-  #hall .title { transform:translateX(-50%); }
+  [data-scene=hall] .title { transform:translateX(-50%); }
   .foliage { transform:rotate(-8deg); }
-  .stage[data-unstable=true] :is(.backdrop,.furniture,.anomaly,.sigil-light) { animation:none; transition:none; }
+  .stage[data-unstable=true] :is(.backdrop,.furniture,.anomaly,.sigil-light,.core-light) { animation:none; transition:none; }
 }
 </style>
 </head>
@@ -71,8 +82,13 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
   <div class="brand"><small>Blacklace Island</small><strong>Feuch Institute</strong><div class="brand-links"><a href="../">Accueil</a><a href="../map">HoloMap</a></div></div>
   <nav aria-label="Salles du Feuch Institute">
     <button type="button" data-room="hall" aria-pressed="true">Hall</button>
-    <button type="button" data-room="room" aria-pressed="false">Feuch Room</button>
+    <button type="button" data-room="feuch-lab" aria-pressed="false">Feuch Room</button>
     <button type="button" data-room="spectrl" aria-pressed="false">SpecTRL</button>
+    <button type="button" data-room="terra" aria-pressed="false">TERRA</button>
+    <button type="button" data-room="livres" aria-pressed="false">Bibliothèque</button>
+    <button type="button" data-room="jeux" aria-pressed="false">Galerie des jeux</button>
+    <button type="button" data-room="ia" aria-pressed="false">Chambre des IA</button>
+    <button type="button" data-room="bazar" aria-pressed="false">Bazar du Feuch</button>
   </nav>
 </header>
 <section class="stage" data-room="hall" tabindex="0" aria-label="Panorama. Bougez la souris, glissez le doigt ou utilisez les flèches pour regarder autour de vous.">
@@ -82,7 +98,7 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
     </clipPath></defs>
   </svg>
   <div class="scenes">
-    <article class="scene" id="hall">
+    <article class="scene" data-scene="hall">
       <img class="backdrop" src="assets/hall-fond-jour.webp" alt="Atrium doré, verrière et doubles escaliers">
       <img class="backdrop" src="assets/hall-fond-nuit.webp" alt="Atrium éclairé par la lune" loading="lazy" data-night="true" hidden>
       <div class="sigil-light" aria-hidden="true"></div>
@@ -90,15 +106,36 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
       <img class="furniture" src="assets/hall-mobilier-jour.webp" alt="">
       <img class="furniture" src="assets/hall-mobilier-nuit.webp" alt="" loading="lazy" data-night="true" hidden>
     </article>
-    <article class="scene" id="room" hidden>
+    <article class="scene" data-scene="feuch-lab" hidden>
       <img class="backdrop" src="assets/feuch-room-jour.webp" alt="Atelier de prototypes au bord de l’océan">
       <img class="backdrop" src="assets/feuch-room-nuit.webp" alt="Atelier de prototypes sous la lune" loading="lazy" data-night="true" hidden>
       <div class="title"><p>L’atelier des prototypes</p><h1>Feuch Room</h1></div>
     </article>
-    <article class="scene" id="spectrl" hidden>
+    <article class="scene" data-scene="spectrl" hidden>
       <img class="backdrop" src="assets/spectrl-jour.webp" alt="Banc optique en laiton et prisme devant une baie sur la mer">
       <img class="backdrop" src="assets/spectrl-nuit.webp" alt="Banc optique et prisme de nuit" loading="lazy" data-night="true" hidden>
       <div class="title"><p>L’observatoire spectral</p><h1>SpecTRL</h1></div>
+    </article>
+    <article class="scene" data-scene="terra" hidden>
+      <img class="backdrop room-daylight" src="assets/terra.webp" alt="Globe terrestre suspendu dans une galerie ouverte sur la mer" loading="lazy">
+      <div class="title"><p>Fable cosmique</p><h1>TERRA</h1></div>
+    </article>
+    <article class="scene" data-scene="livres" hidden>
+      <img class="backdrop room-daylight" src="assets/livres.webp" alt="Bibliothèque en bois sur plusieurs niveaux" loading="lazy">
+      <div class="title"><p>Les livres de Benoît Lubert</p><h1>Bibliothèque</h1></div>
+    </article>
+    <article class="scene" data-scene="jeux" hidden>
+      <img class="backdrop room-daylight" src="assets/jeux.webp" alt="Grande table d’expérimentation avec des cartes et des dés" loading="lazy">
+      <div class="title"><p>Cartes, dés et prototypes</p><h1>Galerie des jeux</h1></div>
+    </article>
+    <article class="scene" data-scene="ia" hidden>
+      <img class="backdrop room-daylight" src="assets/ia.webp" alt="Console en laiton et instruments lumineux" loading="lazy">
+      <div class="core-light" aria-hidden="true"></div>
+      <div class="title"><p>Signaux et présences</p><h1>Chambre des IA</h1></div>
+    </article>
+    <article class="scene" data-scene="bazar" hidden>
+      <img class="backdrop room-daylight" src="assets/bazar.webp" alt="Vitrines de jeux, de livres et de curiosités" loading="lazy">
+      <div class="title"><p>Livres, jeux et curiosités</p><h1>Bazar du Feuch</h1></div>
     </article>
   </div>
   <img class="foliage" src="assets/feuillage-avant-plan.webp" alt="" aria-hidden="true">
@@ -114,13 +151,88 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
     <button type="button" id="gyro" aria-pressed="false">Incliner le téléphone</button>
     <button type="button" id="centrer" hidden>Recentrer</button>
   </nav>
+  <button type="button" id="voir-contenus" hidden>Contenus de la salle ↓</button>
 </div>
 </div>
 <p id="mode" role="status">Souris, glissement tactile ou touches fléchées</p>
+<section class="room-content glass" data-room-content="feuch-lab" aria-labelledby="content-feuch-lab" hidden>
+  <h2 id="content-feuch-lab">Feuch Lab</h2>
+  <p>Depuis la Feuch Room, ouvre les expériences et les protocoles jouables du laboratoire.</p>
+  <div class="room-links">
+    <a href="https://benoitlub.github.io/feuchlab/"><strong>Ouvrir le Feuch Lab</strong><span>Choisir un protocole dans le portail existant.</span></a>
+    <a href="https://benoitlub.github.io/feuchlab/?protocol=dice"><strong>Feuch Dice</strong><span>Un duel local avec trois dés.</span></a>
+    <a href="https://benoitlub.github.io/feuchlab/?protocol=ghost"><strong>Ghost Frame</strong><span>Détecter les apparitions furtives.</span></a>
+    <a href="https://benoitlub.github.io/feuchlab/?protocol=marty"><strong>Marty’s Button</strong><span>Ne touche pas au bouton. Enfin, presque.</span></a>
+    <a href="https://benoitlub.github.io/feuchlab/?protocol=silent"><strong>Silent Link</strong><span>Un protocole à deux, chacun sur son écran.</span></a>
+    <a href="#spectrl"><strong>SpecTRL</strong><span>Retrouver le banc optique de l’Institut.</span></a>
+    <a href="#bazar"><strong>Bazar du Feuch</strong><span>Retrouver les créations et les livres de l’Institut.</span></a>
+  </div>
+</section>
+<section class="room-content glass" data-room-content="spectrl" aria-labelledby="content-spectrl" hidden>
+  <h2 id="content-spectrl">Ouvrir SpecTRL</h2>
+  <p>Le décor mène à l’application de l’observatoire.</p>
+  <div class="room-links">
+    <a href="https://benoitlub.github.io/SpecTRL/"><strong>Tester SpecTRL</strong><span>Expérience audio-visuelle et journal d’observation.</span></a>
+  </div>
+</section>
+<section class="room-content glass" data-room-content="terra" aria-labelledby="content-terra" hidden>
+  <h2 id="content-terra">TERRA · Benoît Lubert</h2>
+  <p>Une fable cosmique sur ce que l’on transmet en apprenant à quelqu’un à observer le monde.</p>
+  <div class="room-links">
+    <a href="https://www.amazon.fr/dp/B0H49Z1K3H"><strong>Édition Kindle</strong><span>Fiche du livre sur Amazon France.</span></a>
+    <a href="https://www.amazon.fr/dp/B0H4CN5MSH"><strong>Édition brochée</strong><span>Fiche du livre sur Amazon France.</span></a>
+    <a href="#livres"><strong>Les autres livres</strong><span>Rejoindre la bibliothèque de l’Institut.</span></a>
+  </div>
+</section>
+<section class="room-content glass" data-room-content="livres" aria-labelledby="content-livres" hidden>
+  <h2 id="content-livres">Bibliothèque</h2>
+  <p>Les livres du catalogue de Benoît Lubert. Chaque titre ouvre sa fiche Amazon.</p>
+  <div class="room-links">
+    <a href="https://www.amazon.fr/dp/B0H49Z1K3H"><strong>TERRA</strong><span>Fable cosmique sur l’observation et la transmission.</span></a>
+    <a href="https://www.amazon.fr/dp/B0GWHDTG6N"><strong>Neverland Ltd. · Volume 1</strong><span>Les enquêtes contemporaines de Peter Pan.</span></a>
+    <a href="https://www.amazon.fr/dp/B0H4RP6T4V"><strong>Neverland Ltd. · Volume 2</strong><span>Peter, Wendy et Darya poursuivent leur enquête entre Lyon et Londres.</span></a>
+    <a href="https://www.amazon.fr/dp/B0GYSSLZX4"><strong>La Feulette tachetée</strong><span>Une fable satirique sur l’influence.</span></a>
+    <a href="https://www.amazon.fr/dp/B0G4F4639R"><strong>La crotte de nez magique</strong><span>Une aventure jeunesse absurde et tendre.</span></a>
+    <a href="https://amzn.eu/d/0gbQ38IR"><strong>Les Vacances interdites</strong><span>Quatre voyageurs, un lapin et un voyage imprévu.</span></a>
+    <a href="https://www.amazon.fr/dp/B0H68811RL"><strong>Gérard et Gérard</strong><span>Deux vieux amis découvrent l’humanité entre deux verres de Frunch.</span></a>
+    <a href="https://www.amazon.fr/dp/B0H69ZMTK9"><strong>Les enquêtes approximatives de Kif &amp; Molla</strong><span>Deux détectives interdimensionnels aussi sincères qu’incompétents.</span></a>
+  </div>
+</section>
+<section class="room-content glass" data-room-content="jeux" aria-labelledby="content-jeux" hidden>
+  <h2 id="content-jeux">Jeux et prototypes</h2>
+  <p>Les jeux déjà accessibles en ligne.</p>
+  <div class="room-links">
+    <a href="https://benoitlub.github.io/prohibited-online/"><strong>Pro.Hibited Online</strong><span>Prototype du jeu de cartes.</span></a>
+    <a href="https://benoitlub.github.io/420-dice-game-reboot/"><strong>420 Dice Game</strong><span>Jeu de dés et de défis.</span></a>
+    <a href="https://benoitlub.github.io/blacklace-dice/"><strong>Blacklace Dice</strong><span>Le dé anti-procrastination.</span></a>
+    <a href="https://benoitlub.github.io/feuchlab/?protocol=dice"><strong>Feuch Dice</strong><span>Duel local dans le Feuch Lab.</span></a>
+  </div>
+</section>
+<section class="room-content glass" data-room-content="ia" aria-labelledby="content-ia" hidden>
+  <h2 id="content-ia">Agents, signaux et expériences</h2>
+  <p>Les portes vers les expériences publiques de l’île.</p>
+  <div class="room-links">
+    <a href="../aloisia"><strong>Aloisia</strong><span>Ouvrir l’interface d’Aloisia dans Echo.</span></a>
+    <a href="https://benoitlub.github.io/Creature-sync/"><strong>Creature-Sync</strong><span>Tester le prototype de traduction animalière.</span></a>
+    <a href="#spectrl"><strong>SpecTRL</strong><span>Passer par l’observatoire spectral.</span></a>
+  </div>
+</section>
+<section class="room-content glass" data-room-content="bazar" aria-labelledby="content-bazar" hidden>
+  <h2 id="content-bazar">Bazar du Feuch</h2>
+  <p>Parcourir les rayons de l’Institut ou ouvrir le catalogue d’origine.</p>
+  <div class="room-links">
+    <a href="#livres"><strong>Livres</strong><span>Fables, romans et aventures jeunesse.</span></a>
+    <a href="#jeux"><strong>Jeux</strong><span>Cartes, dés et prototypes jouables.</span></a>
+    <a href="#feuch-lab"><strong>Expériences</strong><span>Les protocoles du Feuch Lab.</span></a>
+    <a href="https://benoitlub.github.io/bazar-du-feuch/"><strong>Catalogue du Bazar</strong><span>Retrouver la vitrine complète et ses fiches.</span></a>
+  </div>
+</section>
 </main>
 <script>
 const stage = document.querySelector('.stage');
-const controls = [...document.querySelectorAll('[data-room]')];
+const controls = [...document.querySelectorAll('button[data-room]')];
+const contents = [...document.querySelectorAll('[data-room-content]')];
+const voirContenus = document.querySelector('#voir-contenus');
 const scenes = [...document.querySelectorAll('.scene')];
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const gyro = document.querySelector('#gyro');
@@ -238,19 +350,37 @@ gyro.addEventListener('click', async () => {
 });
 centrer.addEventListener('click', recentrer);
 
+function ouvrirSalle() {
+  const destination = location.hash.slice(1);
+  const room = controls.some(button => button.dataset.room === destination) ? destination : 'hall';
+  stage.dataset.room = room;
+  for (const scene of scenes) scene.hidden = scene.dataset.scene !== room;
+  for (const content of contents) content.hidden = content.dataset.roomContent !== room;
+  for (const control of controls) control.setAttribute('aria-pressed', String(control.dataset.room === room));
+  voirContenus.hidden = room === 'hall';
+  move(0, 0);
+  window.scrollTo(0, 0);
+}
 for (const button of controls) {
   button.addEventListener('click', () => {
-    stage.dataset.room = button.dataset.room;
-    for (const scene of scenes) scene.hidden = scene.id !== button.dataset.room;
-    for (const control of controls) control.setAttribute('aria-pressed', String(control === button));
-    move(0, 0);
+    if (button.dataset.room !== stage.dataset.room) location.hash = button.dataset.room;
   });
 }
+window.addEventListener('hashchange', ouvrirSalle);
+ouvrirSalle();
+voirContenus.addEventListener('click', () => {
+  const content = contents.find(section => !section.hidden);
+  if (!content) return;
+  content.tabIndex = -1;
+  content.focus({preventScroll:true});
+  content.scrollIntoView({behavior:reduced.matches ? 'auto' : 'smooth'});
+});
 nuit.addEventListener('click', () => {
   const nocturne = nuit.getAttribute('aria-pressed') !== 'true';
   nuit.setAttribute('aria-pressed', String(nocturne));
   nuit.textContent = nocturne ? 'Nuit active' : 'Nuit';
-  for (const image of stage.querySelectorAll('.backdrop, .furniture')) {
+  stage.dataset.nocturne = String(nocturne);
+  for (const image of stage.querySelectorAll('.backdrop:not(.room-daylight), .furniture')) {
     image.hidden = image.dataset.night === 'true' ? !nocturne : nocturne;
   }
 });

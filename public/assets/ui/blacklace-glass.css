@@ -1,0 +1,8 @@
+:root {
+  --bl-glass-color: #fff1d7;
+  --bl-glass-background: rgba(17, 19, 20, .65);
+  --bl-glass-border: 1px solid #e5c99955;
+  --bl-glass-radius: 12px;
+  --bl-glass-blur: blur(10px);
+  --bl-glass-shadow: 0 8px 24px #1119;
+}
