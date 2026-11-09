@@ -80,6 +80,27 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
  .landscape{transform:none}.title-rig{transform:translate3d(-50%,-50%,0)}
 }
+
+/* Panorama as the primary spatial navigation: coordinates are provisional until art review. */
+.landmarks{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
+#port[data-phase="explore"] .landmarks{opacity:1;pointer-events:auto}
+.landmark{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%) translate(calc(var(--px)*var(--depth)*-9px),calc(var(--py)*var(--depth)*-6px));border:1px solid #ffe8b67a;border-radius:16px;background:#0718248c;backdrop-filter:blur(9px);color:#fff1d2;padding:10px 14px;min-width:94px;min-height:48px;box-shadow:0 0 22px #f4d17c22;text-align:center;transition:background .3s,box-shadow .3s}
+.landmark:hover,.landmark:focus-visible{background:#213d4de8;box-shadow:0 0 32px #f4d17c77}
+.landmark strong{display:block;font:700 clamp(.75rem,1.5vw,1rem) Georgia,serif;letter-spacing:.08em;text-shadow:0 2px 9px #000}
+.landmark small{display:block;font-size:.65rem;opacity:.85;margin-top:3px}
+.landmark:before{content:"";position:absolute;left:50%;top:100%;height:clamp(16px,4vh,48px);border-left:1px solid #ffe8b68a}
+.landmark:after{content:"";position:absolute;left:calc(50% - 3px);top:calc(100% + clamp(16px,4vh,48px));width:7px;height:7px;border-radius:50%;background:#f6d99b;box-shadow:0 0 14px 4px #e9d39b66}
+.landmark[data-place="rotas"]{--x:22%;--y:45%;--depth:1.5}
+.landmark[data-place="institute"]{--x:51%;--y:35%;--depth:1}
+.landmark[data-place="max"]{--x:77%;--y:55%;--depth:1.9}
+.landmark[data-place="sator"]{--x:67%;--y:23%;--depth:.6}
+#port[data-phase="transition"] .landmarks,#port[data-phase="transition"] .lowerbar{opacity:0;pointer-events:none}
+.travel{position:absolute;inset:0;z-index:12;display:grid;place-items:center;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,#09273320,#06121bf2);transition:opacity .7s}
+#port[data-phase="transition"] .travel{opacity:1}
+.travel-title{font:700 clamp(2.8rem,10vw,9rem) Georgia,serif;color:#f8dda3;text-shadow:0 0 18px #f8d48c88,0 10px 45px #000;transform:translateZ(0) scale(.76);opacity:0;transition:transform 1.8s ease,opacity .7s}
+#port[data-phase="transition"] .travel-title{opacity:1;transform:scale(1.35)}
+.travel-note{position:absolute;bottom:14%;font-size:.85rem;color:#f5e5c7}
+@media(max-width:650px){.landmark{padding:8px;min-width:78px;min-height:44px}.landmark small{font-size:.58rem}.landmark[data-place="rotas"]{--x:20%;--y:43%}.landmark[data-place="institute"]{--x:54%;--y:32%}.landmark[data-place="max"]{--x:78%;--y:52%}.landmark[data-place="sator"]{--x:77%;--y:19%}.travel-title{font-size:clamp(2.1rem,10vw,5rem)}}
 </style>
 </head>
 <body>
@@ -87,6 +108,13 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
   <div class="landscape day" role="img" aria-label="Quai de Porsa Rotas, vue diurne du village et de la Fournaise de Feuch"></div>
   <div class="landscape night" role="img" aria-label="Quai de Porsa Rotas, vue nocturne de l'île"></div>
   <div class="fog" aria-hidden="true"></div>
+  <nav class="landmarks" aria-label="Explorer les lieux depuis le panorama">
+    <button class="landmark" data-place="rotas" data-title="ROTAS" data-destination="../map" type="button"><strong>ROTAS</strong><small>Village · aperçu</small></button>
+    <button class="landmark" data-place="institute" data-title="FEUCH INSTITUTE" data-destination="../feuch-institute/" type="button"><strong>FEUCH INSTITUTE</strong><small>Entrer</small></button>
+    <button class="landmark" data-place="max" data-title="MAX LIBERTY" data-destination="../map" type="button"><strong>MAX LIBERTY</strong><small>Bar · aperçu</small></button>
+    <button class="landmark" data-place="sator" data-title="SATOR" data-destination="../map" type="button"><strong>SATOR</strong><small>Forêt · aperçu</small></button>
+  </nav>
+  <div class="travel" aria-live="polite" aria-atomic="true"><div class="travel-title" id="travel-title"></div><div class="travel-note">Le paysage vous ouvre le chemin…</div></div>
   <div class="window" aria-hidden="true"><div class="title-rig" id="title-rig"><div class="title-face">BLACKLACE ISLAND</div></div></div>
   <header class="topbar glass">
     <a href="../" class="brand" aria-label="Accueil Blacklace Echo"><span class="eye">◉</span><span><strong>BLACKLACE ISLAND</strong><small>Porsa Rotas · Le Seuil</small></span></a>
@@ -110,7 +138,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
     </div>
   </section>
   <footer class="lowerbar" aria-label="Accès aux lieux">
-    <div class="places"><a class="pill" href="../map">⌖ Rotas</a><a class="pill" href="../map">☕ Max Liberty</a><a class="pill" href="../feuch-institute/">◉ Feuch Institute</a><a class="pill" href="../map">◈ HoloMap</a></div>
+    <div class="places"><span class="status glass" style="padding:10px">Touchez un lieu dans le paysage</span><a class="pill" href="../map">◈ Carte secondaire</a></div>
     <div class="settings"><button id="recenter" class="pill" type="button" title="Recentrer la perspective">◎</button><span class="status glass" style="padding:10px">Vue fenêtre · tactile / souris</span></div>
   </footer>
 </main>
@@ -140,6 +168,14 @@ function setPointer(x,y){if(reduced.matches)return;root.style.setProperty('--px'
 root.addEventListener('pointerdown',e=>{if(e.target.closest('button,a'))return;activePointer={x:e.clientX,y:e.clientY,id:e.pointerId}});
 root.addEventListener('pointermove',e=>{if(phase==='crossing')return;if(e.pointerType==='mouse'){setPointer((e.clientX/innerWidth-.5)*2,(e.clientY/innerHeight-.5)*2)}else if(activePointer?.id===e.pointerId){setPointer((activePointer.x-e.clientX)/100,(activePointer.y-e.clientY)/100)}});
 root.addEventListener('pointerup',()=>{activePointer=null});
+document.querySelectorAll('.landmark').forEach(button=>button.addEventListener('click',()=>{
+  if(phase!=='explore')return;
+  const destination=button.dataset.destination;
+  document.querySelector('#travel-title').textContent=button.dataset.title;
+  if(reduced.matches){window.location.assign(destination);return}
+  setPhase('transition');
+  setTimeout(()=>window.location.assign(destination),1700);
+}));
 document.querySelector('#recenter').addEventListener('click',()=>setPointer(0,0));
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(phase==='crossing')skip();else if(phase==='welcome')setPhase('explore')}else if(phase==='welcome'&&e.key==='Enter'&&!e.target.closest('button,a'))document.querySelector('#next').click()});
 document.querySelectorAll('.landscape').forEach(el=>{const bg=getComputedStyle(el).backgroundImage;const match=bg.match(/url\\(["']?([^"')]+)["']?\\)/);if(!match)return;const img=new Image();img.onerror=()=>{if(el.classList.contains(root.dataset.night==='true'?'night':'day'))el.style.background='linear-gradient(150deg,#193f50,#0e1728)'};img.src=match[1]});
