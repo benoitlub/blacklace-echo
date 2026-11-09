@@ -1,12 +1,12 @@
 # Ressources pour l'arrivée au port
 
-La scène `public/port/index.html` attend les trois fichiers suivants dans `public/port/assets/` :
+La scène `public/port/index.html` attend les trois fichiers suivants dans `public/port/` :
 
 - `port-jour.webp` — panorama diurne fourni par l'auteur
 - `port-nuit.webp` — panorama nocturne fourni par l'auteur, même géographie
 - `marie-jeanne.webp` — portrait extrait du concept validé, à remplacer si un portrait définitif est retenu
 
-Les fichiers optimisés ont été préparés dans la conversation ChatGPT sous forme d'archive ZIP à décompresser puis à importer **individuellement** dans ce dossier via GitHub > Add file > Upload files.
+Les fichiers optimisés ont été préparés dans la conversation ChatGPT sous forme d'archive ZIP à décompresser puis à importer **individuellement** dans le dossier public/port via GitHub > Add file > Upload files.
 
 Ne pas mettre le ZIP tel quel dans le dossier : GitHub Pages ne le décompresse pas.
 
