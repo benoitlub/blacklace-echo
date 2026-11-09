@@ -5,6 +5,15 @@ import { parsePublicFeed, describeWorldEntry, type PublicWorldEntry } from "@/bl
 
 type Msg = { role: "user" | "aloisia"; content: string };
 const STORAGE_KEY = "blacklace_aloisia_private_chat_v1";
+const AMBIENCE_KEY = "blacklace_aloisia_ambience_v1";
+type Ambience = { night: boolean; unstable: boolean };
+const AMBIENCE_PRESETS: { label: string; value: Ambience }[] = [
+  { label: "Jour paisible", value: { night: false, unstable: false } },
+  { label: "Nuit paisible", value: { night: true, unstable: false } },
+  { label: "Jour troublé", value: { night: false, unstable: true } },
+  { label: "Nuit troublée", value: { night: true, unstable: true } },
+];
+
 const intro: Msg = {
   role: "aloisia",
   content: "Je suis là, Benoît. Dépose le fragment. Je le lirai comme une marée intérieure avant de le redistribuer dans l'île.",
@@ -55,6 +64,17 @@ const Aloisia = () => {
       return saved.length ? saved : [intro];
     } catch { return [intro]; }
   });
+  const [ambience, setAmbience] = useState<Ambience>(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(AMBIENCE_KEY) || "null");
+      if (typeof stored?.night === "boolean" && typeof stored?.unstable === "boolean") return stored;
+    } catch { /* storage unavailable */ }
+    return { night: false, unstable: false };
+  });
+  function commandAmbience(value: Ambience) {
+    setAmbience(value);
+    try { localStorage.setItem(AMBIENCE_KEY, JSON.stringify(value)); } catch { /* local controls remain functional */ }
+  }
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [worldEntries, setWorldEntries] = useState<PublicWorldEntry[]>([]);
@@ -139,6 +159,19 @@ const Aloisia = () => {
             <p>Dépose ici les idées brutes. Aloisia les absorbe, les reformule et les classe pour Blacklace Island.</p>
             <div className="aloisia-tags">
               <span>Lore</span><span>PNJ</span><span>Lieux</span><span>Interface</span><span>Unity</span><span>Transmedia</span>
+            </div>
+            <div className="aloisia-note" aria-label="Ambiance de l'Institut">
+              <strong>Ambiance du Feuch Institute</strong>
+              <p>Commande locale partagée avec l'Institut sur ce navigateur.</p>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10}}>
+                {AMBIENCE_PRESETS.map(preset => (
+                  <button key={preset.label} type="button" className="bl-pill"
+                    aria-pressed={ambience.night === preset.value.night && ambience.unstable === preset.value.unstable}
+                    onClick={() => commandAmbience(preset.value)}>
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="aloisia-note">
               Clé Mistral protégée côté Netlify Function : ne jamais la mettre dans le code en clair. Si la fonction n'est pas branchée, Aloisia répond depuis sa mémoire locale.
