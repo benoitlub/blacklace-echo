@@ -16,8 +16,8 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 [hidden]{display:none!important}
 #port{--px:0;--py:0;position:relative;width:100%;height:100dvh;min-height:360px;overflow:hidden;isolation:isolate;background:#112b38}
 .landscape{position:absolute;inset:-4%;background-size:cover;background-position:center center;transform:translate(calc(var(--px)*-1.25vw),calc(var(--py)*-.9vh)) scale(1.07);transition:opacity 1.3s ease;will-change:transform}
-.day{background-image:url("assets/port-jour.webp")}
-.night{background-image:url("assets/port-nuit.webp");opacity:0}
+.day{background-image:url("port-jour.webp")}
+.night{background-image:url("port-nuit.webp");opacity:0}
 #port[data-night="true"] .day{opacity:0}
 #port[data-night="true"] .night{opacity:1}
 #port:before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,#06141e40 0%,transparent 34%,transparent 57%,#07131cb8 100%)}
@@ -101,7 +101,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
     <button id="enter" type="button">Entrer sur Blacklace Island →</button>
   </section>
   <section id="welcome" class="welcome glass" role="region" aria-label="Accueil de Marie Jeanne" aria-live="polite">
-    <img class="portrait" src="assets/marie-jeanne.webp" alt="Marie Jeanne, habitante accueillante du port de Porsa Rotas">
+    <img class="portrait" src="marie-jeanne.webp" alt="Marie Jeanne, habitante accueillante du port de Porsa Rotas">
     <div class="speech">
       <h2>MARIE JEANNE</h2>
       <small>Accueil du port · Porsa Rotas</small>
