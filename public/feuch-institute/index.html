@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feuch Institute · Fenêtre sur Blacklace Island</title>
+<style>
+:root { color-scheme: dark; background:#101413; color:#f2e5c5; font:16px system-ui,sans-serif; }
+* { box-sizing:border-box; }
+body { margin:0; }
+main { width:min(100%, 1760px); margin:auto; padding:clamp(6px,1.5vw,22px); }
+.frame { position:relative; }
+.glass { color:#fff1d7; background:rgba(17,19,20,.65); border:1px solid #e5c99945; border-radius:12px; backdrop-filter:blur(10px); box-shadow:0 8px 24px #1119; }
+header { position:absolute; z-index:5; inset:10px 10px auto; display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; justify-content:space-between; padding:4px 12px; }
+.brand { display:flex; flex-direction:column; gap:3px; padding:4px 0; }
+.brand strong { font:600 1.2rem Georgia,serif; }
+.brand small { color:#d7b778; text-transform:uppercase; letter-spacing:.19em; font-size:.62rem; }
+nav { display:flex; gap:4px; flex-wrap:wrap; }
+button { min-height:44px; background:#fff1da0e; color:inherit; border:1px solid #f2ddba35; border-radius:8px; padding:4px 10px; font:inherit; cursor:pointer; }
+button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
+:focus-visible { outline:2px solid #d7efff; outline-offset:2px; }
+.stage { --x:0; --y:0; --depth:.82; position:relative; aspect-ratio:16/9; overflow:hidden; isolation:isolate; container-type:inline-size; background:#272b22; border:1px solid #78613f; border-radius:10px; touch-action:pan-y; }
+.scenes, .scene { position:absolute; inset:0; }
+.scene[hidden] { display:none; }
+.scene img { user-select:none; -webkit-user-drag:none; }
+.backdrop, .furniture, .foliage, .anomaly { position:absolute; pointer-events:none; }
+.backdrop, .furniture { inset:0; width:100%; height:100%; object-fit:cover; }
+.backdrop, .sigil-light { transform:translate(calc(var(--x) * var(--depth) * -3.6cqw),calc(var(--y) * var(--depth) * -1.7cqw)) scale(1.11); }
+.furniture { z-index:2; clip-path:url(#meubles); transform:translate(calc(var(--x) * var(--depth) * 1.05cqw),calc(var(--y) * var(--depth) * .55cqw)) scale(1.11); }
+.title { position:absolute; z-index:1; left:18%; bottom:22%; width:max-content; max-width:78%; pointer-events:none; transform:translate(calc(var(--x) * var(--depth) * 2.25cqw),calc(var(--y) * var(--depth) * 1.5cqw)) perspective(100cqw) rotateY(calc(var(--x) * var(--depth) * -6deg - 6deg)) rotateX(calc(var(--y) * var(--depth) * 4deg)); transform-origin:center; }
+#hall .title { left:50%; bottom:19%; transform:translate(calc(-50% + var(--x) * var(--depth) * 2cqw),calc(var(--y) * var(--depth) * 1.5cqw)); text-align:center; }
+#hall .title h1 { font-size:clamp(23px,4cqw,65px); }
+.title p { margin:0 0 .8cqw; padding-left:.32cqw; color:#ffedc8; font-size:clamp(8px,1.18cqw,17px); letter-spacing:.21em; text-transform:uppercase; text-shadow:0 1px 3px #101713,0 1px 8px #101713,0 1px 14px #101713; font-weight:700; }
+.title h1 { margin:0; font:600 clamp(26px,6.8cqw,100px)/.94 Georgia,serif; color:#ffedc5; letter-spacing:-.045em; text-shadow:0 1px #89612c,0 2px #765024,0 3px #523915,0 4px #523915,0 7px 16px #131411,0 0 28px #211f18; }
+.foliage { z-index:3; width:25%; left:-10%; bottom:-12%; filter:blur(.15cqw) brightness(.81); transform:translate(calc(var(--x) * var(--depth) * 7cqw),calc(var(--y) * var(--depth) * 3.1cqw)) rotate(-8deg); transform-origin:left bottom; }
+.stage[data-room=hall] .foliage { display:none; }
+.anomaly { z-index:4; inset:0; opacity:0; background:radial-gradient(ellipse at 51% 78%,#bd71ff65,transparent 42%),linear-gradient(115deg,#6551e639,transparent 52%,#137f9b45); transition:opacity .6s; }
+.stage[data-unstable=true] .anomaly { opacity:.8; animation:onde 6s ease-in-out infinite alternate; }
+.stage[data-unstable=true] :is(.backdrop,.sigil-light) { animation:derive 7s ease-in-out infinite alternate; }
+.stage[data-unstable=true] .furniture { animation:derive-near 7s ease-in-out infinite alternate-reverse; }
+@keyframes derive-near { from { translate:-.15cqw .05cqw; } to { translate:.15cqw -.05cqw; } }
+.sigil-light { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 16% 4% at 50.5% 86.4%, #ffe2a871, #ffba482c 56%, transparent 100%); animation:sigil-breath 8s ease-in-out infinite alternate; }
+@keyframes sigil-breath { from { opacity:.1; } to { opacity:.62; } }
+.brand a { color:inherit; font-size:.72rem; text-decoration-color:#d7b77888; text-underline-offset:2px; }
+@keyframes onde { to { opacity:.27; } }
+@keyframes derive { from { translate:-.6cqw .25cqw; } to { translate:.6cqw -.25cqw; } }
+.controls { position:absolute; z-index:5; inset:auto 10px 10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px 12px; padding:6px 10px; }
+.depth { display:flex; min-height:44px; gap:6px; align-items:center; }
+.depth input { width:clamp(72px,10vw,180px); accent-color:#8bd9ff; }
+#mode { margin:8px 4px 0; color:#d8c8a7; font-size:.82rem; }
+@media (max-width:850px) {
+  header { position:relative; inset:auto; margin-bottom:4px; }
+  .controls { position:relative; inset:auto; margin-top:4px; }
+  button { padding-inline:8px; font-size:.85rem; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .backdrop, .furniture, .sigil-light { transform:scale(1.11); }
+  .sigil-light { animation:none; opacity:.25; }
+  .title { transform:perspective(100cqw) rotateY(-6deg); }
+  #hall .title { transform:translateX(-50%); }
+  .foliage { transform:rotate(-8deg); }
+  .stage[data-unstable=true] :is(.backdrop,.furniture,.anomaly,.sigil-light) { animation:none; transition:none; }
+}
+</style>
+</head>
+<body>
+<main>
+<div class="frame">
+<header class="glass">
+  <div class="brand"><small>Blacklace Island</small><strong>Feuch Institute</strong><a href="../">Retour à l’île</a></div>
+  <nav aria-label="Salles du Feuch Institute">
+    <button type="button" data-room="hall" aria-pressed="true">Hall</button>
+    <button type="button" data-room="room" aria-pressed="false">Feuch Room</button>
+    <button type="button" data-room="spectrl" aria-pressed="false">SpecTRL</button>
+  </nav>
+</header>
+<section class="stage" data-room="hall" tabindex="0" aria-label="Panorama. Bougez la souris, glissez le doigt ou utilisez les flèches pour regarder autour de vous.">
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <defs><clipPath id="meubles" clipPathUnits="objectBoundingBox">
+      <path transform="scale(.000651041667 .001157407407)" d="M0 730 L11 714 L19 709 L20 643 Q20 592 48 581 Q83 560 108 589 Q126 603 127 638 L129 701 L144 703 L140 687 L148 670 L176 655 L193 672 L201 694 L193 724 L220 721 L243 725 L257 729 L280 729 Q277 712 273 689 Q272 653 295 646 Q347 640 384 644 Q412 644 424 660 Q439 673 436 706 Q454 707 472 713 Q492 718 499 735 Q506 747 497 764 L493 799 Q489 815 481 818 L475 832 L470 832 L468 807 L425 814 L422 859 L424 874 H-10 V750 Z M1087 876 L1088 815 Q1087 792 1107 774 Q1129 751 1152 753 Q1145 733 1154 716 Q1164 701 1194 701 L1212 698 Q1211 674 1221 656 Q1230 639 1256 639 L1334 637 Q1360 637 1376 650 Q1394 670 1386 695 L1402 700 L1401 682 L1391 679 L1379 667 Q1360 647 1363 622 Q1361 592 1389 574 Q1417 554 1449 561 Q1481 566 1497 597 Q1511 622 1502 647 Q1498 667 1475 682 L1478 691 L1494 698 L1497 710 L1522 714 L1545 714 V879 Z"/>
+    </clipPath></defs>
+  </svg>
+  <div class="scenes">
+    <article class="scene" id="hall">
+      <img class="backdrop" src="assets/hall-fond-jour.webp" alt="Atrium doré, verrière et doubles escaliers">
+      <img class="backdrop" src="assets/hall-fond-nuit.webp" alt="Atrium éclairé par la lune" loading="lazy" data-night="true" hidden>
+      <div class="sigil-light" aria-hidden="true"></div>
+      <div class="title"><p>Blacklace Island</p><h1>Feuch Institute</h1></div>
+      <img class="furniture" src="assets/hall-mobilier-jour.webp" alt="">
+      <img class="furniture" src="assets/hall-mobilier-nuit.webp" alt="" loading="lazy" data-night="true" hidden>
+    </article>
+    <article class="scene" id="room" hidden>
+      <img class="backdrop" src="assets/feuch-room-jour.webp" alt="Atelier de prototypes au bord de l’océan">
+      <img class="backdrop" src="assets/feuch-room-nuit.webp" alt="Atelier de prototypes sous la lune" loading="lazy" data-night="true" hidden>
+      <div class="title"><p>L’atelier des prototypes</p><h1>Feuch Room</h1></div>
+    </article>
+    <article class="scene" id="spectrl" hidden>
+      <img class="backdrop" src="assets/spectrl-jour.webp" alt="Banc optique en laiton et prisme devant une baie sur la mer">
+      <img class="backdrop" src="assets/spectrl-nuit.webp" alt="Banc optique et prisme de nuit" loading="lazy" data-night="true" hidden>
+      <div class="title"><p>L’observatoire spectral</p><h1>SpecTRL</h1></div>
+    </article>
+  </div>
+  <img class="foliage" src="assets/feuillage-avant-plan.webp" alt="" aria-hidden="true">
+  <div class="anomaly" aria-hidden="true"></div>
+</section>
+<div class="controls glass">
+  <nav aria-label="État du décor">
+    <button type="button" id="nuit" aria-pressed="false">Nuit</button>
+    <button type="button" id="instable" aria-pressed="false">État stable</button>
+  </nav>
+  <label class="depth">Profondeur <input id="profondeur" type="range" min="0" max="100" value="82"></label>
+  <nav aria-label="Orientation du téléphone">
+    <button type="button" id="gyro" aria-pressed="false">Incliner le téléphone</button>
+    <button type="button" id="centrer" hidden>Recentrer</button>
+  </nav>
+</div>
+</div>
+<p id="mode" role="status">Souris, glissement tactile ou touches fléchées</p>
+</main>
+<script>
+const stage = document.querySelector('.stage');
+const controls = [...document.querySelectorAll('[data-room]')];
+const scenes = [...document.querySelectorAll('.scene')];
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const gyro = document.querySelector('#gyro');
+const centrer = document.querySelector('#centrer');
+const mode = document.querySelector('#mode');
+const nuit = document.querySelector('#nuit');
+const instable = document.querySelector('#instable');
+const profondeur = document.querySelector('#profondeur');
+const manual = 'Souris, glissement tactile ou touches fléchées';
+let currentX = 0;
+let currentY = 0;
+let targetX = 0;
+let targetY = 0;
+let frame = 0;
+let contact = null;
+let inclination = false;
+let attente = 0;
+let neutre = null;
+const clamp = value => Math.max(-1, Math.min(1, value));
+
+function draw() {
+  frame = 0;
+  currentX += (targetX - currentX) * .18;
+  currentY += (targetY - currentY) * .18;
+  stage.style.setProperty('--x', currentX.toFixed(4));
+  stage.style.setProperty('--y', currentY.toFixed(4));
+  if (Math.abs(targetX - currentX) + Math.abs(targetY - currentY) > .001) {
+    frame = requestAnimationFrame(draw);
+  }
+}
+
+function move(x, y) {
+  if (reduced.matches) return;
+  targetX = clamp(x);
+  targetY = clamp(y);
+  if (!frame) frame = requestAnimationFrame(draw);
+}
+
+function position(event) {
+  const rect = stage.getBoundingClientRect();
+  return [2 * (event.clientX - rect.left) / rect.width - 1, 2 * (event.clientY - rect.top) / rect.height - 1];
+}
+
+function recentrer() {
+  neutre = null;
+  move(0, 0);
+}
+
+function lireInclinaison(event) {
+  if (!Number.isFinite(event.beta) || !Number.isFinite(event.gamma) || contact) return;
+  clearTimeout(attente);
+  const angle = window.screen.orientation?.angle ?? window.orientation ?? 0;
+  const radians = Math.PI / 180;
+  const beta = event.beta * radians;
+  const gamma = event.gamma * radians;
+  const rotation = angle * radians;
+  // La verticale dans le repère de l’appareil reste continue aux limites des angles d’Euler.
+  const x = -Math.cos(beta) * Math.sin(gamma);
+  const y = Math.sin(beta);
+  const z = Math.cos(beta) * Math.cos(gamma);
+  const horizontal = x * Math.cos(rotation) - y * Math.sin(rotation);
+  const vertical = x * Math.sin(rotation) + y * Math.cos(rotation);
+  const tangage = Math.atan2(vertical, z);
+  if (!neutre || neutre.angle !== angle) {
+    neutre = { angle, horizontal, tangage };
+    move(0, 0);
+    mode.textContent = 'Inclinaison active · touche Recentrer pour changer de position';
+    return;
+  }
+  const delta = tangage - neutre.tangage;
+  move((neutre.horizontal - horizontal) / .24, Math.atan2(Math.sin(delta), Math.cos(delta)) / .24);
+}
+
+function arreterInclinaison(message = manual) {
+  inclination = false;
+  clearTimeout(attente);
+  window.removeEventListener('deviceorientation', lireInclinaison);
+  gyro.setAttribute('aria-pressed', 'false');
+  gyro.textContent = 'Incliner le téléphone';
+  centrer.hidden = true;
+  mode.textContent = message;
+  recentrer();
+}
+
+gyro.addEventListener('click', async () => {
+  if (inclination) {
+    arreterInclinaison();
+    return;
+  }
+  if (!window.isSecureContext || !window.DeviceOrientationEvent) {
+    mode.textContent = 'Capteurs indisponibles ici. Essaie dans un navigateur sur une page HTTPS.';
+    return;
+  }
+  gyro.disabled = true;
+  try {
+    const capteur = window.DeviceOrientationEvent;
+    if (typeof capteur.requestPermission === 'function' && await capteur.requestPermission() !== 'granted') {
+      mode.textContent = 'Accès aux capteurs refusé. Le glissement tactile reste disponible.';
+      return;
+    }
+    if (reduced.matches) return;
+    inclination = true;
+    gyro.setAttribute('aria-pressed', 'true');
+    gyro.textContent = 'Arrêter l’inclinaison';
+    centrer.hidden = false;
+    mode.textContent = 'En attente des capteurs…';
+    recentrer();
+    window.addEventListener('deviceorientation', lireInclinaison);
+    attente = setTimeout(() => arreterInclinaison('Aucun signal des capteurs. Le glissement tactile reste disponible.'), 4000);
+  } catch {
+    arreterInclinaison('Capteurs indisponibles. Le glissement tactile reste disponible.');
+  } finally {
+    gyro.disabled = reduced.matches;
+  }
+});
+centrer.addEventListener('click', recentrer);
+
+for (const button of controls) {
+  button.addEventListener('click', () => {
+    stage.dataset.room = button.dataset.room;
+    for (const scene of scenes) scene.hidden = scene.id !== button.dataset.room;
+    for (const control of controls) control.setAttribute('aria-pressed', String(control === button));
+    move(0, 0);
+  });
+}
+nuit.addEventListener('click', () => {
+  const nocturne = nuit.getAttribute('aria-pressed') !== 'true';
+  nuit.setAttribute('aria-pressed', String(nocturne));
+  nuit.textContent = nocturne ? 'Nuit active' : 'Nuit';
+  for (const image of stage.querySelectorAll('.backdrop, .furniture')) {
+    image.hidden = image.dataset.night === 'true' ? !nocturne : nocturne;
+  }
+});
+instable.addEventListener('click', () => {
+  const perturbation = instable.getAttribute('aria-pressed') !== 'true';
+  instable.setAttribute('aria-pressed', String(perturbation));
+  instable.textContent = perturbation ? 'État instable' : 'État stable';
+  stage.dataset.unstable = String(perturbation);
+});
+profondeur.addEventListener('input', () => stage.style.setProperty('--depth', profondeur.valueAsNumber / 100));
+stage.addEventListener('pointerdown', event => {
+  if (event.pointerType === 'mouse' || !event.isPrimary) return;
+  contact = { id: event.pointerId, x: event.clientX, y: event.clientY };
+  stage.setPointerCapture(event.pointerId);
+});
+stage.addEventListener('pointermove', event => {
+  if (event.pointerType === 'mouse') move(...position(event));
+  else if (contact?.id === event.pointerId) {
+    move((event.clientX - contact.x) / 75, (event.clientY - contact.y) / 75);
+  }
+});
+stage.addEventListener('pointerleave', () => { if (!contact && !inclination) move(0, 0); });
+stage.addEventListener('lostpointercapture', () => {
+  contact = null;
+  if (!inclination) move(0, 0);
+});
+stage.addEventListener('keydown', event => {
+  const offsets = { ArrowLeft: [-.3, 0], ArrowRight: [.3, 0], ArrowUp: [0, -.3], ArrowDown: [0, .3] };
+  if (event.key === 'Escape') move(0, 0);
+  if (!(event.key in offsets)) return;
+  event.preventDefault();
+  const [x, y] = offsets[event.key];
+  move(targetX + x, targetY + y);
+});
+function setMotionLabel() {
+  gyro.disabled = reduced.matches;
+  if (reduced.matches) arreterInclinaison('Mouvements réduits');
+  else mode.textContent = manual;
+}
+reduced.addEventListener('change', setMotionLabel);
+setMotionLabel();
+</script>
+</body>
+</html>

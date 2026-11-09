@@ -351,6 +351,12 @@ const Index = () => {
             <p className="bl-modal-text">{zone.text}</p>
             <div className="bl-modal-fragment">{zone.fragment}</div>
             <div className={"bl-modal-actions" + (zone.mood ? " bl-modal-actions--" + zone.mood : "")}>
+              {zoneOpen === "institute" && (
+                <a className="bl-modal-action is-primary" href={`${import.meta.env.BASE_URL}feuch-institute/`}>
+                  Entrer dans le hall
+                  <em className="bl-modal-action-hint">Visite immersive du Feuch Institute</em>
+                </a>
+              )}
               {(zone.actions ?? []).map((a, i) => {
                 const cls = "bl-modal-action " + (a.intent === "ghost" ? "is-ghost" : a.intent === "warn" ? "is-warn" : "is-primary");
                 const onClick = () => {
