@@ -37,6 +37,9 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 .actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .pill{border:1px solid #dfc39268;background:#08151f9e;color:#fff0d6;min-height:40px;border-radius:12px;padding:7px 12px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .pill:hover{background:#b18a4645}
+#fullscreen-toggle{min-width:44px}
+#port:fullscreen{height:100%;min-height:100%;width:100%;background:#07131f}
+#port:fullscreen .landscape{inset:-4%}
 .start{left:50%;bottom:clamp(28px,10vh,120px);transform:translateX(-50%);text-align:center;width:min(94vw,540px);padding:17px}
 .start p{margin:4px 0 12px;color:#f0dcb8}.start button{border:1px solid #e6ba67;background:#a5722c;color:white;border-radius:12px;min-height:48px;padding:10px 22px;font-weight:700}
 #port[data-phase="crossing"] .start,#port[data-phase="welcome"] .start,#port[data-phase="explore"] .start{display:none}
@@ -121,6 +124,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
     <div class="actions">
       <a href="../map" class="pill explore-only">HoloMap</a>
       <button id="night-toggle" type="button" class="pill" aria-pressed="false">☾ Nuit</button>
+      <button id="fullscreen-toggle" type="button" class="pill" aria-label="Activer le plein écran" aria-pressed="false" title="Plein écran">⛶</button>
       <button id="skip" type="button" class="pill">Passer l'intro</button>
     </div>
   </header>
@@ -163,6 +167,22 @@ document.querySelector('#enter').addEventListener('click',begin);
 document.querySelector('#skip').addEventListener('click',skip);
 document.querySelector('#next').addEventListener('click',()=>{if(line<lines.length-1){line++;updateLine()}else setPhase('explore')});
 document.querySelector('#explore').addEventListener('click',()=>setPhase('explore'));
+const fullscreenButton=document.querySelector('#fullscreen-toggle');
+function updateFullscreenButton(){
+  const enabled=document.fullscreenElement===root;
+  fullscreenButton.textContent=enabled?'⤢':'⛶';
+  fullscreenButton.setAttribute('aria-pressed',String(enabled));
+  fullscreenButton.setAttribute('aria-label',enabled?'Quitter le plein écran':'Activer le plein écran');
+  fullscreenButton.title=enabled?'Quitter le plein écran':'Plein écran';
+}
+fullscreenButton.addEventListener('click',async()=>{
+  try{
+    if(document.fullscreenElement){await document.exitFullscreen()}
+    else if(root.requestFullscreen){await root.requestFullscreen()}
+    else{fullscreenButton.title='Plein écran non disponible dans ce navigateur';fullscreenButton.setAttribute('aria-label','Plein écran indisponible')}
+  }catch(e){fullscreenButton.title='Plein écran refusé par le navigateur'}
+});
+document.addEventListener('fullscreenchange',updateFullscreenButton);
 document.querySelector('#night-toggle').addEventListener('click',e=>{let night=root.dataset.night!=='true';root.dataset.night=String(night);e.currentTarget.textContent=night?'☀ Jour':'☾ Nuit';e.currentTarget.setAttribute('aria-pressed',String(night))});
 function setPointer(x,y){if(reduced.matches)return;root.style.setProperty('--px',String(Math.max(-1,Math.min(1,x))));root.style.setProperty('--py',String(Math.max(-1,Math.min(1,y))))}
 root.addEventListener('pointerdown',e=>{if(e.target.closest('button,a'))return;activePointer={x:e.clientX,y:e.clientY,id:e.pointerId}});
