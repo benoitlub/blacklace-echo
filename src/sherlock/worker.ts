@@ -4,7 +4,9 @@ import { initialWorld, worldSignals } from "./world-core";
 import type { CharacterState, PlaceId } from "./world-core";
 import { commitOctopusCycle } from "./octopus-cycle";
 import { createOctopusHttpExecutor } from "./octopus-http";
-import { loadDialogues } from "./dialogue-persistence";
+import { loadDialogues, appendDialogue } from "./dialogue-persistence";
+import { encounterMemories } from "./social-memory";
+import { createOctopusDialogueExecutor } from "./octopus-dialogue";
 
 export interface SherlockBindings {
   SHERLOCK_DB?: D1Database;
@@ -103,7 +105,19 @@ export default {
         const signals = worldSignals(session.state).map(signal => signal.observable
           ? signal
           : { place: signal.place, observable: false, intensity: signal.intensity, trace: signal.trace });
-        return new Response(JSON.stringify({ entries: publicEntries, signals }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
+        // Public projection of persisted, Octopus-verified dialogue only. Never expose session or operation IDs.
+        const stored = await loadDialogues(env.SHERLOCK_DB, env.SHERLOCK_PUBLIC_SESSION_ID);
+        const encounters = new Map(encounterMemories(session.events).map(e => [e.id, e]));
+        const dialogues = stored.flatMap(item => {
+          const encounter = encounters.get(item.encounterId);
+          if (!encounter || item.source !== "octopus" || item.dialogue.encounterId !== encounter.id ||
+              item.dialogue.participants.some((p, i) => p !== encounter.participants[i])) return [];
+          return item.dialogue.turns.filter(turn => encounter.participants.includes(turn.speaker) &&
+            typeof turn.text === "string" && turn.text.length > 0 && turn.text.length <= 600)
+            .map((turn, i) => ({ id: item.encounterId + ":" + i, cycle: item.cycle,
+              place: encounter.place, speaker: turn.speaker, text: turn.text }));
+        }).slice(-24);
+        return new Response(JSON.stringify({ entries: publicEntries, signals, dialogues }), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "access-control-allow-origin": origin, "vary": "Origin" } });
       } catch { return json({ error: "Public feed unavailable" }, 503); }
     }
     if (!url.pathname.startsWith("/api/sherlock/")) return json({ error: "Not found" }, 404);
@@ -150,7 +164,28 @@ export default {
         const actors = Object.keys(session.state.characters).sort();
         const actorId = actors[session.state.cycle % actors.length];
         const result = await commitOctopusCycle(db, sessionId, actorId, executor);
-        return json(result);
+        // A completed world cycle is never rolled back because dialogue generation failed.
+        // Generate at most one canonical dialogue per verified encounter; D1 primary key
+        // also prevents duplicate commits under concurrent requests.
+        let dialogueStatus: "none" | "saved" | "unavailable" = "none";
+        try {
+          const updated = await loadSession(db, sessionId);
+          if (updated) {
+            const existing = new Set((await loadDialogues(db, sessionId)).map(d => d.encounterId));
+            const pending = encounterMemories(updated.events).filter(e => !existing.has(e.id));
+            if (pending.length) {
+              const generate = createOctopusDialogueExecutor({
+                endpoint: "https://octopus.internal/mission",
+                fetcher: env.OCTOPUS.fetch.bind(env.OCTOPUS) as typeof fetch,
+              });
+              const encounter = pending[0];
+              const generated = await generate(encounter, encounterMemories(updated.events));
+              await appendDialogue(db, sessionId, updated.events, generated.proposal, generated);
+              dialogueStatus = "saved";
+            }
+          }
+        } catch { dialogueStatus = "unavailable"; }
+        return json({ ...result, dialogueStatus });
       } catch (error) {
         const message = errorMessage(error);
         const status = message === "Session not found" ? 404 : /Stale cycle|UNIQUE constraint/i.test(message) ? 409 : 502;
