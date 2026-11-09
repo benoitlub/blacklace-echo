@@ -4,6 +4,7 @@ import { BackgroundLayers } from "@/blacklace/Layers";
 import { feuchInstitutePath } from "@/blacklace/data";
 import RotasPlaza from "@/components/world/RotasPlaza";
 import "@/styles/rotas.css";
+import "@/styles/holomap-glass.css";
 import { ISLAND_LOCATIONS, ISLAND_LOCATION_BY_ID, islandRoute, type RoutePoint } from "@/blacklace/island-geography";
 import { parsePublicFeed, parsePublicSignals, type PublicWorldEntry } from "@/blacklace/sherlock-feed";
 import type { PlaceId } from "@/sherlock/world-core";
@@ -214,6 +215,7 @@ const BlacklaceMap = () => {
   useEffect(() => () => { if (arrivalTimer.current) clearTimeout(arrivalTimer.current); }, []);
 
   function enterZone(id: string) {
+    setSelectedActor(null);
     if (id === "rotas") {
       setActive(null);
       setView("zooming-rotas");
@@ -268,17 +270,23 @@ const BlacklaceMap = () => {
   return (
     <>
       <BackgroundLayers />
-      <main className={`map-page map-page--full ${view === "zooming-rotas" ? "map-entering-rotas" : ""}`}>
+      <main className={`map-page map-page--full holomap-window ${view === "zooming-rotas" ? "map-entering-rotas" : ""}`}>
         <header className="map-topbar">
-          <Link className="bl-brand" to="/">
-            <span className="bl-brand-eye">◉</span>
-            <span>BLACKLACE</span>
-          </Link>
-          <Link className="bl-pill" to="/atlas">LIEUX & HABITANTS</Link>
-          <Link className="bl-pill" to="/">RETOUR LIVE</Link>
+          <div className="holomap-brand"><span>Blacklace Island</span><h1>HoloMap</h1></div>
+          <nav aria-label="Navigation Blacklace">
+            <Link className="bl-pill" to="/atlas">Lieux & habitants</Link>
+            <Link className="bl-pill" to="/">Retour live</Link>
+          </nav>
         </header>
 
         <section className="holo-map-stage holo-map-stage--bare">
+          <div className="holomap-destinations">
+            <label htmlFor="holomap-place">Explorer l’île</label>
+            <select id="holomap-place" value="" onChange={event => { if (event.target.value) enterZone(event.target.value); }}>
+              <option value="" disabled>Choisir un lieu</option>
+              {HOTSPOTS.map(place => <option key={place.id} value={place.id}>{place.label}</option>)}
+            </select>
+          </div>
           <div className={`island3d-stage time-${time} weather-${weather}`} ref={stageRef}>
             <div className="holowall" aria-hidden>
               {tiles.map((_, i) => (
