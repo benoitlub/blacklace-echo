@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#102f33">
+<title>Rotas · Blacklace Island</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#f9ebca;background:#071d22}*{box-sizing:border-box}body{margin:0;min-height:100dvh}a{color:inherit}button{font:inherit;cursor:pointer}
+.scene{min-height:100dvh;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 38%,#b8d4a9 0,#6fada4 18%,#1c666b 49%,#0b2932 76%,#06171d 100%)}
+.scene:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#031a2a11 0%,#031a2a22 36%,#041318d9 100%),repeating-radial-gradient(ellipse at 50% 115%,transparent 0 47px,#e5c89220 49px 51px,transparent 53px 95px);pointer-events:none}
+.sky{position:absolute;top:8%;left:50%;transform:translateX(-50%);width:min(65vw,700px);height:35vh;border-radius:50%;background:radial-gradient(ellipse,#ffdf9b8c,transparent 70%);filter:blur(40px);pointer-events:none}
+header{position:relative;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:clamp(16px,3vw,32px)}
+.brand{font:small-caps clamp(1.1rem,2.5vw,1.7rem) Georgia,serif;letter-spacing:.12em;text-shadow:0 2px 10px #000}
+.pill{border:1px solid #d4b878aa;border-radius:30px;background:#071c24bd;padding:12px 16px;text-decoration:none;backdrop-filter:blur(12px)}
+main{position:relative;z-index:2;max-width:1100px;margin:2vh auto 0;padding:0 20px 110px}
+h1{text-align:center;font:clamp(3.4rem,10vw,7rem) Georgia,serif;letter-spacing:.1em;margin:0;text-shadow:0 6px 25px #061519}
+.intro{text-align:center;margin:8px auto 28px;max-width:650px;color:#f6e6c8}
+.plaza{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,22px);perspective:850px}
+.place{display:flex;flex-direction:column;justify-content:flex-end;min-height:clamp(185px,27vw,300px);border:1px solid #ebd3988a;border-radius:50% 50% 17px 17px / 30% 30% 17px 17px;background:radial-gradient(ellipse at 50% 15%,#69b9ae 0 12%,#28757b 13% 22%,#0d3944 23% 44%,#173e40 45% 58%,#091f29 60%),linear-gradient(#22616c,#0a1d25);box-shadow:inset 0 0 0 5px #e4bb7130,0 20px 40px #0007;position:relative;overflow:hidden;text-decoration:none;padding:20px;text-align:center;transition:transform .35s,box-shadow .35s}
+.place:before{content:"";position:absolute;top:40%;left:37%;width:26%;height:36%;border-radius:55% 55% 0 0;border:4px solid #c5a66d;background:radial-gradient(ellipse at 50% 25%,#ffdf97,#745b39 35%,#12323b 70%);box-shadow:0 0 25px #f5c77a70}
+.place:hover,.place:focus-visible{transform:translateY(-8px) scale(1.025);box-shadow:0 24px 55px #000a,0 0 25px #d9bc7866;outline:2px solid #f3d8a4}
+.place strong,.place span{position:relative;z-index:1;text-shadow:0 2px 10px #000}
+.place strong{font:clamp(1.05rem,2.2vw,1.5rem) Georgia,serif}.place span{font-size:.78rem;color:#d4e8df;margin-top:5px}
+.place.eye{grid-column:2;min-height:320px;background:radial-gradient(ellipse at 50% 10%,#8fd4c7 0 13%,#1f777e 14% 25%,#0b3640 26% 47%,#183e41 48% 59%,#071f28 61%)}
+.place.eye:after{content:"◉";position:absolute;top:22%;left:0;right:0;color:#edce91;font-size:42px;text-shadow:0 0 20px #f5d68d}
+.place.tea{grid-column:1;grid-row:1}.place.shop{grid-column:3;grid-row:1}
+.market{grid-column:1 / -1;display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+.market .place{width:min(45%,260px);min-height:150px;border-radius:45% 45% 14px 14px;background:repeating-linear-gradient(110deg,#12696e 0 20px,#d7c38b 20px 40px);justify-content:flex-end}
+.market .place:before{display:none}
+.notice{margin:25px auto 0;max-width:740px;text-align:center;padding:15px;border:1px solid #d4b87855;border-radius:16px;background:#041820b8;color:#e5d7b8;font-size:.85rem}
+footer{position:relative;z-index:2;text-align:center;padding:15px;color:#b8cfc8;font-size:.78rem}
+@media(max-width:650px){.plaza{grid-template-columns:repeat(2,minmax(0,1fr))}.place.eye{grid-column:1/-1;grid-row:1;min-height:260px}.place.tea{grid-column:1;grid-row:2}.place.shop{grid-column:2;grid-row:2}.place{min-height:200px;padding:12px}.market .place{width:46%}}
+@media(prefers-reduced-motion:reduce){.place{transition:none}}
+</style></head>
+<body><div class="scene"><div class="sky"></div><header><div class="brand">✧ Blacklace Island</div><a class="pill" href="../port/">← Retour au port</a></header>
+<main><h1>ROTAS</h1><p class="intro">Au bout du quai, les spirales des pavés conduisent à une place où chaque porte a sa propre histoire.</p>
+<nav class="plaza" aria-label="Lieux de la place de Rotas">
+<a class="place tea" href="../map" aria-label="Salon de thé — repère sur la carte"><strong>Salon de thé</strong><span>La conversation commence ici · carte</span></a>
+<a class="place eye" href="../map" aria-label="Maison de l'Œil — repère sur la carte"><strong>Maison de l’Œil</strong><span>Un regard sur l’île · carte</span></a>
+<a class="place shop" href="https://benoitlub.github.io/feuchlab/" aria-label="Boutique — visiter le Feuch Lab"><strong>Boutique</strong><span>Entrer au Feuch Lab ↗</span></a>
+<div class="market"><a class="place" href="../map"><strong>Échoppe du marché</strong><span>Découvrir la carte</span></a><a class="place" href="../feuch-institute/"><strong>Atelier du Feuch</strong><span>Visiter l’Institut ↗</span></a></div>
+</nav>
+<p class="notice">Première scène navigable de Rotas. Les volumes sont pour l'instant stylisés en CSS : les illustrations détaillées de la place seront intégrées après leur préparation en fichiers Web optimisés. Les destinations sans scène dédiée restent signalées comme accès à la carte.</p>
+</main><footer>ROTAS · OPERA · TENET · AREPO · SATOR</footer></div></body></html>
