@@ -57,6 +57,8 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
   const [sound, setSound] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [depth, setDepth] = useState(true);
+  const [depthReady, setDepthReady] = useState(false);
   const viewport = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLElement>(null);
   const back = useRef<HTMLButtonElement>(null);
@@ -72,6 +74,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
   const height = baseHeight * camera.zoom;
   const offsetX = clamp(size.width / 2 - camera.x * width, size.width - width, 0);
   const offsetY = clamp(size.height / 2 - camera.y * height, size.height - height, 0);
+  const perspective = sceneId === "square" && depth && depthReady && !imageError;
 
   useEffect(() => {
     const target = viewport.current;
@@ -121,6 +124,8 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
     if (id === sceneId) { reset(); return; }
     setSceneId(id); setSelected(null); setSelectedActor(null); setShowResidents(false);
     setCamera({ zoom: 1, x: .5, y: .5 }); setImageError(false); setImageLoading(true);
+    setDepthReady(false);
+    resetLook();
     pointers.current.clear(); gesture.current = null; setDragging(false);
     requestAnimationFrame(() => viewport.current?.focus());
   }
@@ -130,7 +135,11 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
     setCamera({ zoom: 1.65, x: stop.x / 100, y: stop.y / 100 });
   }
   function zoom(delta: number) { setCamera(value => ({ ...value, zoom: clamp(value.zoom + delta, 1, 2.5) })); }
-  function reset() { setCamera({ zoom: 1, x: .5, y: .5 }); setSelected(null); setSelectedActor(null); setShowResidents(false); }
+  function reset() { setCamera({ zoom: 1, x: .5, y: .5 }); setSelected(null); setSelectedActor(null); setShowResidents(false); resetLook(); }
+  function resetLook() {
+    viewport.current?.style.removeProperty("--rv-look-x");
+    viewport.current?.style.removeProperty("--rv-look-y");
+  }
   function pointerMetrics() {
     const points = [...pointers.current.values()];
     if (!points.length) return null;
@@ -144,6 +153,13 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
     event.currentTarget.setPointerCapture(event.pointerId); setDragging(true); startGesture();
   }
   function pointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (perspective && pointers.current.size < 2 && !(event.target as HTMLElement).closest("button")) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = clamp(2 * (event.clientX - rect.left) / rect.width - 1, -1, 1);
+      const y = clamp(2 * (event.clientY - rect.top) / rect.height - 1, -1, 1);
+      event.currentTarget.style.setProperty("--rv-look-x", String(x));
+      event.currentTarget.style.setProperty("--rv-look-y", String(y));
+    }
     if (!pointers.current.has(event.pointerId) || !gesture.current) return;
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     const metrics = pointerMetrics()!; const initial = gesture.current;
@@ -157,7 +173,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
     const nextY = py - (py - startY) * nextZoom / initial.camera.zoom + metrics.y - initial.y;
     setCamera({ zoom: nextZoom, x: (size.width / 2 - clamp(nextX, size.width - w, 0)) / w, y: (size.height / 2 - clamp(nextY, size.height - h, 0)) / h });
   }
-  function pointerEnd(event: ReactPointerEvent<HTMLDivElement>) { pointers.current.delete(event.pointerId); setDragging(pointers.current.size > 0); startGesture(); }
+  function pointerEnd(event: ReactPointerEvent<HTMLDivElement>) { pointers.current.delete(event.pointerId); setDragging(pointers.current.size > 0); if (!pointers.current.size) resetLook(); startGesture(); }
   async function toggleSound() {
     if (sound) { setSound(false); return; }
     try {
@@ -180,15 +196,22 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
       }}>
       <div ref={viewport} className="rv-viewport" tabIndex={0} aria-label="Décor de Rotas. Flèches pour déplacer la vue, plus et moins pour zoomer, touche Origine pour recentrer."
         onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerEnd}
+        onPointerLeave={() => { if (!pointers.current.size) resetLook(); }}
         onKeyDown={event => {
           if (event.target !== event.currentTarget) return;
           const moves: Record<string, [number, number]> = { ArrowLeft: [-.06, 0], ArrowRight: [.06, 0], ArrowUp: [0, -.06], ArrowDown: [0, .06] };
           if (moves[event.key]) { event.preventDefault(); const [x,y] = moves[event.key]; setCamera(c => ({ ...c, x: clamp(c.x + x, 0, 1), y: clamp(c.y + y, 0, 1) })); }
           if (["+", "=", "-", "Home"].includes(event.key)) { event.preventDefault(); if (event.key === "Home") reset(); else zoom(event.key === "-" ? -.25 : .25); }
         }}>
-        <div className="rv-canvas" style={{ width, height, transform: `translate3d(${offsetX}px, ${offsetY}px, 0)` }}>
+        {size.width > 1 && size.height > 1 && <div className={`rv-canvas ${perspective ? "rv-canvas--perspective" : ""}`}
+          style={{ width, height, "--rv-camera-x": `${offsetX}px`, "--rv-camera-y": `${offsetY}px` } as CSSProperties}>
           <img key={sceneId} src={`${import.meta.env.BASE_URL}assets/rotas/${sceneId}.webp`} alt={scene.subtitle} className="rv-scene" draggable={false}
             onLoad={() => setImageLoading(false)} onError={() => { setImageError(true); setImageLoading(false); }} />
+          {sceneId === "square" && <>
+            <img src={`${import.meta.env.BASE_URL}assets/rotas/square-depth.webp`} alt="" draggable={false}
+              className="rv-scene rv-depth-plate" hidden={!perspective} onLoad={() => setDepthReady(true)} onError={() => setDepthReady(false)} />
+            {perspective && <img src={`${import.meta.env.BASE_URL}assets/rotas/square.webp`} alt="" draggable={false} className="rv-scene rv-near" />}
+          </>}
           <div className="rv-sunlight" aria-hidden="true" />
           {sceneId === "square" && <div className="rv-water" style={{ left: "51%", top: "61%" }} aria-hidden="true"><i /><i /><i /></div>}
           {scene.stops.map((stop) => <button key={stop.id} tabIndex={-1} type="button" className={`rv-hotspot ${selected?.id === stop.id ? "is-selected" : ""}`}
@@ -201,13 +224,17 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
               style={{ left: `${pos.x + Math.floor(i / RESIDENT_POSITIONS.length) * 2}%`, top: `${pos.y}%`, "--resident-color": person.color } as CSSProperties}
               onClick={() => { setSelectedActor(person.actor); setSelected(null); setShowResidents(true); }}><span /><strong>{person.name}</strong></button>;
           })}
-        </div>
+        </div>}
       </div>
       <div className="rv-vignette" aria-hidden="true" />
       <header className="rv-header">
         <button ref={back} type="button" onClick={onBack} className="rv-back">← HoloMap</button>
         <div><span className="rv-eyebrow">BLACKLACE · PROMENADE</span><h1 id="rotas-visit-title">{scene.title}</h1></div>
-        <div className="rv-atmosphere"><button type="button" aria-pressed={night} onClick={() => setNight(!night)}>{night ? "☀ Jour" : "☾ Soir"}</button><button type="button" aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? "Son activé" : "Activer le son"}</button></div>
+        <div className="rv-atmosphere">
+          {sceneId === "square" && depthReady && <button type="button" aria-pressed={depth} onClick={() => { resetLook(); setDepth(!depth); }}>Profondeur</button>}
+          <button type="button" aria-pressed={night} onClick={() => setNight(!night)}>{night ? "☀ Jour" : "☾ Soir"}</button>
+          <button type="button" aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? "Son activé" : "Activer le son"}</button>
+        </div>
       </header>
       {(imageLoading || imageError) && <p className="rv-image-status" role="status">{imageError ? "Le décor n’a pas pu être chargé. Les étapes restent accessibles ci-dessous." : "Ouverture du passage…"}</p>}
       <div className="rv-camera" aria-label="Commandes de la vue"><button type="button" aria-label="Zoom avant" disabled={camera.zoom >= 2.5} onClick={() => zoom(.25)}>+</button><output aria-label="Niveau de zoom">{Math.round(camera.zoom * 100)} %</output><button type="button" aria-label="Zoom arrière" disabled={camera.zoom <= 1} onClick={() => zoom(-.25)}>−</button><button type="button" aria-label="Recentrer la vue" onClick={reset}>⌖</button></div>

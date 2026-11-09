@@ -29,6 +29,8 @@ export const appLinks = {
   spectrl: "https://benoitlub.github.io/SpecTRL/",
 };
 
+export const feuchInstitutePath = `${import.meta.env.BASE_URL}feuch-institute/`;
+
 export const zones: Record<ZoneKey, Zone> = {
   port: {
     kicker: "Accès // Porsa Rotas",

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BackgroundLayers } from "@/blacklace/Layers";
+import { feuchInstitutePath } from "@/blacklace/data";
 import RotasPlaza from "@/components/world/RotasPlaza";
 import "@/styles/rotas.css";
 import { ISLAND_LOCATIONS, ISLAND_LOCATION_BY_ID, islandRoute, type RoutePoint } from "@/blacklace/island-geography";
@@ -448,6 +449,7 @@ const BlacklaceMap = () => {
               <span className="section-kicker">ZONE</span>
               <h3>{activeZone.label}</h3>
               <span className={`bl-zone-status bl-zone-status--${activeZone.status.replace(/\s+/g, "-")}`}>{activeZone.status}</span>
+              {activeZone.id === "institute" && <a className="bl-pill" href={feuchInstitutePath}>Entrer dans le hall</a>}
               <button className="bl-pill" onClick={() => setActive(null)}>FERMER</button>
             </div>
           )}

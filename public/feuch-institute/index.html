@@ -42,6 +42,7 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
 .sigil-light { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 16% 4% at 50.5% 86.4%, #ffe2a871, #ffba482c 56%, transparent 100%); animation:sigil-breath 8s ease-in-out infinite alternate; }
 @keyframes sigil-breath { from { opacity:.1; } to { opacity:.62; } }
 .brand a { color:inherit; font-size:.72rem; text-decoration-color:#d7b77888; text-underline-offset:2px; }
+.brand-links { display:flex; gap:10px; }
 @keyframes onde { to { opacity:.27; } }
 @keyframes derive { from { translate:-.6cqw .25cqw; } to { translate:.6cqw -.25cqw; } }
 .controls { position:absolute; z-index:5; inset:auto 10px 10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px 12px; padding:6px 10px; }
@@ -67,7 +68,7 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
 <main>
 <div class="frame">
 <header class="glass">
-  <div class="brand"><small>Blacklace Island</small><strong>Feuch Institute</strong><a href="../">Retour à l’île</a></div>
+  <div class="brand"><small>Blacklace Island</small><strong>Feuch Institute</strong><div class="brand-links"><a href="../">Accueil</a><a href="../map">HoloMap</a></div></div>
   <nav aria-label="Salles du Feuch Institute">
     <button type="button" data-room="hall" aria-pressed="true">Hall</button>
     <button type="button" data-room="room" aria-pressed="false">Feuch Room</button>
