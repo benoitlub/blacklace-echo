@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BackgroundLayers } from "@/blacklace/Layers";
 import { feuchInstitutePath } from "@/blacklace/data";
 import RotasPlaza from "@/components/world/RotasPlaza";
+import PortArrival from "@/components/world/PortArrival";
 import "@/styles/rotas.css";
 import "@/styles/holomap-glass.css";
 import { ISLAND_LOCATIONS, ISLAND_LOCATION_BY_ID, islandRoute, type RoutePoint } from "@/blacklace/island-geography";
@@ -45,6 +46,8 @@ const BlacklaceMap = () => {
   const [imgOk, setImgOk] = useState(true);
   const [active, setActive] = useState<string | null>(null);
   const [view, setView] = useState<MapView>("map");
+  const [presentation, setPresentation] = useState<"port" | "plan">("port");
+  const [portNight, setPortNight] = useState(false);
   const [weather, setWeather] = useState<Weather>("clear");
   const [time, setTime] = useState<Time>("day");
   const [worldSignals, setWorldSignals] = useState<ReturnType<typeof parsePublicSignals>>([]);
@@ -60,7 +63,7 @@ const BlacklaceMap = () => {
   useEffect(() => {
     const stage = stageRef.current;
     const scene = sceneRef.current;
-    if (!stage || !scene) return;
+    if (!stage || !scene || presentation !== "plan" || view !== "map") return;
     let rx = -16;
     let ry = 0;
     let trx = -16;
@@ -96,7 +99,7 @@ const BlacklaceMap = () => {
       stage.removeEventListener("mouseleave", onLeave);
       cancelAnimationFrame(raf);
     };
-  }, [view]);
+  }, [view, presentation]);
 
   useEffect(() => {
     const endpoint = import.meta.env.VITE_SHERLOCK_PUBLIC_FEED_URL;
@@ -274,6 +277,8 @@ const BlacklaceMap = () => {
         <header className="map-topbar">
           <div className="holomap-brand"><span>Blacklace Island</span><h1>HoloMap</h1></div>
           <nav aria-label="Navigation Blacklace">
+            <button className="bl-pill" type="button" aria-pressed={presentation === "port"} onClick={() => setPresentation("port")}>Arrivée</button>
+            <button className="bl-pill" type="button" aria-pressed={presentation === "plan"} aria-controls="holomap-plan" onClick={() => setPresentation("plan")}>Plan de l’île</button>
             <Link className="bl-pill" to="/atlas">Lieux & habitants</Link>
             <Link className="bl-pill" to="/">Retour live</Link>
           </nav>
@@ -287,7 +292,22 @@ const BlacklaceMap = () => {
               {HOTSPOTS.map(place => <option key={place.id} value={place.id}>{place.label}</option>)}
             </select>
           </div>
-          <div className={`island3d-stage time-${time} weather-${weather}`} ref={stageRef}>
+          {presentation === "port" && view !== "rotas" && <PortArrival
+            active={active}
+            selectedActor={selectedActor}
+            night={portNight}
+            onNight={() => setPortNight(value => !value)}
+            onPlace={enterZone}
+            onActor={actor => { setActive(null); setSelectedActor(current => current === actor ? null : actor); }}
+            signals={worldSignals.flatMap(signal => isPlaceId(signal.place) && signal.intensity > 0
+              ? [{ place: signal.place, trace: signal.observable ? signal.trace : `Anomalie · ${signal.intensity}` }] : [])}
+            visitors={presenceLayout.map(({ presence, offsetX, offsetY }) => ({
+              id: presence.actor, name: ACTOR_NAMES[presence.actor] ?? presence.actor,
+              color: ACTOR_COLORS[presence.actor] ?? "#fff", place: presence.place,
+              travelPoint: presence.travelPoint, moving: presence.moving, offsetX, offsetY,
+            }))}
+          />}
+          <div id="holomap-plan" className={`island3d-stage time-${time} weather-${weather}`} ref={stageRef} hidden={presentation !== "plan"}>
             <div className="holowall" aria-hidden>
               {tiles.map((_, i) => (
                 <div key={i} className={`holowall-tile tile-${i % 6}`} style={{ animationDelay: `${(i * 0.37) % 4}s` }}>
