@@ -6,12 +6,12 @@ import { parsePublicFeed, describeWorldEntry, type PublicWorldEntry } from "@/bl
 type Msg = { role: "user" | "aloisia"; content: string };
 const STORAGE_KEY = "blacklace_aloisia_private_chat_v1";
 const AMBIENCE_KEY = "blacklace_aloisia_ambience_v1";
-type Ambience = { night: boolean; unstable: boolean };
+type Ambience = { phase: "phase-signal" | "phase-feuch" | "phase-reboot" | "phase-sator"; night: boolean; unstable: boolean };
 const AMBIENCE_PRESETS: { label: string; value: Ambience }[] = [
-  { label: "Jour paisible", value: { night: false, unstable: false } },
-  { label: "Nuit paisible", value: { night: true, unstable: false } },
-  { label: "Jour troublé", value: { night: false, unstable: true } },
-  { label: "Nuit troublée", value: { night: true, unstable: true } },
+  { label: "SIGNAL", value: { phase: "phase-signal", night: false, unstable: false } },
+  { label: "FEUCH", value: { phase: "phase-feuch", night: false, unstable: true } },
+  { label: "REBOOT", value: { phase: "phase-reboot", night: true, unstable: true } },
+  { label: "SATOR", value: { phase: "phase-sator", night: true, unstable: false } },
 ];
 
 const intro: Msg = {
@@ -67,9 +67,9 @@ const Aloisia = () => {
   const [ambience, setAmbience] = useState<Ambience>(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(AMBIENCE_KEY) || "null");
-      if (typeof stored?.night === "boolean" && typeof stored?.unstable === "boolean") return stored;
+      if (AMBIENCE_PRESETS.some(preset => preset.value.phase === stored?.phase)) return AMBIENCE_PRESETS.find(preset => preset.value.phase === stored.phase)!.value;
     } catch { /* storage unavailable */ }
-    return { night: false, unstable: false };
+    return AMBIENCE_PRESETS[0].value;
   });
   function commandAmbience(value: Ambience) {
     setAmbience(value);
@@ -162,11 +162,11 @@ const Aloisia = () => {
             </div>
             <div className="aloisia-note" aria-label="Ambiance de l'Institut">
               <strong>Ambiance du Feuch Institute</strong>
-              <p>Commande locale partagée avec l'Institut sur ce navigateur.</p>
+              <p>Phases communes à la home et à l'Institut, sur ce navigateur.</p>
               <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10}}>
                 {AMBIENCE_PRESETS.map(preset => (
                   <button key={preset.label} type="button" className="bl-pill"
-                    aria-pressed={ambience.night === preset.value.night && ambience.unstable === preset.value.unstable}
+                    aria-pressed={ambience.phase === preset.value.phase}
                     onClick={() => commandAmbience(preset.value)}>
                     {preset.label}
                   </button>
