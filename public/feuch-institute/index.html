@@ -91,6 +91,19 @@ header.glass{position:absolute;z-index:20;inset:max(10px,env(safe-area-inset-top
  header.glass{max-height:29dvh;overflow:auto}
  .room-content{max-height:38dvh;bottom:62px}
 }
+
+/* Spatial links are part of the hall, not a separate navigation page. */
+.hall-portals{position:absolute;inset:0;z-index:7;pointer-events:none;perspective:900px}
+.hall-portals .portal{position:absolute;pointer-events:auto;display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;border:1px solid #ffdda27d;border-radius:9px;background:linear-gradient(125deg,#081a21c9,#21323b91);box-shadow:0 5px 22px #0008,0 0 20px #e6b86c30;color:#ffecc5;font:600 clamp(11px,1.3vw,17px) Georgia,serif;letter-spacing:.045em;text-shadow:0 2px 6px #000;backdrop-filter:blur(5px);transform:translate(calc(var(--x)*var(--shift,1)*1.7vw),calc(var(--y)*var(--shift,1)*1vw)) perspective(900px) rotateY(calc(var(--x)*-5deg));transition:background .2s,border-color .2s,box-shadow .2s}
+.hall-portals .portal:hover,.hall-portals .portal:focus-visible{background:#2d4c56eb;border-color:#ffe4a2;box-shadow:0 0 26px #e6b86c88}
+.portal-books{left:5%;top:28%;--shift:1.4}
+.portal-terra{left:27%;top:21%;--shift:.8}
+.portal-lab{right:5%;top:28%;--shift:1.4}
+.portal-spectrl{right:27%;top:21%;--shift:.8}
+.portal-games{left:8%;top:61%;--shift:1.8}
+.portal-ai{right:8%;top:61%;--shift:1.8}
+.portal-bazar{left:50%;top:69%;--shift:1.2;translate:-50% 0}
+@media(max-width:850px){.hall-portals .portal{font-size:clamp(10px,2.5vw,14px);padding:6px 8px;max-width:30%;line-height:1.1}.portal-books{left:3%;top:35%}.portal-terra{left:29%;top:29%}.portal-lab{right:3%;top:35%}.portal-spectrl{right:29%;top:29%}.portal-games{left:3%;top:60%}.portal-ai{right:3%;top:60%}.portal-bazar{top:72%}}
 </style>
 </head>
 <body>
@@ -123,6 +136,15 @@ header.glass{position:absolute;z-index:20;inset:max(10px,env(safe-area-inset-top
       <div class="title"><p>Blacklace Island</p><h1>Feuch Institute</h1></div>
       <img class="furniture" src="assets/hall-mobilier-jour.webp" alt="">
       <img class="furniture" src="assets/hall-mobilier-nuit.webp" alt="" loading="lazy" data-night="true" hidden>
+      <nav class="hall-portals" aria-label="Explorer les salles depuis le hall">
+        <button type="button" data-room="livres" class="portal portal-books"><span>Bibliothèque</span></button>
+        <button type="button" data-room="terra" class="portal portal-terra"><span>TERRA</span></button>
+        <button type="button" data-room="feuch-lab" class="portal portal-lab"><span>Feuch Room</span></button>
+        <button type="button" data-room="spectrl" class="portal portal-spectrl"><span>SpecTRL</span></button>
+        <button type="button" data-room="jeux" class="portal portal-games"><span>Galerie des jeux</span></button>
+        <button type="button" data-room="ia" class="portal portal-ai"><span>Chambre des IA</span></button>
+        <button type="button" data-room="bazar" class="portal portal-bazar"><span>Bazar du Feuch</span></button>
+      </nav>
     </article>
     <article class="scene" data-scene="feuch-lab" hidden>
       <img class="backdrop" src="assets/feuch-room-jour.webp" alt="Atelier de prototypes au bord de l’océan">
