@@ -152,7 +152,7 @@ const Aloisia = () => {
         <header className="aloisia-topbar">
           <Link className="bl-brand" to="/"><span className="bl-brand-eye">◉</span><span>ALOISIA CORE</span></Link>
           <div style={{ display: "flex", gap: 10 }}>
-            <Link className="bl-pill" to="/">LIVE ACCESS</Link>
+            <a className="bl-pill" href={`${import.meta.env.BASE_URL}port/`}>PORT · LIVE ACCESS</a>
             <Link className="bl-pill" to="/map">HOLO MAP</Link>
           </div>
         </header>
