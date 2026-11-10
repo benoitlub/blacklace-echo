@@ -138,6 +138,17 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
   .depth.foreground-plane{transform:translate(calc((var(--px)*-2.4 + var(--hx)*-2.6)*1vw),calc((var(--py)*-1.5 + var(--hy)*-1.7)*1vh)) scale(1.045)}
 }
 @media(prefers-reduced-motion:reduce){.depth.foreground-plane{transform:none!important}}
+/* Transparent PNG parallax is enabled only when all six cutouts exist. */
+#port[data-layered="true"] .landscape,#port[data-layered="true"] .depth:not(.true-plane){display:none}
+.true-plane{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;will-change:transform;transform:translate(calc(var(--px)*var(--mx)*1vw + var(--hx)*var(--mx)*.55vw),calc(var(--py)*var(--my)*1vh + var(--hy)*var(--my)*.55vh));}
+.true-plane[data-layer="0"]{z-index:0;--mx:-.12;--my:-.06}
+.true-plane[data-layer="1"]{z-index:1;--mx:-.3;--my:-.16}
+.true-plane[data-layer="2"]{z-index:2;--mx:-.55;--my:-.3}
+.true-plane[data-layer="3"]{z-index:3;--mx:-.85;--my:-.48}
+.true-plane[data-layer="4"]{z-index:4;--mx:-1.3;--my:-.72}
+.true-plane[data-layer="5"]{z-index:5;--mx:-1.9;--my:-1.1}
+#port[data-layered="true"] .foreground{z-index:6}
+@media(prefers-reduced-motion:reduce){.true-plane{transform:none!important}}
 </style>
 </head>
 <body>
@@ -148,6 +159,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
   <div class="depth mid day" aria-hidden="true"></div><div class="depth mid night" aria-hidden="true"></div>
   <div class="depth near day" aria-hidden="true"></div><div class="depth near night" aria-hidden="true"></div>
   <div class="depth foreground-plane day" aria-hidden="true"></div><div class="depth foreground-plane night" aria-hidden="true"></div>
+  <div id="true-parallax" aria-hidden="true" hidden></div>
   <div class="foreground" aria-hidden="true"></div>
   <div class="fog" aria-hidden="true"></div>
   <nav class="landmarks" aria-label="Explorer les lieux depuis le panorama">
@@ -212,6 +224,18 @@ document.querySelector('#enter').addEventListener('click',begin);
 document.querySelector('#skip').addEventListener('click',skip);
 document.querySelector('#next').addEventListener('click',()=>{if(line<lines.length-1){line++;updateLine()}else setPhase('explore')});
 document.querySelector('#explore').addEventListener('click',()=>setPhase('explore'));
+/* Keep the existing panorama unless every transparent layer loads. */
+(async()=>{
+ const names=['sky','volcano','hills','village','quay','foreground'];
+ const holder=document.querySelector('#true-parallax');
+ try{
+  const imgs=await Promise.all(names.map((name)=>new Promise((resolve,reject)=>{
+   const img=new Image();img.onload=()=>img.naturalWidth>=800&&img.naturalHeight>=400?resolve(img):reject(Error('Layer too small'));img.onerror=reject;img.src=new URL('layers/'+name+'.png',location.href).href;
+  })));
+  imgs.forEach((img,i)=>{img.className='true-plane';img.dataset.layer=String(i);img.alt='';holder.append(img)});
+  holder.hidden=false;root.dataset.layered='true';
+ }catch(e){holder.replaceChildren()}
+})();
 const fullscreenButton=document.querySelector('#fullscreen-toggle');
 function updateFullscreenButton(){
   const enabled=document.fullscreenElement===root;
