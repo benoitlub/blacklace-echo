@@ -43,7 +43,7 @@ export default {
     }
     // Public, shared ambience state; D1 is the sole source of truth.
     if (url.pathname === "/api/aloisia/ambience") {
-      const allowedOrigin = env.SHERLOCK_PUBLIC_ORIGIN;
+      const allowedOrigin = env.SHERLOCK_PUBLIC_ORIGIN || "https://benoitlub.github.io";
       const origin = request.headers.get("origin");
       const cors = allowedOrigin && origin === allowedOrigin
         ? { "access-control-allow-origin": allowedOrigin, "vary": "Origin" }
