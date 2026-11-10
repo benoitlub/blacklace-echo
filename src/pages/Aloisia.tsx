@@ -5,7 +5,7 @@ import { parsePublicFeed, describeWorldEntry, type PublicWorldEntry } from "@/bl
 
 type Msg = { role: "user" | "aloisia"; content: string };
 const STORAGE_KEY = "blacklace_aloisia_private_chat_v1";
-const AMBIENCE_KEY = "blacklace_aloisia_ambience_v1";
+const AMBIENCE_ENDPOINT = "https://blacklace-sherlock.benoitlubert.workers.dev/api/aloisia/ambience";
 type Ambience = { phase: "phase-signal" | "phase-feuch" | "phase-reboot" | "phase-sator"; night: boolean; unstable: boolean };
 const AMBIENCE_PRESETS: { label: string; value: Ambience }[] = [
   { label: "SIGNAL", value: { phase: "phase-signal", night: false, unstable: false } },
@@ -64,17 +64,22 @@ const Aloisia = () => {
       return saved.length ? saved : [intro];
     } catch { return [intro]; }
   });
-  const [ambience, setAmbience] = useState<Ambience>(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(AMBIENCE_KEY) || "null");
-      if (AMBIENCE_PRESETS.some(preset => preset.value.phase === stored?.phase)) return AMBIENCE_PRESETS.find(preset => preset.value.phase === stored.phase)!.value;
-    } catch { /* storage unavailable */ }
-    return AMBIENCE_PRESETS[0].value;
-  });
-  function commandAmbience(value: Ambience) {
-    setAmbience(value);
-    try { localStorage.setItem(AMBIENCE_KEY, JSON.stringify(value)); } catch { /* local controls remain functional */ }
-  }
+  const [ambience, setAmbience] = useState<Ambience | null>(null);
+  useEffect(() => {
+    let active = true;
+    const sync = async () => {
+      try {
+        const response = await fetch(AMBIENCE_ENDPOINT, { cache: "no-store" });
+        if (!response.ok) return;
+        const value = await response.json();
+        const preset = AMBIENCE_PRESETS.find(preset => preset.value.phase === value?.phase);
+        if (active && preset) setAmbience(preset.value);
+      } catch { /* no fabricated ambience when server is unreachable */ }
+    };
+    void sync();
+    const interval = window.setInterval(() => void sync(), 10000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, []);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [worldEntries, setWorldEntries] = useState<PublicWorldEntry[]>([]);
@@ -162,12 +167,12 @@ const Aloisia = () => {
             </div>
             <div className="aloisia-note" aria-label="Ambiance de l'Institut">
               <strong>Ambiance du Feuch Institute</strong>
-              <p>Phases communes à la home et à l'Institut, sur ce navigateur.</p>
+              <p>État partagé depuis Cloudflare D1. Commandes réservées au service authentifié.</p>
               <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10}}>
                 {AMBIENCE_PRESETS.map(preset => (
                   <button key={preset.label} type="button" className="bl-pill"
-                    aria-pressed={ambience.phase === preset.value.phase}
-                    onClick={() => commandAmbience(preset.value)}>
+                    aria-pressed={ambience?.phase === preset.value.phase}
+                    disabled title="Commande serveur authentifiée non encore reliée à Aloisia">
                     {preset.label}
                   </button>
                 ))}
