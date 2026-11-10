@@ -131,6 +131,13 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 #port[data-phase="transition"] .travel-title{opacity:1;transform:scale(1.35)}
 .travel-note{position:absolute;bottom:14%;font-size:.85rem;color:#f5e5c7}
 @media(max-width:650px){.landmark{padding:8px;min-width:78px;min-height:44px}.landmark small{font-size:.58rem}.landmark[data-place="rotas"]{--x:20%;--y:43%}.landmark[data-place="institute"]{--x:54%;--y:32%}.landmark[data-place="max"]{--x:78%;--y:52%}.landmark[data-place="sator"]{--x:77%;--y:19%}.travel-title{font-size:clamp(2.1rem,10vw,5rem)}}
+/* Six independently moving depth bands, retaining the current artwork until true
+   transparent cut-outs are available. Do not mistake these bands for PNG mattes. */
+.depth.foreground-plane{z-index:4;clip-path:polygon(0 89%,100% 89%,100% 100%,0 100%);transform:translate(calc((var(--px)*-2.4 + var(--hx)*-2.6)*1vw),calc((var(--py)*-1.5 + var(--hy)*-1.7)*1vh)) scale(1.15)}
+@media (min-aspect-ratio:16/10){
+  .depth.foreground-plane{transform:translate(calc((var(--px)*-2.4 + var(--hx)*-2.6)*1vw),calc((var(--py)*-1.5 + var(--hy)*-1.7)*1vh)) scale(1.045)}
+}
+@media(prefers-reduced-motion:reduce){.depth.foreground-plane{transform:none!important}}
 </style>
 </head>
 <body>
@@ -140,6 +147,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
   <div class="depth far day" aria-hidden="true"></div><div class="depth far night" aria-hidden="true"></div>
   <div class="depth mid day" aria-hidden="true"></div><div class="depth mid night" aria-hidden="true"></div>
   <div class="depth near day" aria-hidden="true"></div><div class="depth near night" aria-hidden="true"></div>
+  <div class="depth foreground-plane day" aria-hidden="true"></div><div class="depth foreground-plane night" aria-hidden="true"></div>
   <div class="foreground" aria-hidden="true"></div>
   <div class="fog" aria-hidden="true"></div>
   <nav class="landmarks" aria-label="Explorer les lieux depuis le panorama">
