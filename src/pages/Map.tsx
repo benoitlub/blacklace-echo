@@ -277,7 +277,7 @@ const BlacklaceMap = () => {
           <div className="holomap-brand"><span>Blacklace Island</span><h1>HoloMap</h1></div>
           <nav aria-label="Navigation Blacklace">
             <Link className="bl-pill" to="/atlas">Lieux & habitants</Link>
-            <Link className="bl-pill" to="/">Retour live</Link>
+            <a className="bl-pill" href={`${import.meta.env.BASE_URL}port/`}>Retour au port</a>
           </nav>
         </header>
 

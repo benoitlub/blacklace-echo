@@ -61,7 +61,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
   const [depthReady, setDepthReady] = useState(false);
   const viewport = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLElement>(null);
-  const back = useRef<HTMLButtonElement>(null);
+  const back = useRef<HTMLAnchorElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef<{ camera: Camera; x: number; y: number; distance: number } | null>(null);
   const audio = useRef<AudioContext | null>(null);
@@ -228,7 +228,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
       </div>
       <div className="rv-vignette" aria-hidden="true" />
       <header className="rv-header">
-        <button ref={back} type="button" onClick={onBack} className="rv-back">← HoloMap</button>
+        <a ref={back} href={`${import.meta.env.BASE_URL}port/`} className="rv-back">← Port de Porsa Rotas</a>
         <div><span className="rv-eyebrow">BLACKLACE · PROMENADE</span><h1 id="rotas-visit-title">{scene.title}</h1></div>
         <div className="rv-atmosphere">
           {sceneId === "square" && depthReady && <button type="button" aria-pressed={depth} onClick={() => { resetLook(); setDepth(!depth); }}>Profondeur</button>}
