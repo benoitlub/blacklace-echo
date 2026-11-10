@@ -1,19 +1,32 @@
-# Ressources pour l'arrivée au port
+# Le Seuil — ressources et réalisation
 
-La scène `public/port/index.html` attend les trois fichiers suivants dans `public/port/` :
+L'entrée est désormais compilée par Vite depuis `port/index.html` et
+`src/port/arrival.ts`. Ne pas recréer `public/port/index.html` : il écraserait
+l'entrée compilée. L'URL publiée reste `/blacklace-echo/port/`.
 
-- `port-jour.webp` — panorama diurne fourni par l'auteur
-- `port-nuit.webp` — panorama nocturne fourni par l'auteur, même géographie
-- `marie-jeanne.webp` — portrait extrait du concept validé, à remplacer si un portrait définitif est retenu
+Ressources vérifiées et conservées :
+- `public/port/port-jour.webp` : panorama auteur 1536 × 864.
+- `public/port/port-nuit.webp` : panorama auteur 1536 × 864, même géographie.
+- `public/port/marie-jeanne.webp` : portrait indépendant avec transparence.
+- `public/port/title-font.json` : Helvetiker Bold depuis Three.js ; licence
+  MAGENTA incluse dans les métadonnées du fichier.
 
-Les fichiers optimisés ont été préparés dans la conversation ChatGPT sous forme d'archive ZIP à décompresser puis à importer **individuellement** dans le dossier public/port via GitHub > Add file > Upload files.
+Le titre utilise TextGeometry et des matériaux de face/tranche. La caméra
+traverse son plan, de z=20 à z=-4, en 6,7 s, puis la révélation dure 1,3 s.
+Les images restent des plans 2,5D dérivés du même panorama, avec masques
+progressifs ; ce ne sont pas des bâtiments reconstruits ou des calques détourés.
+Le mode sans WebGL ou avec mouvement réduit ouvre directement le dialogue.
 
-Ne pas mettre le ZIP tel quel dans le dossier : GitHub Pages ne le décompresse pas.
+Les trois répliques viennent de `src/sherlock/arrival.ts`. Les lieux, le portail
+plein écran, Rotas, les salles Feuch, HoloMap et les conversations vérifiées
+existantes sont conservés. Les étiquettes de présence utilisent le flux public
+Sherlock configuré par `VITE_SHERLOCK_PUBLIC_FEED_URL`, sans simulation locale.
+Sans flux, aucune présence n'est inventée. Les déplacements détaillés restent
+rendus dans Rotas et HoloMap par leurs composants existants.
 
-## État technique
-- Implémenté : scène autonome /port/, décor plein écran, bascule jour/nuit, perspective souris/tactile, titre en volume CSS avec traversée, apparition du dialogue Marie Jeanne, lien Feuch Institute et HoloMap, bouton passer, reduced-motion.
-- Non réalisé : vraie géométrie extrudée Three.js, panorama 2,5D multi-calques, suivi de tête, PNJ Sherlock animés, audio spatialisé.
-- **Ne pas présenter le titre CSS comme un maillage Three.js.**
-- Test manuel mobile et desktop requis après import des ressources.
+Le son est une ambiance de mer synthétisée localement après un clic explicite,
+muette par défaut. Aucun serveur ou abonnement ajouté. Webcam inutilisée ;
+le capteur d'orientation existant reste facultatif et demande une permission
+uniquement après un clic explicite.
 
-Le changement sur l'accueil redirige « Traverser la brume » vers `/port/`. Vérifier le comportement du bouton et les liens du mode exploration.
+Validation et limites : voir `docs/LE-SEUIL-VALIDATION.md`.
