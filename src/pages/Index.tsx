@@ -297,7 +297,7 @@ const Index = () => {
               <a className="bl-cta" href={`${import.meta.env.BASE_URL}port/`}>
                 Traverser la brume
               </a>
-              <Link className="bl-cta ghost" to="/map">Voir l'île</Link>
+              <a className="bl-cta ghost" href={`${import.meta.env.BASE_URL}rotas/`}>Place de Rotas</a>
               <a className="bl-cta ghost" href={feuchInstitutePath}>Feuch Institute</a>
             </div>
           </div>
@@ -353,7 +353,7 @@ const Index = () => {
         </section>
 
         <div className="bl-map-access">
-          <Link className="bl-map-button" to="/map">OUVRIR LA HOLO MAP →</Link>
+          <a className="bl-map-button" href={`${import.meta.env.BASE_URL}port/`}>ENTRER SUR BLACKLACE ISLAND →</a>
         </div>
       </main>
 
