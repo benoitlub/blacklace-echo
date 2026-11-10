@@ -139,7 +139,8 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 }
 @media(prefers-reduced-motion:reduce){.depth.foreground-plane{transform:none!important}}
 /* Transparent PNG parallax is enabled only when all six cutouts exist. */
-#port[data-layered="true"][data-night="false"] .landscape,#port[data-layered="true"][data-night="false"] .depth:not(.true-plane){display:none}\n#port[data-layered="true"][data-night="true"] #true-parallax{display:none}
+#port[data-layered="true"][data-night="false"] .landscape,#port[data-layered="true"][data-night="false"] .depth:not(.true-plane){display:none}
+#port[data-layered="true"][data-night="true"] #true-parallax{display:none}
 .true-plane{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;will-change:transform;transform:translate(calc(var(--px)*var(--mx)*1vw + var(--hx)*var(--mx)*.55vw),calc(var(--py)*var(--my)*1vh + var(--hy)*var(--my)*.55vh));}
 .true-plane[data-layer="0"]{z-index:0;--mx:-.12;--my:-.06}
 .true-plane[data-layer="1"]{z-index:1;--mx:-.3;--my:-.16}
