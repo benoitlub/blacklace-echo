@@ -53,6 +53,17 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 #fullscreen-toggle{min-width:44px}
 #port:fullscreen{height:100%;min-height:100%;width:100%;background:#07131f}
 #port:fullscreen .landscape{inset:-4%}
+/* Pull the camera back on wide landscape screens so the volcano remains in frame.
+   Keep the original portrait composition and all clickable landmarks. */
+@media (min-aspect-ratio: 16/10) {
+  .landscape,.depth{inset:0;background-position:center top;background-repeat:no-repeat;background-size:100% 100%}
+  .landscape.base{transform:translate(calc((var(--px)*-.25 + var(--hx)*-.3)*1vw),calc((var(--py)*-.18 + var(--hy)*-.25)*1vh)) scale(1)}
+  .depth.far{transform:translate(calc((var(--px)*-.6 + var(--hx)*-.65)*1vw),calc((var(--py)*-.45 + var(--hy)*-.5)*1vh)) scale(1.015)}
+  .depth.mid{transform:translate(calc((var(--px)*-1 + var(--hx)*-1.1)*1vw),calc((var(--py)*-.7 + var(--hy)*-.8)*1vh)) scale(1.025)}
+  .depth.near{transform:translate(calc((var(--px)*-1.55 + var(--hx)*-1.7)*1vw),calc((var(--py)*-1.05 + var(--hy)*-1.2)*1vh)) scale(1.035)}
+  #port:fullscreen .landscape{inset:0}
+}
+
 #port{--hx:0;--hy:0}
 .tracking-note{font-size:.69rem;color:#e6d5b4}
 #tracking-toggle[aria-pressed="true"]{border-color:#e6ba67;background:#7c632d88}
