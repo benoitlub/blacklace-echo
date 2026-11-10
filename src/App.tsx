@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,11 @@ import WorldDirectory from "./pages/WorldDirectory.tsx";
 
 const queryClient = new QueryClient();
 
+function IslandEntrance() {
+  useEffect(() => { window.location.replace(`${import.meta.env.BASE_URL}port/`); }, []);
+  return <main style={{ minHeight: "100dvh", display: "grid", placeItems: "center", background: "#07131f", color: "#ffeccc" }}><a href={`${import.meta.env.BASE_URL}port/`}>Entrer sur Blacklace Island →</a></main>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -24,7 +30,8 @@ const App = () => (
         <div className="bl-build-marker">BLACKLACE ISLAND // SHERLOCK WORLD SIGNAL</div>
         <div className="bl-build-footer">MONDE VIVANT // ÉVÉNEMENTS VÉRIFIÉS PAR SHERLOCK</div>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<IslandEntrance />} />
+          <Route path="/control" element={<Index />} />
           <Route path="/map" element={<Map />} />
           <Route path="/aloisia" element={<Aloisia />} />
           <Route path="/atlas" element={<WorldDirectory />} />
