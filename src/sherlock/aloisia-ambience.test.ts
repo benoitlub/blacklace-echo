@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import worker from "./worker";
+import type { SherlockBindings } from "./worker";
 
 const origin = "https://benoitlub.github.io";
 function mockDb() {
@@ -32,21 +33,21 @@ function mockDb() {
 const url = "https://worker.example/api/aloisia/ambience";
 describe("Aloisia shared D1 ambience API", () => {
   it("reads persisted ambience cross-origin from the published site", async () => {
-    const response = await worker.fetch(new Request(url, { headers: { origin } }), { SHERLOCK_DB: mockDb() });
+    const response = await worker.fetch(new Request(url, { headers: { origin } }), { SHERLOCK_DB: mockDb() } as unknown as SherlockBindings);
     expect(response.status).toBe(200);
     expect(response.headers.get("access-control-allow-origin")).toBe(origin);
     expect((await response.json()).phase).toBe("phase-signal");
   });
   it("rejects unauthenticated mutations", async () => {
-    const response = await worker.fetch(new Request(url, { method: "PUT", headers: { origin, "content-type": "application/json" }, body: JSON.stringify({ phase: "phase-sator", source: "aloisia" }) }), { SHERLOCK_DB: mockDb(), SHERLOCK_API_TOKEN: "secret" });
+    const response = await worker.fetch(new Request(url, { method: "PUT", headers: { origin, "content-type": "application/json" }, body: JSON.stringify({ phase: "phase-sator", source: "aloisia" }) }), { SHERLOCK_DB: mockDb(), SHERLOCK_API_TOKEN: "secret" } as unknown as SherlockBindings);
     expect(response.status).toBe(401);
   });
   it("persists authenticated phases and rejects invalid ones", async () => {
     const db = mockDb();
     const env = { SHERLOCK_DB: db, SHERLOCK_API_TOKEN: "secret" };
-    const send = (phase: string) => worker.fetch(new Request(url, { method: "PUT", headers: { authorization: "Bearer secret", "content-type": "application/json", origin }, body: JSON.stringify({ phase, source: "aloisia" }) }), env);
+    const send = (phase: string) => worker.fetch(new Request(url, { method: "PUT", headers: { authorization: "Bearer secret", "content-type": "application/json", origin }, body: JSON.stringify({ phase, source: "aloisia" }) }), env as unknown as SherlockBindings);
     expect((await send("phase-sator")).status).toBe(200);
-    const response = await worker.fetch(new Request(url), env);
+    const response = await worker.fetch(new Request(url), env as unknown as SherlockBindings);
     expect(await response.json()).toMatchObject({ phase: "phase-sator", night: true, unstable: false });
     expect((await send("bogus")).status).toBe(400);
   });
