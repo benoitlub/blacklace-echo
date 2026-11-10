@@ -7,6 +7,7 @@ import { createOctopusHttpExecutor } from "./octopus-http";
 import { loadDialogues, appendDialogue } from "./dialogue-persistence";
 import { encounterMemories } from "./social-memory";
 import { createOctopusDialogueExecutor } from "./octopus-dialogue";
+import { decideAloisiaAmbience } from "./aloisia-decision";
 
 export interface SherlockBindings {
   SHERLOCK_DB?: D1Database;
@@ -40,6 +41,24 @@ export default {
     if (request.method === "GET" && url.pathname === "/health") {
       return json({ service: "sherlock", status: env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS ? "configured" : "unavailable" },
         env.SHERLOCK_DB && env.SHERLOCK_API_TOKEN && env.OCTOPUS ? 200 : 503);
+    }
+    // Authenticated, server-side decision using Sherlock's persisted world state.
+    if (request.method === "POST" && url.pathname === "/api/aloisia/decide") {
+      if (!env.SHERLOCK_API_TOKEN || request.headers.get("authorization") !== `Bearer ${env.SHERLOCK_API_TOKEN}`) return json({ error: "Unauthorized" }, 401);
+      if (!env.SHERLOCK_DB || !env.SHERLOCK_PUBLIC_SESSION_ID || !validId(env.SHERLOCK_PUBLIC_SESSION_ID)) return json({ error: "World session unavailable" }, 503);
+      try {
+        const session = await loadSession(env.SHERLOCK_DB, env.SHERLOCK_PUBLIC_SESSION_ID);
+        if (!session) return json({ error: "World session unavailable" }, 503);
+        const decision = decideAloisiaAmbience(session.state);
+        const presets: Record<string, [number, number]> = {
+          "phase-signal": [0,0], "phase-feuch": [0,1],
+          "phase-reboot": [1,1], "phase-sator": [1,0],
+        };
+        const [night, unstable] = presets[decision.phase];
+        await env.SHERLOCK_DB.prepare("UPDATE aloisia_ambience SET phase=?,night=?,unstable=?,source=?,updated_at=CURRENT_TIMESTAMP WHERE singleton=1")
+          .bind(decision.phase,night,unstable,decision.source).run();
+        return json({ ...decision, night: Boolean(night), unstable: Boolean(unstable) });
+      } catch { return json({ error: "Aloisia decision unavailable" }, 503); }
     }
     // Public, shared ambience state; D1 is the sole source of truth.
     if (url.pathname === "/api/aloisia/ambience") {
