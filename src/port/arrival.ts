@@ -17,6 +17,7 @@ function draw() { if (renderer && ready) renderer.render(scene, camera); }
 function dispose() { cancelAnimationFrame(frame); renderer?.dispose(); renderer = undefined; canvas.hidden = true; }
 function setPhase(next: string) {
   phase = next; root.dataset.phase = next;
+  document.querySelector<HTMLDetailsElement>('.port-tools')!.open = false;
   document.querySelector<HTMLElement>('.landmarks')!.inert = next !== 'explore';
   get('welcome').inert = next !== 'welcome';
   document.querySelector<HTMLElement>('.lowerbar')!.inert = next !== 'explore';
@@ -69,7 +70,7 @@ function parallax(x: number, y: number) {
   if (ready && phase === 'quay') { camera.position.x = x * .25; camera.position.y = -y * .15; draw(); }
 }
 root.onpointerdown = e => {
-  if ((e.target as Element).closest('a,button')) return;
+  if ((e.target as Element).closest('a,button,summary')) return;
   pointer = { x: e.clientX, y: e.clientY, id: e.pointerId }; root.setPointerCapture(e.pointerId);
 };
 root.onpointermove = e => {

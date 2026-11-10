@@ -15,18 +15,18 @@ for(const [name,width,height,reduced] of [['desktop',1440,900,false],['android',
  if(!reduced){assert.equal(await page.locator('#port').getAttribute('data-phase'),'crossing');await page.waitForTimeout(3500);await page.screenshot({path:`artifacts/seuil-${name}-crossing.png`});}
  await page.waitForFunction(()=>document.querySelector('#port').dataset.phase==='welcome',null,{timeout:12000});
  for(let i=0;i<3;i++){
-  for(const selector of ['#next','#explore','#night-toggle']){
+  for(const selector of ['#next','#explore']){
    const box=await page.locator(selector).boundingBox();assert.ok(box&&box.x>=0&&box.y>=0&&box.x+box.width<=width+1&&box.y+box.height<=height+1,`${name} ${selector} on screen`);
   }
   await page.waitForTimeout(750);await page.screenshot({path:`artifacts/seuil-${name}-welcome-${i}.png`});await page.locator('#next').click();
  }
  assert.equal(await page.locator('#port').getAttribute('data-phase'),'explore');
- await page.locator('#night-toggle').click();assert.equal(await page.locator('#port').getAttribute('data-night'),'true');
+ await page.locator('.port-tools summary').click();await page.locator('#night-toggle').click();assert.equal(await page.locator('#port').getAttribute('data-night'),'true');await page.locator('.port-tools summary').click();
  await page.screenshot({path:`artifacts/seuil-${name}-explore.png`});
  await page.locator('[data-place="rotas"]').click();await page.waitForURL('**/map?place=rotas');await page.waitForTimeout(1300);
  await page.locator('.rotas-visit').waitFor();
  await page.waitForFunction(()=>{const img=document.querySelector('.rv-scene');return img?.complete&&img.naturalWidth>0;});
- await page.goto(base);await page.locator('#skip').click();assert.equal(await page.locator('#port').getAttribute('data-phase'),'welcome');await page.locator('#explore').click();
+ await page.goto(base);await page.locator('.port-tools summary').click();await page.locator('#skip').click();assert.equal(await page.locator('#port').getAttribute('data-phase'),'welcome');await page.locator('#explore').click();
  await page.locator('[data-place="institute"]').click();await page.waitForURL('**/feuch-institute/');
  assert.equal(errors.length,0,errors.join('\n'));console.log(`PASS ${name}: crossing, 3 lines, controls, night, skip, Rotas, Institute`);await context.close();
 }

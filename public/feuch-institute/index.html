@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Feuch Institute · Fenêtre sur Blacklace Island</title>
 <link rel="stylesheet" href="../assets/ui/blacklace-glass.css">
 <style>
@@ -104,13 +104,35 @@ header.glass{position:absolute;z-index:20;top:max(10px,env(safe-area-inset-top))
 .portal-ai{right:8%;top:61%;--shift:1.8}
 .portal-bazar{left:50%;top:69%;--shift:1.2;translate:-50% 0}
 @media(max-width:850px){.hall-portals .portal{font-size:clamp(10px,2.5vw,14px);padding:6px 8px;max-width:30%;line-height:1.1}.portal-books{left:3%;top:35%}.portal-terra{left:29%;top:29%}.portal-lab{right:3%;top:35%}.portal-spectrl{right:29%;top:29%}.portal-games{left:3%;top:60%}.portal-ai{right:3%;top:60%}.portal-bazar{top:72%}}
+
+/* Fine brass wayfinding follows the room rather than covering it with cards. */
+header.glass{padding:5px 9px;border-radius:10px;background:#10201c80;box-shadow:none}
+.brand{gap:2px;padding:0}.brand small{font-size:.5rem}.brand strong{font-size:.95rem}.brand-links{gap:0}.brand-links a{font-size:.65rem;min-height:36px;display:flex;align-items:center;padding:0 7px;text-decoration:none}
+.hall-portals .portal,.object-links .object-trigger{background:transparent;border:0;border-radius:0;box-shadow:none;backdrop-filter:none;color:#ffedc3;text-shadow:0 1px 4px #000,0 2px 12px #000,0 0 24px #000;min-height:44px;padding:7px 8px;font:600 clamp(11px,1.2vw,16px)/1.25 Georgia,serif;letter-spacing:.025em;text-decoration:none}
+.hall-portals .portal::after,.object-links .object-trigger::after{content:'';position:absolute;bottom:0;left:25%;width:50%;height:1px;background:linear-gradient(90deg,transparent,#ffdc97,transparent);box-shadow:0 0 9px #ffdc97}
+.hall-portals .portal::before,.object-links .object-trigger::before{content:'◇';margin-right:5px;color:#f7d48b;font-size:11px}
+.hall-portals .portal:hover,.hall-portals .portal:focus-visible,.object-links .object-trigger:hover,.object-links .object-trigger:focus-visible{background:#1a322b50;box-shadow:0 0 18px #e6b86c20;border-color:transparent}
+.object-links{position:absolute;inset:0;z-index:6;pointer-events:none}
+.object-links .object-trigger{position:absolute;left:var(--object-x);top:var(--object-y);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;max-width:150px;width:max-content;pointer-events:auto;text-align:center}
+.object-links strong{font-weight:500}.object-links .object-trigger::after{bottom:2px}
+.institute-tools{position:absolute;z-index:25;bottom:max(10px,env(safe-area-inset-bottom));left:max(10px,env(safe-area-inset-left))}
+.institute-tools summary{list-style:none;min-height:44px;display:flex;align-items:center;padding:7px 12px;border:1px solid #f2ddba40;border-radius:10px;background:#10201c80;cursor:pointer;font-size:.75rem}
+.institute-tools summary::-webkit-details-marker{display:none}
+.institute-tools .controls{position:absolute;inset:auto auto calc(100% + 8px) 0;width:min(320px,calc(100vw - 24px));max-height:60dvh;overflow:auto;display:flex;padding:10px;background:#10201ced;gap:8px}
+.institute-tools button{font-size:.75rem}.institute-tools .depth{font-size:.75rem}.institute-tools .depth input{width:130px}
+#voir-contenus{position:absolute;z-index:25;bottom:max(10px,env(safe-area-inset-bottom));right:max(10px,env(safe-area-inset-right));font-size:.75rem;background:#10201c80}
+#mode{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
+.room-content{bottom:calc(65px + env(safe-area-inset-bottom));max-height:55dvh;background:#10201ce8}
+@media(max-width:850px){header.glass{left:max(8px,env(safe-area-inset-left));padding:5px 8px}.hall-portals .portal{max-width:31%;padding:6px 4px;font-size:12px}.object-links .object-trigger{max-width:115px;font-size:12px;padding:6px 3px}.brand strong{font-size:.9rem}.brand small{display:none}.room-content{bottom:65px;max-height:55dvh}}
+@media(max-height:520px){.brand-links{display:flex}.hall-portals .portal{font-size:11px}.object-links .object-trigger{font-size:11px;max-width:150px}.institute-tools .controls{max-height:65dvh}}
+[data-scene="hall"] .title{width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 </style>
 </head>
 <body>
 <main>
 <div class="frame">
 <header class="glass">
-  <div class="brand"><small>Blacklace Island</small><strong>Feuch Institute</strong><div class="brand-links"><a href="../port/">Port</a><a href="../rotas/">Rotas</a><a href="../map">HoloMap</a></div></div>
+  <div class="brand"><small>Blacklace Island</small><strong>Feuch Institute</strong><div class="brand-links"><a href="#hall">Hall</a><a href="../port/">Port</a><a href="../rotas/">Rotas</a><a href="../map">HoloMap</a></div></div>
 
 </header>
 <section class="stage" data-room="hall" tabindex="0" aria-label="Panorama. Bougez la souris, glissez le doigt ou utilisez les flèches pour regarder autour de vous.">
@@ -172,7 +194,7 @@ header.glass{position:absolute;z-index:20;top:max(10px,env(safe-area-inset-top))
   <img class="foliage" src="assets/feuillage-avant-plan.webp" alt="" aria-hidden="true">
   <div class="anomaly" aria-hidden="true"></div>
 </section>
-<div class="controls glass">
+<details class="institute-tools"><summary>☷ Ambiance</summary><div class="controls glass">
   <nav aria-label="État du décor">
     <button type="button" id="nuit" aria-pressed="false">Nuit</button>
     <button type="button" id="instable" aria-pressed="false">État stable</button>
@@ -182,8 +204,8 @@ header.glass{position:absolute;z-index:20;top:max(10px,env(safe-area-inset-top))
     <button type="button" id="gyro" aria-pressed="false">Incliner le téléphone</button>
     <button type="button" id="centrer" hidden>Recentrer</button>
   </nav>
-  <button type="button" id="voir-contenus" hidden>Contenus de la salle ↓</button>
-</div>
+</div></details>
+<button type="button" id="voir-contenus" hidden aria-expanded="false">À propos de la salle</button>
 </div>
 <p id="mode" role="status">Souris, glissement tactile ou touches fléchées</p>
 <section class="room-content glass" data-room-content="feuch-lab" aria-labelledby="content-feuch-lab" hidden>
@@ -381,12 +403,48 @@ gyro.addEventListener('click', async () => {
 });
 centrer.addEventListener('click', recentrer);
 
+const objectSigns = {
+  'feuch-lab': ['Activer les protocoles', '55%', '53%'],
+  spectrl: ['Tester SpecTRL', '55%', '51%'],
+  terra: ['Découvrir TERRA', '50%', '43%'],
+  livres: ['Ouvrir les livres', '50%', '57%'],
+  jeux: ['Choisir un jeu', '50%', '58%'],
+  ia: ['Explorer les interfaces', '55%', '48%'],
+  bazar: ['Parcourir les curiosités', '50%', '55%'],
+};
+for (const content of contents) {
+  const scene = scenes.find(scene => scene.dataset.scene === content.dataset.roomContent);
+  const sign = objectSigns[content.dataset.roomContent];
+  if (!scene || !sign) continue;
+  const links = document.createElement('nav');
+  links.className = 'object-links';
+  links.setAttribute('aria-label', 'Explorer les objets de la salle');
+  const sources = content.querySelectorAll('.room-links a');
+  const target = sources.length === 1 ? sources[0].cloneNode(true) : document.createElement('button');
+  target.className = 'object-trigger';
+  target.style.setProperty('--object-x', sign[1]);
+  target.style.setProperty('--object-y', sign[2]);
+  target.textContent = sign[0];
+  if (target.tagName === 'BUTTON') {
+    target.type = 'button';
+    target.addEventListener('click', () => {
+      content.hidden = false;
+      voirContenus.setAttribute('aria-expanded', 'true');
+      voirContenus.textContent = 'Fermer le détail';
+    });
+  }
+  links.append(target);
+  scene.append(links);
+}
 function ouvrirSalle() {
   const destination = location.hash.slice(1);
   const room = controls.some(button => button.dataset.room === destination) ? destination : 'hall';
   stage.dataset.room = room;
   for (const scene of scenes) scene.hidden = scene.dataset.scene !== room;
-  for (const content of contents) content.hidden = content.dataset.roomContent !== room;
+  for (const content of contents) content.hidden = true;
+  voirContenus.setAttribute('aria-expanded', 'false');
+  voirContenus.textContent = 'À propos de la salle';
+  document.querySelector('.institute-tools').open = false;
   for (const control of controls) control.setAttribute('aria-pressed', String(control.dataset.room === room));
   voirContenus.hidden = room === 'hall';
   move(0, 0);
@@ -400,11 +458,18 @@ for (const button of controls) {
 window.addEventListener('hashchange', ouvrirSalle);
 ouvrirSalle();
 voirContenus.addEventListener('click', () => {
-  const content = contents.find(section => !section.hidden);
+  const content = contents.find(section => section.dataset.roomContent === stage.dataset.room);
   if (!content) return;
-  content.tabIndex = -1;
-  content.focus({preventScroll:true});
-  content.scrollIntoView({behavior:reduced.matches ? 'auto' : 'smooth'});
+  content.hidden = !content.hidden;
+  voirContenus.setAttribute('aria-expanded', String(!content.hidden));
+  voirContenus.textContent = content.hidden ? 'À propos de la salle' : 'Fermer le détail';
+});
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape') return;
+  contents.forEach(content => content.hidden = true);
+  voirContenus.setAttribute('aria-expanded', 'false');
+  voirContenus.textContent = 'À propos de la salle';
+  document.querySelector('.institute-tools').open = false;
 });
 // Aloisia's shared ambience signal; local visitor controls remain available.
 
@@ -440,7 +505,7 @@ instable.addEventListener('click', () => {
 });
 profondeur.addEventListener('input', () => stage.style.setProperty('--depth', profondeur.valueAsNumber / 100));
 stage.addEventListener('pointerdown', event => {
-  if (event.pointerType === 'mouse' || !event.isPrimary) return;
+  if (event.pointerType === 'mouse' || !event.isPrimary || event.target.closest('a,button')) return;
   contact = { id: event.pointerId, x: event.clientX, y: event.clientY };
   stage.setPointerCapture(event.pointerId);
 });

@@ -62,6 +62,8 @@ immersiveFrame.addEventListener('load',()=>{
   try{
     const inner=immersiveFrame.contentDocument;
     if(!inner)return;
+    // The embedded scenes already expose their own return to the harbour.
+    document.querySelector('#institute-return').hidden=!!inner.querySelector('a[href$="port/"]');
     inner.addEventListener('click',event=>{
       const link=event.target.closest?.('a[href]');
       if(!link || event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target==='_blank')return;

@@ -36,3 +36,24 @@ body.rotas-visiting .bl-build-marker,body.rotas-visiting .bl-build-footer{displa
   .rv-canvas--perspective { transform: translate3d(var(--rv-camera-x, 0px), var(--rv-camera-y, 0px), 0); }
   .rv-near, .rv-depth-plate { display: none; }
 }
+
+/* Small signs and scene anchors leave the promenade in view. */
+.rv-vignette{background:linear-gradient(#0924244a,transparent 16%,transparent 88%,#09242450)}
+.rv-header{top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:auto;padding:0;gap:10px;max-width:calc(100% - 20px);flex-wrap:nowrap;align-items:center}
+.rv-header h1{font-size:clamp(15px,2vw,22px);margin:0;max-width:220px}.rv-header .rv-eyebrow{font-size:8px}
+.rv-back{padding:10px!important;min-height:44px;background:#102e2d80;border-radius:10px;color:#fff5df;text-decoration:none;text-shadow:0 2px 6px #000}
+.rv-tools summary,.rv-paths summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;color:#fff5df;background:#102e2da8;border:1px solid #dfc18c55;border-radius:10px;font:12px system-ui,sans-serif;padding:8px 12px}
+.rv-tools summary::-webkit-details-marker,.rv-paths summary::-webkit-details-marker{display:none}
+.rv-tools{position:relative}.rv-atmosphere{position:absolute;top:calc(100% + 8px);right:0;display:grid;min-width:145px;background:#112e2ded;padding:8px;border-radius:10px;border:1px solid #dfc18c55}
+.rv-camera{right:max(10px,env(safe-area-inset-right));top:auto;bottom:calc(70px + env(safe-area-inset-bottom));gap:0;padding:2px;background:#112e2d75}
+.rv-camera button{min-height:36px!important;min-width:36px!important;font-size:19px}.rv-camera output{font-size:9px}
+.rv-footer{bottom:max(10px,env(safe-area-inset-bottom));left:max(10px,env(safe-area-inset-left));right:auto;display:flex;align-items:center;gap:8px;padding:0;background:none}
+.rv-paths{position:relative}.rv-stops{position:absolute;bottom:calc(100% + 8px);left:0;display:grid;grid-template-columns:1fr 1fr;width:min(310px,calc(100vw - 24px));max-height:60dvh;overflow:auto;background:#112e2def;border:1px solid #dfc18c55;border-radius:12px;padding:8px;margin:0;gap:5px}
+.rv-stops button{font-size:12px;min-height:44px}.rv-people{font:11px system-ui,sans-serif!important;background:#112e2d80!important}
+.rotas-visit .rv-hotspot{border:0!important;background:transparent!important;box-shadow:none;min-width:44px;min-height:44px;width:44px;height:44px;overflow:visible}
+.rv-hotspot>span{display:grid;place-items:center;width:25px;height:25px;margin:auto;border:1px solid #ffe5abbb;border-radius:50%;font-size:17px;background:#143b3680;box-shadow:0 0 14px #ffdda229}
+.rv-hotspot strong{opacity:1;white-space:normal;min-width:76px;max-width:106px;top:90%;font:11px/1.3 Georgia,serif;text-align:center;padding:3px 5px;background:#102e2d66;text-shadow:0 1px 5px #000;border-bottom:1px solid #dfc18c66;border-radius:2px}
+.rv-hotspot:hover>span,.rv-hotspot:focus-visible>span{background:#a27431}.rv-hotspot.is-selected{background:transparent!important}
+.rv-note{bottom:calc(75px + env(safe-area-inset-bottom));left:max(12px,env(safe-area-inset-left));max-height:45dvh}
+@media(max-width:720px){.rv-back{font-size:0!important;width:44px}.rv-back::before{content:'←';font-size:20px}.rv-header h1{font-size:17px;max-width:195px}.rv-atmosphere{top:calc(100% + 8px);right:0}.rv-hotspot strong{font-size:10px}.rv-camera{top:auto}.rv-note{bottom:75px;max-height:42dvh}}
+@media(max-height:520px){.rv-header{padding:0}.rv-tools .rv-atmosphere{position:absolute;display:grid}.rv-note{bottom:65px}.rv-camera{top:auto;bottom:65px}}
