@@ -1,18 +1,21 @@
-# Blacklace Island — six-layer port parallax
+# Port de Blacklace Island — vrais plans de parallaxe
 
-The port now supports six independent transparent PNG planes. It **does not** pretend that the reference contact sheet is six alpha-matted assets. The existing complete day/night panorama stays visible until all six files load successfully.
+Les **sept images découpées existent déjà dans les fichiers de travail** : `/mnt/data/blacklace_port_cinematic_layers/` et `blacklace_port_cinematic_layers.zip`. Elles ne sont pas encore publiées sur GitHub.
 
-Expected paths (each must have a full-canvas, aligned transparent background, identical pixel dimensions, ideally 1920×1080 or higher):
+Dimensions identiques : **1672 × 941**. Les six plans supérieurs sont RGBA ; le fond est RGB.
 
-- `public/port/layers/sky.png` — complete opaque sky and clouds (plane 0)
-- `public/port/layers/volcano.png` — volcano and distant mountains, transparent elsewhere (plane 1)
-- `public/port/layers/hills.png` — hills and distant settlements (plane 2)
-- `public/port/layers/village.png` — Rotas and the Institute (plane 3)
-- `public/port/layers/quay.png` — quay, water, docks, stones (plane 4)
-- `public/port/layers/foreground.png` — flowers, foliage, bird and near props (plane 5)
+Fichiers à déposer sans renommage dans ce répertoire :
 
-**Do not upload the reference contact sheet as a transparent asset.** Its checkerboard and titles are pixels, not true transparency. Each element needs a proper alpha matte and missing backgrounds must be reconstructed behind foreground objects.
+1. `00_background.png` — fond et ciel
+2. `01_mountains.png` — montagnes / volcan
+3. `02_village.png` — bâtiments
+4. `03_quay.png` — quai
+5. `04_foreground.png` — premier plan
+6. `05_left_props.png` — accessoires à gauche
+7. `06_right_flowers.png` — fleurs à droite
 
-Validation before merging assets: inspect all six alpha channels, verify exact alignment with the landmark hotspots, ensure no gaps appear at maximum perspective movement, test portrait and landscape, reduced motion and night mode. The six-layer loader currently reuses the day assets in night mode; separate night color treatment is still required before replacing the existing night panorama in production.
+Le chargeur attend **les sept fichiers**, vérifie leur taille et ne remplace le panorama diurne qu'après chargement complet. Le panorama nocturne existant reste utilisé la nuit.
 
-This is a staging contract, not a claim that final image assets have already been integrated.
+**Attention :** le manifeste des découpes indique des masques polygonaux approximatifs et un fond non reconstitué derrière les objets. Les amplitudes sont donc volontairement faibles. Un nettoyage des masques et des zones occultées sera nécessaire avant de pousser la parallaxe plus loin.
+
+Ne pas fusionner en prétendant que les PNG sont déjà en ligne : leur transfert binaire dans le dépôt reste à faire.
