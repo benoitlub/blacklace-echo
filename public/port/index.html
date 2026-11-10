@@ -15,16 +15,29 @@ a{color:inherit}
 button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3px}
 [hidden]{display:none!important}
 #port{--px:0;--py:0;position:relative;width:100%;height:100dvh;min-height:360px;overflow:hidden;isolation:isolate;background:#112b38}
-.landscape{position:absolute;inset:-4%;background-size:cover;background-position:center center;transform:translate(calc(var(--px)*-1.25vw),calc(var(--py)*-.9vh)) scale(1.07);transition:opacity 1.3s ease;will-change:transform}
+/* Four visual depth zones: distant background, far, middle, near and a foreground overlay.
+   Current image-derived bands are a temporary 2.5D approximation, not segmented assets. */
+.landscape{position:absolute;inset:-4%;background-size:cover;background-position:center center;transition:opacity 1.3s ease;will-change:transform}
+.landscape.base{z-index:0;transform:translate(calc((var(--px)*-.25 + var(--hx)*-.3)*1vw),calc((var(--py)*-.18 + var(--hy)*-.25)*1vh)) scale(1.06)}
+.depth{position:absolute;inset:-4%;pointer-events:none;background-size:cover;background-position:center;will-change:transform;transition:opacity 1.3s ease}
+.depth.far{z-index:1;clip-path:polygon(0 26%,100% 26%,100% 66%,0 66%);transform:translate(calc((var(--px)*-.6 + var(--hx)*-.65)*1vw),calc((var(--py)*-.45 + var(--hy)*-.5)*1vh)) scale(1.08)}
+.depth.mid{z-index:2;clip-path:polygon(0 56%,100% 56%,100% 83%,0 83%);transform:translate(calc((var(--px)*-1 + var(--hx)*-1.1)*1vw),calc((var(--py)*-.7 + var(--hy)*-.8)*1vh)) scale(1.10)}
+.depth.near{z-index:3;clip-path:polygon(0 76%,100% 76%,100% 100%,0 100%);transform:translate(calc((var(--px)*-1.55 + var(--hx)*-1.7)*1vw),calc((var(--py)*-1.05 + var(--hy)*-1.2)*1vh)) scale(1.13)}
+.depth.day{background-image:url("port-jour.webp")}
+.depth.night{background-image:url("port-nuit.webp")}
+#port[data-night="true"] .depth.day{opacity:0}
+#port[data-night="true"] .depth.night{opacity:1}
+.foreground{position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(0deg,#06141e8a,transparent 24%),radial-gradient(ellipse at 50% 106%,#b5d4ce1c,transparent 55%);transform:translate(calc(var(--px)*-2px),calc(var(--py)*-2px))}
+@media(prefers-reduced-motion:reduce){.landscape.base,.depth,.foreground{transform:none!important}}
 .day{background-image:url("port-jour.webp")}
 .night{background-image:url("port-nuit.webp");opacity:0}
 #port[data-night="true"] .day{opacity:0}
 #port[data-night="true"] .night{opacity:1}
-#port:before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,#06141e40 0%,transparent 34%,transparent 57%,#07131cb8 100%)}
-.fog{position:absolute;inset:-15%;z-index:2;pointer-events:none;opacity:.55;background:radial-gradient(ellipse at 42% 67%,#d3e4df73,transparent 45%);filter:blur(28px);animation:fog 11s ease-in-out infinite alternate;transition:opacity 2s ease}
+#port:before{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(180deg,#06141e40 0%,transparent 34%,transparent 57%,#07131cb8 100%)}
+.fog{position:absolute;inset:-15%;z-index:5;pointer-events:none;opacity:.55;background:radial-gradient(ellipse at 42% 67%,#d3e4df73,transparent 45%);filter:blur(28px);animation:fog 11s ease-in-out infinite alternate;transition:opacity 2s ease}
 @keyframes fog{to{transform:translateX(9%);opacity:.26}}
 #port[data-phase="welcome"] .fog,#port[data-phase="explore"] .fog{opacity:.11}
-.window{position:absolute;inset:0;z-index:3;perspective:750px;pointer-events:none}
+.window{position:absolute;inset:0;z-index:6;perspective:750px;pointer-events:none}
 .title-rig{position:absolute;left:50%;top:46%;width:min(94vw,1200px);transform-style:preserve-3d;transform:translate3d(-50%,-50%,0) rotateY(calc(var(--px)*-2deg));transition:transform 7s cubic-bezier(.2,.71,.2,1),opacity 1.7s 5s;filter:drop-shadow(0 15px 30px #0009)}
 #port[data-phase="crossing"] .title-rig{transform:translate3d(-50%,-50%,790px) rotateY(2deg);opacity:0}
 #port[data-phase="welcome"] .title-rig,#port[data-phase="explore"] .title-rig{opacity:0;visibility:hidden}
@@ -37,6 +50,23 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 .actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .pill{border:1px solid #dfc39268;background:#08151f9e;color:#fff0d6;min-height:40px;border-radius:12px;padding:7px 12px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .pill:hover{background:#b18a4645}
+#fullscreen-toggle{min-width:44px}
+#port:fullscreen{height:100%;min-height:100%;width:100%;background:#07131f}
+#port:fullscreen .landscape{inset:-4%}
+/* Pull the camera back on wide landscape screens so the volcano remains in frame.
+   Keep the original portrait composition and all clickable landmarks. */
+@media (min-aspect-ratio: 16/10) {
+  .landscape,.depth{inset:0;background-position:center top;background-repeat:no-repeat;background-size:100% 100%}
+  .landscape.base{transform:translate(calc((var(--px)*-.25 + var(--hx)*-.3)*1vw),calc((var(--py)*-.18 + var(--hy)*-.25)*1vh)) scale(1)}
+  .depth.far{transform:translate(calc((var(--px)*-.6 + var(--hx)*-.65)*1vw),calc((var(--py)*-.45 + var(--hy)*-.5)*1vh)) scale(1.015)}
+  .depth.mid{transform:translate(calc((var(--px)*-1 + var(--hx)*-1.1)*1vw),calc((var(--py)*-.7 + var(--hy)*-.8)*1vh)) scale(1.025)}
+  .depth.near{transform:translate(calc((var(--px)*-1.55 + var(--hx)*-1.7)*1vw),calc((var(--py)*-1.05 + var(--hy)*-1.2)*1vh)) scale(1.035)}
+  #port:fullscreen .landscape{inset:0}
+}
+
+#port{--hx:0;--hy:0}
+.tracking-note{font-size:.69rem;color:#e6d5b4}
+#tracking-toggle[aria-pressed="true"]{border-color:#e6ba67;background:#7c632d88}
 .start{left:50%;bottom:clamp(28px,10vh,120px);transform:translateX(-50%);text-align:center;width:min(94vw,540px);padding:17px}
 .start p{margin:4px 0 12px;color:#f0dcb8}.start button{border:1px solid #e6ba67;background:#a5722c;color:white;border-radius:12px;min-height:48px;padding:10px 22px;font-weight:700}
 #port[data-phase="crossing"] .start,#port[data-phase="welcome"] .start,#port[data-phase="explore"] .start{display:none}
@@ -80,19 +110,58 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
  .landscape{transform:none}.title-rig{transform:translate3d(-50%,-50%,0)}
 }
+
+/* Panorama as the primary spatial navigation: coordinates are provisional until art review. */
+.landmarks{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
+#port[data-phase="explore"] .landmarks{opacity:1;pointer-events:auto}
+.landmark{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%) translate(calc(var(--px)*var(--depth)*-9px),calc(var(--py)*var(--depth)*-6px));border:1px solid #ffe8b67a;border-radius:16px;background:#0718248c;backdrop-filter:blur(9px);color:#fff1d2;padding:10px 14px;min-width:94px;min-height:48px;box-shadow:0 0 22px #f4d17c22;text-align:center;transition:background .3s,box-shadow .3s}
+.landmark:hover,.landmark:focus-visible{background:#213d4de8;box-shadow:0 0 32px #f4d17c77}
+.landmark strong{display:block;font:700 clamp(.75rem,1.5vw,1rem) Georgia,serif;letter-spacing:.08em;text-shadow:0 2px 9px #000}
+.landmark small{display:block;font-size:.65rem;opacity:.85;margin-top:3px}
+.landmark:before{content:"";position:absolute;left:50%;top:100%;height:clamp(16px,4vh,48px);border-left:1px solid #ffe8b68a}
+.landmark:after{content:"";position:absolute;left:calc(50% - 3px);top:calc(100% + clamp(16px,4vh,48px));width:7px;height:7px;border-radius:50%;background:#f6d99b;box-shadow:0 0 14px 4px #e9d39b66}
+.landmark[data-place="rotas"]{--x:22%;--y:45%;--depth:1.5}
+.landmark[data-place="institute"]{--x:51%;--y:35%;--depth:1}
+.landmark[data-place="max"]{--x:77%;--y:55%;--depth:1.9}
+.landmark[data-place="sator"]{--x:67%;--y:23%;--depth:.6}
+#port[data-phase="transition"] .landmarks,#port[data-phase="transition"] .lowerbar{opacity:0;pointer-events:none}
+.travel{position:absolute;inset:0;z-index:12;display:grid;place-items:center;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,#09273320,#06121bf2);transition:opacity .7s}
+#port[data-phase="transition"] .travel{opacity:1}
+.travel-title{font:700 clamp(2.8rem,10vw,9rem) Georgia,serif;color:#f8dda3;text-shadow:0 0 18px #f8d48c88,0 10px 45px #000;transform:translateZ(0) scale(.76);opacity:0;transition:transform 1.8s ease,opacity .7s}
+#port[data-phase="transition"] .travel-title{opacity:1;transform:scale(1.35)}
+.travel-note{position:absolute;bottom:14%;font-size:.85rem;color:#f5e5c7}
+@media(max-width:650px){.landmark{padding:8px;min-width:78px;min-height:44px}.landmark small{font-size:.58rem}.landmark[data-place="rotas"]{--x:20%;--y:43%}.landmark[data-place="institute"]{--x:54%;--y:32%}.landmark[data-place="max"]{--x:78%;--y:52%}.landmark[data-place="sator"]{--x:77%;--y:19%}.travel-title{font-size:clamp(2.1rem,10vw,5rem)}}
 </style>
 </head>
 <body>
 <main id="port" data-phase="quay" data-night="false">
-  <div class="landscape day" role="img" aria-label="Quai de Porsa Rotas, vue diurne du village et de la Fournaise de Feuch"></div>
-  <div class="landscape night" role="img" aria-label="Quai de Porsa Rotas, vue nocturne de l'île"></div>
+  <div class="landscape base day" role="img" aria-label="Quai de Porsa Rotas, vue diurne du village et de la Fournaise de Feuch"></div>
+  <div class="landscape base night" role="img" aria-label="Quai de Porsa Rotas, vue nocturne de l'île"></div>
+  <div class="depth far day" aria-hidden="true"></div><div class="depth far night" aria-hidden="true"></div>
+  <div class="depth mid day" aria-hidden="true"></div><div class="depth mid night" aria-hidden="true"></div>
+  <div class="depth near day" aria-hidden="true"></div><div class="depth near night" aria-hidden="true"></div>
+  <div class="foreground" aria-hidden="true"></div>
   <div class="fog" aria-hidden="true"></div>
+  <nav class="landmarks" aria-label="Explorer les lieux depuis le panorama">
+    <button class="landmark" data-place="rotas" data-title="ROTAS" data-destination="../map?place=rotas" type="button"><strong>ROTAS</strong><small>Entrer dans le village</small></button>
+    <button class="landmark" data-place="institute" data-title="FEUCH INSTITUTE" data-destination="../feuch-institute/" type="button"><strong>FEUCH INSTITUTE</strong><small>Entrer</small></button>
+    <button class="landmark" data-place="max" data-title="MAX LIBERTY" data-destination="../map" type="button"><strong>MAX LIBERTY</strong><small>Bar · aperçu</small></button>
+    <button class="landmark" data-place="sator" data-title="SATOR" data-destination="../map" type="button"><strong>SATOR</strong><small>Forêt · aperçu</small></button>
+  </nav>
+  <section id="institute-portal" hidden aria-label="Lieu immersif" style="position:absolute;inset:0;z-index:80;background:#07131f">
+    <iframe id="institute-frame" title="Lieu immersif" loading="lazy" allow="fullscreen" style="width:100%;height:100%;border:0;display:block"></iframe>
+    <button id="institute-return" type="button" class="pill" style="position:absolute;top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));z-index:2;background:#07131ff0;color:#ffeccc;border:1px solid #ffeccc66;padding:10px 16px">← Retour au port</button>
+  </section>
+  <div class="travel" aria-live="polite" aria-atomic="true"><div class="travel-title" id="travel-title"></div><div class="travel-note">Le paysage vous ouvre le chemin…</div></div>
   <div class="window" aria-hidden="true"><div class="title-rig" id="title-rig"><div class="title-face">BLACKLACE ISLAND</div></div></div>
   <header class="topbar glass">
-    <a href="../" class="brand" aria-label="Accueil Blacklace Echo"><span class="eye">◉</span><span><strong>BLACKLACE ISLAND</strong><small>Porsa Rotas · Le Seuil</small></span></a>
+    <a href="../control" class="brand" aria-label="Centre de contrôle Blacklace Echo"><span class="eye">◉</span><span><strong>BLACKLACE ISLAND</strong><small>Porsa Rotas · Le Seuil</small></span></a>
     <div class="actions">
+      <a href="../control" class="pill explore-only">Live Access</a>
       <a href="../map" class="pill explore-only">HoloMap</a>
       <button id="night-toggle" type="button" class="pill" aria-pressed="false">☾ Nuit</button>
+      <button id="fullscreen-toggle" type="button" class="pill" aria-label="Activer le plein écran" aria-pressed="false" title="Plein écran">⛶</button>
+      <button id="tracking-toggle" type="button" class="pill explore-only" aria-pressed="false" title="Perspective par mouvement de l’appareil">◉ Perspective</button>
       <button id="skip" type="button" class="pill">Passer l'intro</button>
     </div>
   </header>
@@ -110,7 +179,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
     </div>
   </section>
   <footer class="lowerbar" aria-label="Accès aux lieux">
-    <div class="places"><a class="pill" href="../map">⌖ Rotas</a><a class="pill" href="../map">☕ Max Liberty</a><a class="pill" href="../feuch-institute/">◉ Feuch Institute</a><a class="pill" href="../map">◈ HoloMap</a></div>
+    <div class="places"><span class="status glass" style="padding:10px">Touchez un lieu dans le paysage</span><a class="pill" href="../map">◈ Carte secondaire</a></div>
     <div class="settings"><button id="recenter" class="pill" type="button" title="Recentrer la perspective">◎</button><span class="status glass" style="padding:10px">Vue fenêtre · tactile / souris</span></div>
   </footer>
 </main>
@@ -135,14 +204,100 @@ document.querySelector('#enter').addEventListener('click',begin);
 document.querySelector('#skip').addEventListener('click',skip);
 document.querySelector('#next').addEventListener('click',()=>{if(line<lines.length-1){line++;updateLine()}else setPhase('explore')});
 document.querySelector('#explore').addEventListener('click',()=>setPhase('explore'));
+const fullscreenButton=document.querySelector('#fullscreen-toggle');
+function updateFullscreenButton(){
+  const enabled=document.fullscreenElement===root;
+  fullscreenButton.textContent=enabled?'⤢':'⛶';
+  fullscreenButton.setAttribute('aria-pressed',String(enabled));
+  fullscreenButton.setAttribute('aria-label',enabled?'Quitter le plein écran':'Activer le plein écran');
+  fullscreenButton.title=enabled?'Quitter le plein écran':'Plein écran';
+}
+fullscreenButton.addEventListener('click',async()=>{
+  try{
+    if(document.fullscreenElement){await document.exitFullscreen()}
+    else if(root.requestFullscreen){await root.requestFullscreen()}
+    else{fullscreenButton.title='Plein écran non disponible dans ce navigateur';fullscreenButton.setAttribute('aria-label','Plein écran indisponible')}
+  }catch(e){fullscreenButton.title='Plein écran refusé par le navigateur'}
+});
+document.addEventListener('fullscreenchange',updateFullscreenButton);
+const trackingButton=document.querySelector('#tracking-toggle');
+let tracking=false,orientationBase=null;
+function clampUnit(n){return Math.max(-1,Math.min(1,n))}
+function orientationMove(event){
+  if(!tracking||phase==='crossing'||reduced.matches)return;
+  if(!Number.isFinite(event.gamma)||!Number.isFinite(event.beta))return;
+  if(!orientationBase)orientationBase={gamma:event.gamma,beta:event.beta};
+  root.style.setProperty('--hx',String(clampUnit((event.gamma-orientationBase.gamma)/20)));
+  root.style.setProperty('--hy',String(clampUnit((event.beta-orientationBase.beta)/25)));
+}
+trackingButton.addEventListener('click',async()=>{
+  if(tracking){tracking=false;window.removeEventListener('deviceorientation',orientationMove);orientationBase=null;root.style.setProperty('--hx','0');root.style.setProperty('--hy','0');trackingButton.setAttribute('aria-pressed','false');trackingButton.textContent='◉ Perspective';return}
+  if(!('DeviceOrientationEvent' in window)){trackingButton.title='Capteur de mouvement indisponible';return}
+  try{
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      const permission=await DeviceOrientationEvent.requestPermission();
+      if(permission!=='granted')return;
+    }
+    orientationBase=null;tracking=true;
+    window.addEventListener('deviceorientation',orientationMove);
+    trackingButton.setAttribute('aria-pressed','true');
+    trackingButton.textContent='◉ Perspective active';
+  }catch(e){trackingButton.title='Autorisation du capteur refusée'}
+});
 document.querySelector('#night-toggle').addEventListener('click',e=>{let night=root.dataset.night!=='true';root.dataset.night=String(night);e.currentTarget.textContent=night?'☀ Jour':'☾ Nuit';e.currentTarget.setAttribute('aria-pressed',String(night))});
 function setPointer(x,y){if(reduced.matches)return;root.style.setProperty('--px',String(Math.max(-1,Math.min(1,x))));root.style.setProperty('--py',String(Math.max(-1,Math.min(1,y))))}
 root.addEventListener('pointerdown',e=>{if(e.target.closest('button,a'))return;activePointer={x:e.clientX,y:e.clientY,id:e.pointerId}});
 root.addEventListener('pointermove',e=>{if(phase==='crossing')return;if(e.pointerType==='mouse'){setPointer((e.clientX/innerWidth-.5)*2,(e.clientY/innerHeight-.5)*2)}else if(activePointer?.id===e.pointerId){setPointer((activePointer.x-e.clientX)/100,(activePointer.y-e.clientY)/100)}});
 root.addEventListener('pointerup',()=>{activePointer=null});
-document.querySelector('#recenter').addEventListener('click',()=>setPointer(0,0));
+document.querySelectorAll('.landmark').forEach(button=>button.addEventListener('click',()=>{
+  if(phase!=='explore')return;
+  const destination=button.dataset.destination;
+  document.querySelector('#travel-title').textContent=button.dataset.title;
+  if(['institute','rotas'].includes(button.dataset.place) && document.fullscreenElement===root){
+    // Keep the same fullscreen document alive: navigation would end browser fullscreen.
+    const portal=document.querySelector('#institute-portal');
+    const frame=document.querySelector('#institute-frame');
+    frame.title=button.dataset.title;
+    portal.setAttribute('aria-label',button.dataset.title);
+    frame.src=destination;
+    portal.hidden=false;
+    return;
+  }
+  if(reduced.matches){window.location.assign(destination);return}
+  setPhase('transition');
+  setTimeout(()=>window.location.assign(destination),1700);
+}));
+const immersiveFrame=document.querySelector('#institute-frame');
+immersiveFrame.addEventListener('load',()=>{
+  try{
+    const inner=immersiveFrame.contentDocument;
+    if(!inner)return;
+    inner.addEventListener('click',event=>{
+      const link=event.target.closest?.('a[href]');
+      if(!link || event.defaultPrevented || event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target==='_blank')return;
+      const url=new URL(link.href,inner.baseURI);
+      if(url.origin!==location.origin)return;
+      const base=new URL('../',location.href).pathname;
+      const path=url.pathname;
+      if(path===base+'port/' || path===base+'port'){
+        event.preventDefault();
+        document.querySelector('#institute-return').click();
+      }else if(path===base+'rotas/' || path===base+'rotas' || path===base+'feuch-institute/' || path===base+'feuch-institute' || (path===base+'map' && url.searchParams.get('place')==='rotas')){
+        event.preventDefault();
+        immersiveFrame.src=url.href;
+      }
+    },true);
+  }catch(e){/* External destinations retain normal navigation. */}
+});
+document.querySelector('#institute-return').addEventListener('click',()=>{
+  const portal=document.querySelector('#institute-portal');
+  portal.hidden=true;
+  document.querySelector('#institute-frame').removeAttribute('src');
+});
+document.querySelector('#recenter').addEventListener('click',()=>{setPointer(0,0);orientationBase=null;root.style.setProperty('--hx','0');root.style.setProperty('--hy','0')});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(phase==='crossing')skip();else if(phase==='welcome')setPhase('explore')}else if(phase==='welcome'&&e.key==='Enter'&&!e.target.closest('button,a'))document.querySelector('#next').click()});
 document.querySelectorAll('.landscape').forEach(el=>{const bg=getComputedStyle(el).backgroundImage;const match=bg.match(/url\\(["']?([^"')]+)["']?\\)/);if(!match)return;const img=new Image();img.onerror=()=>{if(el.classList.contains(root.dataset.night==='true'?'night':'day'))el.style.background='linear-gradient(150deg,#193f50,#0e1728)'};img.src=match[1]});
 </script>
-</body>
+<section data-live-dialogue-box hidden aria-live="polite" class="glass" style="position:fixed;bottom:80px;left:3%;width:min(850px,94%);display:flex;align-items:center;gap:12px;padding:14px;pointer-events:none;z-index:25" aria-label="Conversation des habitants"><img class="portrait" src="marie-jeanne.webp" alt="Portrait illustratif du port"><div class="speech"><h2 data-live-speaker>HABITANT</h2><small>Conversation vérifiée · Octopus / Sherlock</small><p data-live-dialogue></p></div></section><div data-world-presence="port" hidden></div>
+<script src="../world-feed-config.js" defer></script><script src="../world-presence.js" defer></script></body>
 </html>

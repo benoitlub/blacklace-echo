@@ -73,23 +73,45 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
   .foliage { transform:rotate(-8deg); }
   .stage[data-unstable=true] :is(.backdrop,.furniture,.anomaly,.sigil-light,.core-light) { animation:none; transition:none; }
 }
+
+/* Immersive viewport: preserve the existing scenes, room links and controls. */
+html,body{min-height:100%;height:100%;overflow:hidden}
+main{width:100%;max-width:none;height:100dvh;min-height:320px;margin:0;padding:0;position:relative;overflow:hidden}
+.frame{position:absolute;inset:0;overflow:hidden}
+.stage{width:100%;height:100%;min-height:100%;aspect-ratio:auto;border:0;border-radius:0}
+header.glass{position:absolute;z-index:20;top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:auto;bottom:auto;width:max-content;max-width:calc(100% - 20px);margin:0;padding:6px 12px}
+.controls{bottom:max(10px,env(safe-area-inset-bottom));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right))}
+.room-content{position:absolute;z-index:30;left:50%;bottom:max(72px,calc(env(safe-area-inset-bottom) + 66px));transform:translateX(-50%);width:min(850px,calc(100% - 24px));max-height:min(48dvh,460px);overflow:auto;overscroll-behavior:contain;margin:0;border-radius:16px}
+.room-content[hidden]{display:none!important}
+@media(max-width:850px){
+ header.glass{position:absolute;top:max(8px,env(safe-area-inset-top));left:8px;right:auto;bottom:auto;margin:0;max-height:none;overflow:visible;padding:5px 10px}
+ .room-content{bottom:max(80px,calc(env(safe-area-inset-bottom) + 72px));max-height:42dvh}
+}
+@media(max-height:520px){
+ header.glass{max-height:none;overflow:visible}
+ .room-content{max-height:38dvh;bottom:62px}
+}
+
+/* Spatial links are part of the hall, not a separate navigation page. */
+.hall-portals{position:absolute;inset:0;z-index:7;pointer-events:none;perspective:900px}
+.hall-portals .portal{position:absolute;pointer-events:auto;display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;border:1px solid #ffdda27d;border-radius:9px;background:linear-gradient(125deg,#081a21c9,#21323b91);box-shadow:0 5px 22px #0008,0 0 20px #e6b86c30;color:#ffecc5;font:600 clamp(11px,1.3vw,17px) Georgia,serif;letter-spacing:.045em;text-shadow:0 2px 6px #000;backdrop-filter:blur(5px);transform:translate(calc(var(--x)*var(--shift,1)*1.7vw),calc(var(--y)*var(--shift,1)*1vw)) perspective(900px) rotateY(calc(var(--x)*-5deg));transition:background .2s,border-color .2s,box-shadow .2s}
+.hall-portals .portal:hover,.hall-portals .portal:focus-visible{background:#2d4c56eb;border-color:#ffe4a2;box-shadow:0 0 26px #e6b86c88}
+.portal-books{left:5%;top:28%;--shift:1.4}
+.portal-terra{left:27%;top:21%;--shift:.8}
+.portal-lab{right:5%;top:28%;--shift:1.4}
+.portal-spectrl{right:27%;top:21%;--shift:.8}
+.portal-games{left:8%;top:61%;--shift:1.8}
+.portal-ai{right:8%;top:61%;--shift:1.8}
+.portal-bazar{left:50%;top:69%;--shift:1.2;translate:-50% 0}
+@media(max-width:850px){.hall-portals .portal{font-size:clamp(10px,2.5vw,14px);padding:6px 8px;max-width:30%;line-height:1.1}.portal-books{left:3%;top:35%}.portal-terra{left:29%;top:29%}.portal-lab{right:3%;top:35%}.portal-spectrl{right:29%;top:29%}.portal-games{left:3%;top:60%}.portal-ai{right:3%;top:60%}.portal-bazar{top:72%}}
 </style>
 </head>
 <body>
 <main>
 <div class="frame">
 <header class="glass">
-  <div class="brand"><small>Blacklace Island</small><strong>Feuch Institute</strong><div class="brand-links"><a href="../">Accueil</a><a href="../map">HoloMap</a></div></div>
-  <nav aria-label="Salles du Feuch Institute">
-    <button type="button" data-room="hall" aria-pressed="true">Hall</button>
-    <button type="button" data-room="feuch-lab" aria-pressed="false">Feuch Room</button>
-    <button type="button" data-room="spectrl" aria-pressed="false">SpecTRL</button>
-    <button type="button" data-room="terra" aria-pressed="false">TERRA</button>
-    <button type="button" data-room="livres" aria-pressed="false">Bibliothèque</button>
-    <button type="button" data-room="jeux" aria-pressed="false">Galerie des jeux</button>
-    <button type="button" data-room="ia" aria-pressed="false">Chambre des IA</button>
-    <button type="button" data-room="bazar" aria-pressed="false">Bazar du Feuch</button>
-  </nav>
+  <div class="brand"><small>Blacklace Island</small><strong>Feuch Institute</strong><div class="brand-links"><a href="../port/">Port</a><a href="../rotas/">Rotas</a><a href="../map">HoloMap</a></div></div>
+
 </header>
 <section class="stage" data-room="hall" tabindex="0" aria-label="Panorama. Bougez la souris, glissez le doigt ou utilisez les flèches pour regarder autour de vous.">
   <svg width="0" height="0" aria-hidden="true" style="position:absolute">
@@ -105,6 +127,15 @@ button[aria-pressed=true] { background:#e5b86b42; border-color:#e5b86b88; }
       <div class="title"><p>Blacklace Island</p><h1>Feuch Institute</h1></div>
       <img class="furniture" src="assets/hall-mobilier-jour.webp" alt="">
       <img class="furniture" src="assets/hall-mobilier-nuit.webp" alt="" loading="lazy" data-night="true" hidden>
+      <nav class="hall-portals" aria-label="Explorer les salles depuis le hall">
+        <button type="button" data-room="livres" class="portal portal-books"><span>Bibliothèque</span></button>
+        <button type="button" data-room="terra" class="portal portal-terra"><span>TERRA</span></button>
+        <button type="button" data-room="feuch-lab" class="portal portal-lab"><span>Feuch Room</span></button>
+        <button type="button" data-room="spectrl" class="portal portal-spectrl"><span>SpecTRL</span></button>
+        <button type="button" data-room="jeux" class="portal portal-games"><span>Galerie des jeux</span></button>
+        <button type="button" data-room="ia" class="portal portal-ai"><span>Chambre des IA</span></button>
+        <button type="button" data-room="bazar" class="portal portal-bazar"><span>Bazar du Feuch</span></button>
+      </nav>
     </article>
     <article class="scene" data-scene="feuch-lab" hidden>
       <img class="backdrop" src="assets/feuch-room-jour.webp" alt="Atelier de prototypes au bord de l’océan">
@@ -375,20 +406,37 @@ voirContenus.addEventListener('click', () => {
   content.focus({preventScroll:true});
   content.scrollIntoView({behavior:reduced.matches ? 'auto' : 'smooth'});
 });
-nuit.addEventListener('click', () => {
-  const nocturne = nuit.getAttribute('aria-pressed') !== 'true';
-  nuit.setAttribute('aria-pressed', String(nocturne));
-  nuit.textContent = nocturne ? 'Nuit active' : 'Nuit';
-  stage.dataset.nocturne = String(nocturne);
+// Aloisia's shared ambience signal; local visitor controls remain available.
+
+function setAmbience(night, unstable) {
+  nuit.setAttribute('aria-pressed', String(night));
+  nuit.textContent = night ? 'Nuit active' : 'Nuit';
+  stage.dataset.nocturne = String(night);
   for (const image of stage.querySelectorAll('.backdrop:not(.room-daylight), .furniture')) {
-    image.hidden = image.dataset.night === 'true' ? !nocturne : nocturne;
+    image.hidden = image.dataset.night === 'true' ? !night : night;
   }
+  instable.setAttribute('aria-pressed', String(unstable));
+  instable.textContent = unstable ? 'État instable' : 'État stable';
+  stage.dataset.unstable = String(unstable);
+}
+async function receiveAloisiaAmbience() {
+  try {
+    const response = await fetch('https://blacklace-sherlock.benoitlubert.workers.dev/api/aloisia/ambience', { cache: 'no-store' });
+    if (!response.ok) return;
+    const signal = await response.json();
+    if (['phase-signal','phase-feuch','phase-reboot','phase-sator'].includes(signal.phase) &&
+        typeof signal.night === 'boolean' && typeof signal.unstable === 'boolean') {
+      setAmbience(signal.night, signal.unstable);
+    }
+  } catch { /* keep last displayed ambience while Worker is unavailable */ }
+}
+receiveAloisiaAmbience();
+setInterval(receiveAloisiaAmbience, 10000);
+nuit.addEventListener('click', () => {
+  setAmbience(nuit.getAttribute('aria-pressed') !== 'true', instable.getAttribute('aria-pressed') === 'true');
 });
 instable.addEventListener('click', () => {
-  const perturbation = instable.getAttribute('aria-pressed') !== 'true';
-  instable.setAttribute('aria-pressed', String(perturbation));
-  instable.textContent = perturbation ? 'État instable' : 'État stable';
-  stage.dataset.unstable = String(perturbation);
+  setAmbience(nuit.getAttribute('aria-pressed') === 'true', instable.getAttribute('aria-pressed') !== 'true');
 });
 profondeur.addEventListener('input', () => stage.style.setProperty('--depth', profondeur.valueAsNumber / 100));
 stage.addEventListener('pointerdown', event => {

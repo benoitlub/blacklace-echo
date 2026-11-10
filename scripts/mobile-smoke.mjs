@@ -74,17 +74,11 @@ try {
       await page.keyboard.press('Escape');
       await page.screenshot({path:`qa-output/rotas-evening-${device.name}.png`});
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth + 1),'Horizontal page overflow');
-      await page.getByRole('button',{name:'← HoloMap',exact:true}).click();
-      await page.waitForTimeout(1400);
-      assert.equal(await page.locator('.rotas-visit').count(),0,'Returning must cancel delayed arrival');
-      assert.equal(await page.locator('main.map-page').evaluate(el=>el.inert),false);
-      if(device.name==='mobile') {
-        await page.emulateMedia({reducedMotion:'no-preference'});
-        await page.getByRole('button',{name:'Village de Rotas',exact:true}).click();
-        await page.getByRole('button',{name:'← HoloMap',exact:true}).click();
-        await page.waitForTimeout(1400);
-        assert.equal(await page.locator('.rotas-visit').count(),0,'Early return must cancel the arrival timer');
-      }
+       await page.getByRole('link',{name:'← Port de Porsa Rotas',exact:true}).click();
+       await page.waitForURL('**/blacklace-echo/port/');
+       assert.equal(await page.locator('.rotas-visit').count(),0,'Returning to port must leave the plaza');
+       assert.ok(await page.locator('#port').count()>0,'Port scene must load');
+
       assert.deepEqual(errors,[],'Browser runtime errors');
       console.log(`Rotas ${device.name}: scene navigation, images, zoom, keyboard, residents, return passed`);
     } catch(error) {

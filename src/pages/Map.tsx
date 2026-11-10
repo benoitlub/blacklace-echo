@@ -44,7 +44,7 @@ const ACTOR_COLORS: Record<string, string> = {
 const BlacklaceMap = () => {
   const [imgOk, setImgOk] = useState(true);
   const [active, setActive] = useState<string | null>(null);
-  const [view, setView] = useState<MapView>("map");
+  const [view, setView] = useState<MapView>(() => new URLSearchParams(window.location.search).get("place") === "rotas" ? "rotas" : "map");
   const [weather, setWeather] = useState<Weather>("clear");
   const [time, setTime] = useState<Time>("day");
   const [worldSignals, setWorldSignals] = useState<ReturnType<typeof parsePublicSignals>>([]);
@@ -218,6 +218,7 @@ const BlacklaceMap = () => {
     setSelectedActor(null);
     if (id === "rotas") {
       setActive(null);
+      window.history.replaceState(window.history.state, "", `${window.location.pathname}?place=rotas`);
       setView("zooming-rotas");
       if (arrivalTimer.current) clearTimeout(arrivalTimer.current);
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -230,6 +231,7 @@ const BlacklaceMap = () => {
   function backToMap() {
     if (arrivalTimer.current) clearTimeout(arrivalTimer.current);
     arrivalTimer.current = null;
+    window.history.replaceState(window.history.state, "", window.location.pathname);
     setView("map");
     setActive(null);
   }
@@ -275,7 +277,7 @@ const BlacklaceMap = () => {
           <div className="holomap-brand"><span>Blacklace Island</span><h1>HoloMap</h1></div>
           <nav aria-label="Navigation Blacklace">
             <Link className="bl-pill" to="/atlas">Lieux & habitants</Link>
-            <Link className="bl-pill" to="/">Retour live</Link>
+            <a className="bl-pill" href={`${import.meta.env.BASE_URL}port/`}>Retour au port</a>
           </nav>
         </header>
 

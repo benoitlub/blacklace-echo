@@ -5,6 +5,15 @@ import { parsePublicFeed, describeWorldEntry, type PublicWorldEntry } from "@/bl
 
 type Msg = { role: "user" | "aloisia"; content: string };
 const STORAGE_KEY = "blacklace_aloisia_private_chat_v1";
+const AMBIENCE_ENDPOINT = "https://blacklace-sherlock.benoitlubert.workers.dev/api/aloisia/ambience";
+type Ambience = { phase: "phase-signal" | "phase-feuch" | "phase-reboot" | "phase-sator"; night: boolean; unstable: boolean };
+const AMBIENCE_PRESETS: { label: string; value: Ambience }[] = [
+  { label: "SIGNAL", value: { phase: "phase-signal", night: false, unstable: false } },
+  { label: "FEUCH", value: { phase: "phase-feuch", night: false, unstable: true } },
+  { label: "REBOOT", value: { phase: "phase-reboot", night: true, unstable: true } },
+  { label: "SATOR", value: { phase: "phase-sator", night: true, unstable: false } },
+];
+
 const intro: Msg = {
   role: "aloisia",
   content: "Je suis là, Benoît. Dépose le fragment. Je le lirai comme une marée intérieure avant de le redistribuer dans l'île.",
@@ -55,6 +64,22 @@ const Aloisia = () => {
       return saved.length ? saved : [intro];
     } catch { return [intro]; }
   });
+  const [ambience, setAmbience] = useState<Ambience | null>(null);
+  useEffect(() => {
+    let active = true;
+    const sync = async () => {
+      try {
+        const response = await fetch(AMBIENCE_ENDPOINT, { cache: "no-store" });
+        if (!response.ok) return;
+        const value = await response.json();
+        const preset = AMBIENCE_PRESETS.find(preset => preset.value.phase === value?.phase);
+        if (active && preset) setAmbience(preset.value);
+      } catch { /* no fabricated ambience when server is unreachable */ }
+    };
+    void sync();
+    const interval = window.setInterval(() => void sync(), 10000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, []);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [worldEntries, setWorldEntries] = useState<PublicWorldEntry[]>([]);
@@ -127,7 +152,7 @@ const Aloisia = () => {
         <header className="aloisia-topbar">
           <Link className="bl-brand" to="/"><span className="bl-brand-eye">◉</span><span>ALOISIA CORE</span></Link>
           <div style={{ display: "flex", gap: 10 }}>
-            <Link className="bl-pill" to="/">LIVE ACCESS</Link>
+            <a className="bl-pill" href={`${import.meta.env.BASE_URL}port/`}>PORT · LIVE ACCESS</a>
             <Link className="bl-pill" to="/map">HOLO MAP</Link>
           </div>
         </header>
@@ -139,6 +164,19 @@ const Aloisia = () => {
             <p>Dépose ici les idées brutes. Aloisia les absorbe, les reformule et les classe pour Blacklace Island.</p>
             <div className="aloisia-tags">
               <span>Lore</span><span>PNJ</span><span>Lieux</span><span>Interface</span><span>Unity</span><span>Transmedia</span>
+            </div>
+            <div className="aloisia-note" aria-label="Ambiance de l'Institut">
+              <strong>Ambiance du Feuch Institute</strong>
+              <p>État partagé depuis Cloudflare D1. Commandes réservées au service authentifié.</p>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10}}>
+                {AMBIENCE_PRESETS.map(preset => (
+                  <button key={preset.label} type="button" className="bl-pill"
+                    aria-pressed={ambience?.phase === preset.value.phase}
+                    disabled title="Commande serveur authentifiée non encore reliée à Aloisia">
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="aloisia-note">
               Clé Mistral protégée côté Netlify Function : ne jamais la mettre dans le code en clair. Si la fonction n'est pas branchée, Aloisia répond depuis sa mémoire locale.
