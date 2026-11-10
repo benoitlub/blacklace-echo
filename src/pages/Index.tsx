@@ -10,6 +10,7 @@ type ChatItem = { name: string; text: string; origin?: "archive" | "visitor" | "
 type Phase = "phase-signal" | "phase-feuch" | "phase-reboot";
 type Phase2 = Phase | "phase-sator";
 
+const AMBIENCE_ENDPOINT = "https://blacklace-sherlock.benoitlubert.workers.dev/api/aloisia/ambience";
 const phaseButtons: { phase: Phase2; label: string }[] = [
   { phase: "phase-signal", label: "SIGNAL" },
   { phase: "phase-feuch", label: "FEUCH" },
@@ -47,6 +48,21 @@ const Index = () => {
 
   const currentSource = videoSources[videoIdx % videoSources.length];
   const isLocalSource = currentSource.type === "local";
+
+  useEffect(() => {
+    let active = true;
+    const sync = async () => {
+      try {
+        const response = await fetch(AMBIENCE_ENDPOINT, { cache: "no-store" });
+        if (!response.ok) return;
+        const value = await response.json();
+        if (active && phaseButtons.some(item => item.phase === value?.phase)) setPhase(value.phase);
+      } catch { /* preserve last known phase while server is unreachable */ }
+    };
+    void sync();
+    const interval = window.setInterval(() => void sync(), 10000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, []);
 
   useEffect(() => {
     document.body.classList.remove("phase-signal", "phase-feuch", "phase-reboot", "phase-sator");
@@ -129,7 +145,7 @@ const Index = () => {
   }
 
   function requestLockedPhase(label: string) {
-    setChat((c) => [...c, { name: "ALOISIA", text: `${label} n'est pas un interrupteur public. Je l'activerai quand l'île sera prête.` }]);
+    setChat((c) => [...c, { name: "ALOISIA", text: `${label} est une phase pilotée par Aloisia. Ouvre son interface pour la modifier.` }]);
     glitch();
   }
 
@@ -173,7 +189,7 @@ const Index = () => {
                 className={"bl-pill bl-phase-locked" + (phase === b.phase ? " bl-pill-active" : "")}
                 onClick={() => requestLockedPhase(b.label)}
                 type="button"
-                title="Mode réservé à Aloisia"
+                title="Phase pilotée depuis Aloisia"
               >
                 {b.label}
               </button>
