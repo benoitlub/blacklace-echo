@@ -188,7 +188,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
       onKeyDown={event => {
         if (event.key === "Escape") { event.stopPropagation(); if (selected || selectedActor || showResidents) reset(); else if (sceneId !== "square") go("square"); else onBack(); }
         if (event.key === "Tab") {
-          const items = Array.from(root.current?.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex="0"]') ?? []).filter(el => el.getClientRects().length > 0);
+          const items = Array.from(root.current?.querySelectorAll<HTMLElement>('button:not([disabled]), summary, [href], [tabindex="0"]') ?? []).filter(el => el.getClientRects().length > 0);
           const first = items[0], last = items[items.length - 1];
           if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
           else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -214,9 +214,9 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
           </>}
           <div className="rv-sunlight" aria-hidden="true" />
           {sceneId === "square" && <div className="rv-water" style={{ left: "51%", top: "61%" }} aria-hidden="true"><i /><i /><i /></div>}
-          {scene.stops.map((stop) => <button key={stop.id} tabIndex={-1} type="button" className={`rv-hotspot ${selected?.id === stop.id ? "is-selected" : ""}`}
-            style={{ left: `${stop.x}%`, top: `${stop.y}%` }} onClick={() => observe(stop)} aria-label={stop.label} title={stop.label}>
-            <span>{stop.destination ? "↗" : "+"}</span><strong>{stop.label}</strong>
+          {scene.stops.map((stop) => <button key={stop.id} type="button" className={`rv-hotspot ${selected?.id === stop.id ? "is-selected" : ""}`}
+            style={{ left: clamp(stop.x / 100 * width, -offsetX + 54, -offsetX + size.width - 54), top: clamp(stop.y / 100 * height, -offsetY + 125, -offsetY + size.height - 95) }} onClick={() => observe(stop)} aria-label={stop.label} title={stop.label}>
+            <span>{stop.destination ? "→" : "+"}</span><strong>{stop.label}</strong>
           </button>)}
           {sceneId === "square" && residents.map((person, i) => {
             const pos = RESIDENT_POSITIONS[i % RESIDENT_POSITIONS.length];
@@ -228,15 +228,15 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
       </div>
       <div className="rv-vignette" aria-hidden="true" />
       <header className="rv-header">
-        <a ref={back} href={`${import.meta.env.BASE_URL}port/`} className="rv-back">← Port de Porsa Rotas</a>
+        <a ref={back} href={`${import.meta.env.BASE_URL}port/`} className="rv-back" aria-label="← Port de Porsa Rotas">← Port de Porsa Rotas</a>
         <div><span className="rv-eyebrow">BLACKLACE · PROMENADE</span><h1 id="rotas-visit-title">{scene.title}</h1></div>
-        <div className="rv-atmosphere">
+        <details className="rv-tools"><summary aria-label="Réglages de la promenade">☷</summary><div className="rv-atmosphere">
           {sceneId === "square" && depthReady && <button type="button" aria-pressed={depth} onClick={() => { resetLook(); setDepth(!depth); }}>Profondeur</button>}
           <button type="button" aria-pressed={night} onClick={() => setNight(!night)}>{night ? "☀ Jour" : "☾ Soir"}</button>
           <button type="button" aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? "Son activé" : "Activer le son"}</button>
-        </div>
+        </div></details>
       </header>
-      {(imageLoading || imageError) && <p className="rv-image-status" role="status">{imageError ? "Le décor n’a pas pu être chargé. Les étapes restent accessibles ci-dessous." : "Ouverture du passage…"}</p>}
+      {(imageLoading || imageError) && <p className="rv-image-status" role="status">{imageError ? "Le décor n’a pas pu être chargé. Les étapes restent accessibles dans « Chemins »." : "Ouverture du passage…"}</p>}
       <div className="rv-camera" aria-label="Commandes de la vue"><button type="button" aria-label="Zoom avant" disabled={camera.zoom >= 2.5} onClick={() => zoom(.25)}>+</button><output aria-label="Niveau de zoom">{Math.round(camera.zoom * 100)} %</output><button type="button" aria-label="Zoom arrière" disabled={camera.zoom <= 1} onClick={() => zoom(-.25)}>−</button><button type="button" aria-label="Recentrer la vue" onClick={reset}>⌖</button></div>
       {(selected || showResidents) && <aside className="rv-note" aria-label={selected ? "Détail du lieu" : "Habitants de Rotas"}>
         <button className="rv-note-close" type="button" aria-label="Fermer le détail" onClick={() => { setSelected(null); setSelectedActor(null); setShowResidents(false); }}>×</button>
@@ -247,10 +247,11 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
         </>}
       </aside>}
       <footer className="rv-footer">
-        <div className="rv-walk-heading"><span>{sceneId === "square" ? "À votre rythme" : "Île / Rotas / " + scene.title}</span><button type="button" onClick={() => { setShowResidents(!showResidents); setSelected(null); setSelectedActor(null); }}>Habitants · {residents.length}</button></div>
-        <nav className="rv-stops" aria-label="Étapes de la promenade">{SCENE_IDS.map(id => <button key={id} type="button" aria-current={sceneId === id ? "location" : undefined} onClick={() => go(id)}>{id === "square" ? "La place" : id === "tea" ? "Salon de thé" : id === "market" ? "Marché" : id === "stairs" ? "Escaliers" : id === "coast" ? "La côte" : "Boutiques"}</button>)}</nav>
-        <div className="rv-place-actions" aria-label="Points d’intérêt de cette étape">{scene.stops.map(stop => <button key={stop.id} type="button" onClick={() => observe(stop)}>{stop.label} {stop.destination ? "↗" : "+"}</button>)}</div>
-        <p className="rv-help">Glissez pour regarder autour de vous · Pincez ou utilisez + / − pour vous rapprocher</p>
+        <details className="rv-paths">
+          <summary>⌁ Chemins</summary>
+          <nav className="rv-stops" aria-label="Étapes de la promenade">{SCENE_IDS.map(id => <button key={id} type="button" aria-current={sceneId === id ? "location" : undefined} onClick={event => { go(id); event.currentTarget.closest("details")?.removeAttribute("open"); }}>{id === "square" ? "La place" : id === "tea" ? "Salon de thé" : id === "market" ? "Marché" : id === "stairs" ? "Escaliers" : id === "coast" ? "La côte" : "Boutiques"}</button>)}</nav>
+        </details>
+        <button className="rv-people" type="button" onClick={() => { setShowResidents(!showResidents); setSelected(null); setSelectedActor(null); }}>Habitants · {residents.length}</button>
       </footer>
     </section>
   );

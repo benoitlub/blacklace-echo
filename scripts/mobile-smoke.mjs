@@ -28,7 +28,7 @@ try {
       assert.equal(await page.locator('.bl-build-marker').isVisible(),false,'Build marker must not cover the visit');
       assert.equal(await page.locator('.bl-build-footer').isVisible(),false,'Build footer must not cover the visit');
       await page.screenshot({path:`qa-output/rotas-${device.name}.png`});
-      const actions = page.locator('.rv-place-actions');
+      const actions = page.locator('.rv-viewport');
       await actions.getByRole('button',{name:'Fontaine centrale'}).click();
       assert.match(await page.locator('.rv-note').innerText(),/Fontaine centrale/);
       assert.match(await page.locator('.rv-camera output').innerText(),/165/);
@@ -46,6 +46,7 @@ try {
       await page.keyboard.press('ArrowLeft');
       if(device.name==='mobile') assert.notEqual(await page.locator('.rv-canvas').evaluate(el=>getComputedStyle(el).transform),transform,'Keyboard pan must move the camera');
       for (const [label,file,title] of [['Salon de thé','tea','Les terrasses du thé'],['Marché','market','La rue du marché'],['Escaliers','stairs','Les escaliers fleuris'],['La côte','coast','Le passage de la côte'],['Boutiques','shop','La rue des boutiques'],['La place','square','La place de Rotas']]) {
+        await page.locator('.rv-paths summary').click();
         await page.getByRole('navigation',{name:'Étapes de la promenade'}).getByRole('button',{name:label,exact:true}).click();
         await page.getByRole('heading',{name:title,exact:true}).waitFor();
         await page.waitForFunction(file=>{const img=document.querySelector('.rv-scene');return img?.src.endsWith('/'+file+'.webp')&&img.complete&&img.naturalWidth>0;},file);
@@ -64,8 +65,10 @@ try {
         await cdp.detach();
       }
       // Click the selected scene again: loading must not get stuck.
+      await page.locator('.rv-paths summary').click();
       await page.getByRole('navigation',{name:'Étapes de la promenade'}).getByRole('button',{name:'La place',exact:true}).click();
       assert.equal(await page.locator('.rv-image-status').count(),0);
+      await page.locator('.rv-tools summary').click();
       await page.getByRole('button',{name:'☾ Soir',exact:true}).click();
       assert.equal(await page.getByRole('button',{name:'☀ Jour',exact:true}).getAttribute('aria-pressed'),'true');
       await page.getByRole('button',{name:/Habitants ·/}).click();

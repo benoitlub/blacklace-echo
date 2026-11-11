@@ -169,6 +169,18 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
 .topbar,.lowerbar{left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right))}
 #welcome{left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));width:auto;max-width:850px}
 @media(prefers-reduced-motion:reduce){.landscape{scale:1!important}}
+
+/* A small harbour sign, with controls revealed only on request. */
+#port .topbar{right:auto;width:max-content;max-width:calc(100% - 24px);padding:6px 9px;gap:14px;border-radius:12px;background:#09111a85}
+#port .brand strong{font-size:clamp(.7rem,1.1vw,.94rem)}
+#port .brand small{font-size:.58rem}#port .eye{font-size:1rem}
+.port-tools summary{list-style:none;cursor:pointer;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:.8rem;color:#f6dfaf}
+.port-tools summary::-webkit-details-marker{display:none}
+.port-tools .actions{position:absolute;left:0;top:calc(100% + 8px);width:min(310px,calc(100vw - 24px));padding:10px;background:#091722ed;border:1px solid #dfc39255;border-radius:12px;box-shadow:0 8px 25px #0004}
+#port .port-tools .actions .pill{min-height:44px;font-size:.8rem}
+#port .lowerbar{right:auto;width:max-content;max-width:calc(100% - 24px);gap:8px}
+#port .lowerbar .places{max-width:none}#port .lowerbar .places>.status,#port .settings>.status{display:none}
+@media(max-width:650px){#port .topbar{gap:7px;padding:3px 7px}#port .brand{min-width:0}#port .brand strong{font-size:.7rem}#port .brand small{font-size:.55rem}.port-tools summary span{display:none}}
 </style>
 </head>
 <body>
@@ -188,20 +200,20 @@ button:focus-visible,a:focus-visible{outline:2px solid #c0e9ff;outline-offset:3p
   </nav>
   <section id="institute-portal" hidden aria-label="Lieu immersif" style="position:absolute;inset:0;z-index:80;background:#07131f">
     <iframe id="institute-frame" title="Lieu immersif" loading="lazy" allow="fullscreen" style="width:100%;height:100%;border:0;display:block"></iframe>
-    <button id="institute-return" type="button" class="pill" style="position:absolute;top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));z-index:2;background:#07131ff0;color:#ffeccc;border:1px solid #ffeccc66;padding:10px 16px">← Retour au port</button>
+    <button id="institute-return" aria-label="Retour au port" title="Retour au port" type="button" class="pill" style="position:absolute;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:2;background:#07131fb0;color:#ffeccc;border:1px solid #ffeccc66;padding:10px 16px">←</button>
   </section>
   <div class="travel" aria-live="polite" aria-atomic="true"><div class="travel-title" id="travel-title"></div><div class="travel-note">Le paysage vous ouvre le chemin…</div></div>
   <div class="window" aria-hidden="true"><canvas id="title-canvas"></canvas><h1 id="fallback-title">BLACKLACE ISLAND</h1></div>
   <header class="topbar glass">
     <a href="../control" class="brand" aria-label="Centre de contrôle Blacklace Echo"><span class="eye">◉</span><span><strong>BLACKLACE ISLAND</strong><small>Porsa Rotas · Le Seuil</small></span></a>
-    <div class="actions">
+    <details class="port-tools"><summary aria-label="Ouvrir les commandes du port">☷ <span>Options</span></summary><div class="actions">
       <a href="../control" class="pill explore-only">Live Access</a>
       <a href="../map" class="pill explore-only">HoloMap</a>
       <button id="sound-toggle" class="pill" type="button" aria-pressed="false">Son : non</button><button id="night-toggle" type="button" class="pill" aria-pressed="false">☾ Nuit</button>
       <button id="fullscreen-toggle" type="button" class="pill" aria-label="Activer le plein écran" aria-pressed="false" title="Plein écran">⛶</button>
       <button id="tracking-toggle" type="button" class="pill explore-only" aria-pressed="false" title="Perspective par mouvement de l’appareil">◉ Perspective</button>
       <button id="skip" type="button" class="pill">Passer l’introduction</button>
-    </div>
+    </div></details>
   </header>
   <section class="start glass" aria-label="Entrée sur l'île">
     <p>La mer vous a conduit jusqu'ici. Le reste appartient à l'île.</p>
