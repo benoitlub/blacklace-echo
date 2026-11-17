@@ -40,13 +40,27 @@ function stop(){session++;active=false;cancelAnimationFrame(faceFrame);stream?.g
 document.querySelector('#stop').onclick=()=>{stop();status.textContent='Caméra arrêtée. Mode tactile disponible.'};
 faceButton.onclick=async()=>{
  if(active){stop();status.textContent='Suivi arrêté.';return}
- faceButton.disabled=true;status.textContent='Demande d’autorisation de la caméra…';
+ faceButton.disabled=true;
+ const thisSession=session;
+ const timed=(promise,seconds,step)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(step+' : délai dépassé ('+seconds+' s).')),seconds*1000))]);
  try{
   if(!window.isSecureContext)throw new Error('Cette page doit être ouverte via HTTPS.');
-  stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:'user',width:{ideal:320},height:{ideal:240}}});
-  video=document.createElement('video');video.muted=true;video.playsInline=true;video.srcObject=stream;await video.play();
-  const thisSession=session;
-  const timed=(promise,seconds,step)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(step+' : délai dépassé ('+seconds+' s). Réseau/CDN à vérifier.')),seconds*1000))]);
+  if(!navigator.mediaDevices?.getUserMedia)throw new Error('API caméra indisponible dans ce navigateur');
+  status.textContent='Caméra 1/2 : vérification des permissions…';
+  try{
+   const permission=await timed(navigator.permissions.query({name:'camera'}),3,'Vérification permission');
+   if(permission.state==='denied')throw new Error('Caméra bloquée dans les permissions du site : autorise-la dans les paramètres du navigateur');
+   status.textContent=permission.state==='prompt'?'Caméra 1/2 : accepte la demande du navigateur…':'Caméra 1/2 : ouverture du flux vidéo…';
+  }catch(e){if(e.message.includes('Caméra bloquée'))throw e;status.textContent='Caméra 1/2 : ouverture du flux vidéo…'}
+  const request=navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:'user',width:{ideal:320},height:{ideal:240}}});
+  request.then(s=>{if(thisSession!==session)s.getTracks().forEach(t=>t.stop())}).catch(()=>{});
+  stream=await timed(request,12,'Ouverture caméra (permission ou appareil occupé)');
+  if(thisSession!==session)throw new Error('Demande annulée');
+  status.textContent='Caméra 2/2 : démarrage vidéo…';
+  video=document.createElement('video');video.muted=true;video.autoplay=true;video.playsInline=true;video.srcObject=stream;
+  // On mobile, video.play() can remain pending; bound it separately from permission.
+  await timed(video.play(),8,'Démarrage vidéo');
+  if(thisSession!==session)throw new Error('Demande annulée');
   status.textContent='MediaPipe 1/3 : téléchargement du module…';
   // The published ESM bundle is a more predictable browser entry point than +esm rewriting.
   const mp=await timed(import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs'),18,'Module MediaPipe');
@@ -63,7 +77,7 @@ faceButton.onclick=async()=>{
   active=true;neutral=null;last=0;faceButton.setAttribute('aria-pressed','true');faceButton.textContent='◎ Visage actif';status.textContent='Suivi actif. Bouge doucement la tête.';
   const detect=now=>{if(!active)return;if(now-last>100&&video.readyState>=2){last=now;try{const face=landmarker.detectForVideo(video,now).faceLandmarks?.[0];if(face){const p=face[1]||face[4]||face[0];if(!neutral)neutral={x:p.x,y:p.y};tx=clamp((p.x-neutral.x)*5,-1,1);ty=clamp((p.y-neutral.y)*5,-1,1)}else status.textContent='Visage hors champ : replace-toi face à l’écran.'}catch(e){status.textContent='Erreur de détection : '+e.message}}faceFrame=requestAnimationFrame(detect)};
   faceFrame=requestAnimationFrame(detect);
- }catch(e){stop();status.textContent='Échec du suivi : '+e.message+' — mode tactile conservé. Recharge pour réessayer.'}
+ }catch(e){stop();status.textContent='Diagnostic : '+(e.name==='NotAllowedError'?'permission caméra refusée (vérifie les autorisations du site)':e.name==='NotReadableError'?'caméra occupée ou inaccessible':e.message)+' — le tactile reste disponible.'}
  finally{faceButton.disabled=false}
 };
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)stop()});
