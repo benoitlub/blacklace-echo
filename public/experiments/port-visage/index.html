@@ -5,7 +5,7 @@
 :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#08121e;color:#fff}*{box-sizing:border-box}
 body{margin:0}header{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;background:#0c1626}
 #scene{position:relative;width:100%;height:min(74dvh,780px);min-height:390px;overflow:hidden;background:#edac9b;touch-action:pan-y;isolation:isolate}
-.layer{position:absolute;inset:-7% -13%;background-repeat:no-repeat;background-position:center center;background-size:cover;pointer-events:none;will-change:transform}
+.layer{position:absolute;inset:0;background-repeat:no-repeat;background-position:center center;background-size:100% 100%;transform-origin:center center;pointer-events:none;will-change:transform}
 #status{font-size:13px;min-height:2em;color:#b9d8e8}main{padding:12px 14px;display:grid;gap:12px}
 .controls{display:flex;gap:8px;flex-wrap:wrap}button{border:1px solid #7ca7c6;border-radius:12px;background:#17344c;color:white;padding:12px 15px;font:inherit}
 button[aria-pressed=true]{background:#146b6a;border-color:#7df7d8}
@@ -20,32 +20,33 @@ small{color:#9db5c6}#scene:after{content:"";position:absolute;inset:0;pointer-ev
 <small>Le suivi facial fonctionne uniquement après autorisation de la caméra, sur HTTPS. Traitement local dans le navigateur. Aucun enregistrement vidéo.</small></main>
 <script type="module">
 const scene=document.querySelector('#scene'),status=document.querySelector('#status');
-// Each layer has an explicit visual stacking order and vertical offset.
-// Keep the three water textures in the exact same coordinate space and depth.
+// All eleven PNGs share the same 1188 x 941 transparent canvas.
+// Their artwork is already aligned in source coordinates: never stagger the layers.
+// Keep separate parallax depths, but water textures share one geometric plane.
 const layerSpecs=[
- ['01_ciel.png',0,0,0],
- ['02_volcan.png',.07,1,0],
- ['03_foret.png',.15,2,.014],
- ['04_feuch_institut.png',.72,7.5,.20],
- ['05_sator_clairiere.png',.38,4,.016],
- ['06_village.png',.50,5,-.018],
- ['07_porsa_rotas.png',.65,6,-.036],
- ['08a_eau_reflets.png',.78,8,-.048],
- ['08b_eau_vagues.png',.78,9,-.048],
- ['08c_eau_ecume.png',.78,10,-.048],
- ['09_quai.png',1,11,-.055]
+ ['01_ciel.png',0,0],
+ ['02_volcan.png',.05,1],
+ ['03_foret.png',.10,2],
+ ['04_feuch_institut.png',.20,3],
+ ['05_sator_clairiere.png',.28,4],
+ ['06_village.png',.40,5],
+ ['07_porsa_rotas.png',.60,6],
+ ['08a_eau_reflets.png',.65,7],
+ ['08b_eau_vagues.png',.65,8],
+ ['08c_eau_ecume.png',.65,9],
+ ['09_quai.png',1,10]
 ];
-const layers=layerSpecs.map(([name,depth,z,offset])=>{
+const layers=layerSpecs.map(([name,depth,z])=>{
  const e=document.createElement('div');
  e.className='layer';
  e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
  e.style.zIndex=z;
  scene.append(e);
- return {e,depth,offset};
+ return {e,depth};
 });
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth,offset} of layers){const d=depth*amp;const vertical=offset*scene.clientHeight;e.style.transform='translate3d('+(-x*d*36).toFixed(2)+'px,'+(vertical-y*d*22).toFixed(2)+'px,0) scale('+(1.06+d*.11)+')'}frame=requestAnimationFrame(render)}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth} of layers){const d=depth*amp;e.style.transform='translate3d('+(-x*d*36).toFixed(2)+'px,'+(-y*d*22).toFixed(2)+'px,0) scale('+(1.06+d*.11)+')'}frame=requestAnimationFrame(render)}
 render();
 document.querySelector('#amplitude').addEventListener('input',e=>{amp=Number(e.target.value)/100;document.querySelector('#value').textContent=e.target.value+' %'});
 document.querySelector('#center').onclick=()=>{neutral=null;tx=0;ty=0;status.textContent=active?'Recentrage : regarde au centre de l’écran.':'Perspective recentrée.'};
