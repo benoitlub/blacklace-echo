@@ -61,3 +61,19 @@ body.rotas-visiting .bl-build-marker,body.rotas-visiting .bl-build-footer{displa
 /* The depth plate is an auxiliary map, not a visible scene layer. Its onLoad
    enables perspective, but painting it over square.webp obscures Rotas. */
 .rotas-visit .rv-depth-plate { display: none !important; }
+
+/* Small diegetic interactions, without covering the scenery. */
+.rv-interaction{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.rv-interaction button{font:12px system-ui,sans-serif;min-height:44px}.rv-dialogue{border-left:2px solid var(--rv-gold);padding-left:12px}.rv-dialogue-disclaimer{font-size:10px!important;opacity:.75}.rv-journal{font:11px system-ui,sans-serif;color:#fff5df;background:#112e2dc9;border:1px solid #dfc18c55;border-radius:8px;padding:12px;align-self:center}
+
+.rv-character-heading{display:flex;align-items:center;gap:14px;margin:4px 0 12px}.rv-character-heading>div:last-child{min-width:0}.rv-character-portrait{width:clamp(76px,17vw,124px);height:clamp(76px,17vw,124px);flex:none;object-fit:cover;object-position:50% 25%;border-radius:50%;border:2px solid #e4b96577;background:#283a45}.rv-character-placeholder{display:grid;place-items:center;font:700 36px Georgia,serif;color:#ffdc92}
+
+/* Non-interactive decor lives in the scene canvas, behind hotspots. */
+.rv-decor{position:absolute;pointer-events:none;user-select:none;filter:drop-shadow(0 5px 5px #142a2a88);opacity:.8;z-index:1}.rv-decor-banner{left:10%;top:13%;width:4%;max-width:58px;min-width:20px}.rv-decor-lantern{right:12%;top:16%;width:5%;max-width:65px;min-width:22px}.rv-hotspot,.rv-resident{z-index:2}
+
+.rv-artifact{width:78px;height:78px;object-fit:contain;flex:0 0 78px;filter:drop-shadow(0 5px 8px #0007)}
+@media(max-width:480px){.rv-artifact{width:64px;height:64px;flex-basis:64px}}
+/* Night treatment is provisional until dedicated painted night backgrounds are available. */
+.rotas-visit--night .rv-scene{filter:brightness(.35) saturate(.66) contrast(1.08) hue-rotate(9deg)}
+.rotas-visit--night .rv-vignette{background:linear-gradient(#08152de0,#13294430 26%,#0a193a45 60%,#060e25ec)}
+.rotas-visit--night .rv-water i{border-color:#8ee9f2b5;box-shadow:0 0 9px #63b8d4a3}
+@media(prefers-reduced-motion:reduce){.rv-water i{animation:none}}
