@@ -14,6 +14,15 @@ export default function MaxLiberty({ onBack }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const [scene, setScene] = useState<"bar" | "plage">("bar");
   const [missing, setMissing] = useState(false);
+  const [parallax, setParallax] = useState({ x: 0, y: 0 });
+  const layers = [
+    ["01_plage_horizon.webp", 0.012],
+    ["02_structure_bar.webp", 0.025],
+    ["03_comptoir_tabourets.webp", 0.04],
+    ["04_table_premier_plan.webp", 0.065],
+    ["05_vegetation_avant.webp", 0.09],
+    ["06_lumieres_suspensions.webp", 0.035],
+  ] as const;
   const audio = useRef<AudioContext | null>(null);
   useEffect(() => {
     if (!sound) return;
@@ -49,7 +58,10 @@ export default function MaxLiberty({ onBack }: Props) {
   }, []);
   return <section className="max-visit" role="dialog" aria-modal="true" aria-label="Visite du Max Liberty">
     <div className="max-backdrop" aria-hidden="true" />
-    {!missing && <img key={scene} className="max-photo" src={asset(scene === "bar" ? "bar-interieur.webp" : "bar-plage.webp")} alt="" onError={() => setMissing(true)} />}
+    <div className="max-depth-stage" aria-hidden="true" onPointerMove={event => { if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; const rect = event.currentTarget.getBoundingClientRect(); setParallax({ x: (event.clientX / rect.width - rect.left / rect.width - .5) * 2, y: (event.clientY / rect.height - rect.top / rect.height - .5) * 2 }); }} onPointerLeave={() => setParallax({ x: 0, y: 0 })}>
+      {!missing && <img className="max-photo max-depth-base" src={asset(scene === "bar" ? "00_fond_complet.webp" : "bar-plage.webp")} alt="" onError={() => setMissing(true)} />}
+      {scene === "bar" && !missing && layers.map(([file, depth]) => <img key={file} className="max-depth-layer" src={asset(file)} alt="" style={{ transform: `translate3d(${(-parallax.x * depth * 100).toFixed(2)}px, ${(-parallax.y * depth * 60).toFixed(2)}px, 0) scale(1.035)` }} />)}
+    </div>
     <div className="max-vignette" />
     <header className="max-header">
       <button onClick={onBack}>← HoloMap</button>
