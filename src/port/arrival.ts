@@ -70,11 +70,23 @@ get('enter').onclick = () => {
 get('skip').onclick = welcome;
 get('next').onclick = () => { if (line < 2) { line++; updateLine(); } else setPhase('explore'); };
 get('explore').onclick = () => setPhase('explore');
-get('night-toggle').onclick = () => {
-  const night = root.dataset.night !== 'true'; root.dataset.night = String(night);
-  get('night-toggle').textContent = night ? '☀ Jour' : '☾ Nuit';
-  get('night-toggle').setAttribute('aria-pressed', String(night));
-};
+// Match the existing Aloisia/Map island clock (local 06–09 dawn, 09–18 day,
+ // 18–21 dusk, otherwise night). Manual override is temporary until next click.
+let manualLight: boolean | null = null;
+function updateIslandLight() {
+  const hour = new Date().getHours() + new Date().getMinutes() / 60;
+  const phase = hour < 6 || hour >= 21 ? 'night' : hour < 9 ? 'dawn' : hour < 18 ? 'day' : 'dusk';
+  const nightMix = phase === 'night' ? 1 : phase === 'day' ? 0 : phase === 'dawn' ? (9-hour)/3 : (hour-18)/3;
+  const mix = manualLight === null ? nightMix : Number(manualLight);
+  root.style.setProperty('--night-mix', String(mix));
+  root.dataset.night = String(mix >= .5);
+  get('night-toggle').textContent = manualLight === null ? '◷ Aloisia · ' + phase : (manualLight ? '☾ Nuit manuelle' : '☀ Jour manuel');
+  get('night-toggle').setAttribute('aria-pressed', String(manualLight !== null));
+}
+get('night-toggle').onclick = () => { manualLight = manualLight === null ? true : manualLight ? false : null; updateIslandLight(); };
+updateIslandLight();
+const islandClockTimer = window.setInterval(updateIslandLight, 60_000);
+window.addEventListener('pagehide', () => clearInterval(islandClockTimer));
 let pointer: { x: number; y: number; id: number } | undefined;
 function parallax(x: number, y: number) {
   if (reduced.matches || phase === 'crossing') return;
