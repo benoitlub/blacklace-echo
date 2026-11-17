@@ -69,3 +69,11 @@ body.rotas-visiting .bl-build-marker,body.rotas-visiting .bl-build-footer{displa
 
 /* Non-interactive decor lives in the scene canvas, behind hotspots. */
 .rv-decor{position:absolute;pointer-events:none;user-select:none;filter:drop-shadow(0 5px 5px #142a2a88);opacity:.8;z-index:1}.rv-decor-banner{left:10%;top:13%;width:4%;max-width:58px;min-width:20px}.rv-decor-lantern{right:12%;top:16%;width:5%;max-width:65px;min-width:22px}.rv-hotspot,.rv-resident{z-index:2}
+
+.rv-artifact{width:78px;height:78px;object-fit:contain;flex:0 0 78px;filter:drop-shadow(0 5px 8px #0007)}
+@media(max-width:480px){.rv-artifact{width:64px;height:64px;flex-basis:64px}}
+/* Night treatment is provisional until dedicated painted night backgrounds are available. */
+.rotas-visit--night .rv-scene{filter:brightness(.35) saturate(.66) contrast(1.08) hue-rotate(9deg)}
+.rotas-visit--night .rv-vignette{background:linear-gradient(#08152de0,#13294430 26%,#0a193a45 60%,#060e25ec)}
+.rotas-visit--night .rv-water i{border-color:#8ee9f2b5;box-shadow:0 0 9px #63b8d4a3}
+@media(prefers-reduced-motion:reduce){.rv-water i{animation:none}}
