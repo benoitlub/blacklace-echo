@@ -76,7 +76,7 @@ faceButton.onclick=async()=>{
   if(thisSession!==session){created.close();throw new Error('Chargement annulé')}
   landmarker=created;
   active=true;neutral=null;last=0;faceButton.setAttribute('aria-pressed','true');faceButton.textContent='◎ Visage actif';status.textContent='Suivi actif. Bouge doucement la tête.';
-  const detect=now=>{if(!active)return;if(now-last>100&&video.readyState>=2){last=now;try{const face=landmarker.detectForVideo(video,now).faceLandmarks?.[0];if(face){const p=face[1]||face[4]||face[0];if(!neutral)neutral={x:p.x,y:p.y};tx=clamp((p.x-neutral.x)*5,-1,1);ty=clamp((p.y-neutral.y)*5,-1,1)}else status.textContent='Visage hors champ : replace-toi face à l’écran.'}catch(e){status.textContent='Erreur de détection : '+e.message}}faceFrame=requestAnimationFrame(detect)};
+  const detect=now=>{if(!active)return;if(now-last>100&&video.readyState>=2){last=now;try{const face=landmarker.detectForVideo(video,now).faceLandmarks?.[0];if(face){const p=face[1]||face[4]||face[0];if(!neutral)neutral={x:p.x,y:p.y};tx=clamp((neutral.x-p.x)*5,-1,1);ty=clamp((neutral.y-p.y)*5,-1,1)}else status.textContent='Visage hors champ : replace-toi face à l’écran.'}catch(e){status.textContent='Erreur de détection : '+e.message}}faceFrame=requestAnimationFrame(detect)};
   faceFrame=requestAnimationFrame(detect);
  }catch(e){stop();status.textContent='Diagnostic : '+(e.name==='NotAllowedError'?'permission caméra refusée (vérifie les autorisations du site)':e.name==='NotReadableError'?'caméra occupée ou inaccessible':e.message)+' — le tactile reste disponible.'}
  finally{faceButton.disabled=false}
