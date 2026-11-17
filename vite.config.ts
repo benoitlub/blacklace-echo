@@ -7,7 +7,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   base: "/blacklace-echo/",
 
-  build: { rollupOptions: { input: { main: path.resolve(__dirname, "index.html"), port: path.resolve(__dirname, "port/index.html") } } },
+  build: { rollupOptions: { input: { main: path.resolve(__dirname, "index.html"), port: path.resolve(__dirname, "port/index.html"), faceTest: path.resolve(__dirname, "public/experiments/port-visage/index.html") } } },
 
   server: {
     host: "::",
