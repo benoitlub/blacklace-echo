@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blacklace — Aloisia : laboratoire de perception</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b101b;color:#f4e8d5;font:16px system-ui,sans-serif}main{max-width:850px;margin:auto;padding:16px}h1{font-size:1.5rem}
+#scene{position:relative;overflow:hidden;isolation:isolate;aspect-ratio:16/9;border:2px solid #765b78;border-radius:16px;background:linear-gradient(#19182f 0 58%,#70442c 58% 100%)}
+.shelf{position:absolute;left:10%;right:10%;top:24%;height:25%;border:8px solid #63422d;border-radius:12px;background:repeating-linear-gradient(90deg,#35443a 0 18px,#ae7e52 19px 29px,#403044 30px 46px)}
+.counter{position:absolute;inset:auto 0 0;height:29%;background:linear-gradient(#b57b43 0 22%,#58351f 22%);box-shadow:0 -7px 30px #110b1b}
+.sign{position:absolute;top:5%;width:100%;text-align:center;letter-spacing:.2em;font-weight:900;font-size:clamp(14px,3vw,30px);text-shadow:0 0 10px #eead5b}
+.drink{position:absolute;left:46%;bottom:20%;font-size:clamp(28px,7vw,68px)}
+.effect{position:absolute;inset:0;pointer-events:none;opacity:0;background:repeating-radial-gradient(circle at 53% 65%,transparent 0 16px,#ea44da55 17px 20px,transparent 21px 38px);mix-blend-mode:screen}
+.effect[data-perception-variant="fee_belette"]{background:radial-gradient(circle at 24% 25%,#e8e96b88,transparent 26%),radial-gradient(circle at 78% 60%,#77f5f288,transparent 30%)}
+.effect[data-perception-variant="aloisia"]{background:radial-gradient(ellipse at 60% 45%,#ca38fb99,transparent 35%),repeating-conic-gradient(from 25deg at 75% 40%,#ff66c322 0 15deg,transparent 15deg 40deg)}
+.controls{display:grid;gap:12px;margin:18px 0}label{display:grid;gap:4px}input{width:100%}button{background:#342843;color:white;border:1px solid #a98ec6;border-radius:8px;padding:12px}small{color:#b8b3c3}
+</style></head><body><main>
+<h1>🐙 Aloisia — clés du moteur</h1>
+<p>Laboratoire visuel indépendant du port. Les effets se cumulent ; aucune caméra requise.</p>
+<div id="scene" aria-label="Démonstration stylisée du Max Liberty">
+<div class="shelf"></div><div class="sign">MAX LIBERTY</div><div class="drink">🍹</div><div class="counter"></div>
+<div class="effect" data-perception-variant="feuch"><div data-perception-warp></div></div>
+<div class="effect" data-perception-variant="fee_belette"><div data-perception-warp></div></div>
+<div class="effect" data-perception-variant="aloisia"><div data-perception-warp></div></div>
+</div>
+<div class="controls">
+<label>🌿 Feuch <input id="feuch" type="range" min="0" max="1" step=".01" value="0"></label>
+<label>🧚 Fée Belette <input id="fee_belette" type="range" min="0" max="1" step=".01" value="0"></label>
+<label>🐙 Aloisia <input id="aloisia" type="range" min="0" max="1" step=".01" value="0"></label>
+<button id="surprise">Aloisia prend les commandes</button><button id="reset">Retour à la normale</button>
+</div><small>Prototype de perception : les vrais assets du Max Liberty restent à créer.</small>
+<script type="module">
+import {createPerceptionEngine} from './perception-engine.js';
+const engine=createPerceptionEngine(document.querySelector('#scene'));
+const inputs=[...document.querySelectorAll('input[type=range]')];
+for(const input of inputs)input.addEventListener('input',()=>engine.setInfluence(input.id,+input.value));
+document.querySelector('#surprise').onclick=()=>{document.querySelector('#aloisia').value=.9;engine.setInfluence('aloisia',.9)};
+document.querySelector('#reset').onclick=()=>{engine.clear();for(const input of inputs)input.value=0};
+window.addEventListener('pagehide',()=>engine.destroy(),{once:true});
+</script></main></body></html>
