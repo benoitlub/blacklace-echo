@@ -27,7 +27,11 @@ const layers=[
 ].map(([name,depth,z])=>{const e=document.createElement('div');e.className='layer';e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';e.style.zIndex=z;scene.append(e);return{e,depth,z}});
 // Vertical composition corrections (fraction of scene height): bring the Eye House down,
 // overlap the landscape bands, and preserve independent parallax depths.
-const verticalOffsets=[0,0,.014,.165,.016,-.018,-.036,-.048,-.052,-.055,-.055];
+// Global depth-dependent vertical staggering: shift every foreground plane together
+// rather than adjusting individual strips one by one. Keep the sky and volcano fixed.
+const baseVerticalOffsets=[0,0,.014,.165,.016,-.018,-.036,-.048,-.052,-.055,-.055];
+const globalLayerDrop=.028;
+const verticalOffsets=baseVerticalOffsets.map((offset,z)=>offset+(z<2?0:(z-1)*globalLayerDrop));
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
 function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth,z} of layers){const d=depth*amp;const vertical=verticalOffsets[z]*scene.clientHeight;e.style.transform='translate3d('+(-x*d*36).toFixed(2)+'px,'+(vertical-y*d*22).toFixed(2)+'px,0) scale('+(1.06+d*.11)+')'}frame=requestAnimationFrame(render)}
