@@ -47,9 +47,9 @@ const layers=specs.map(([name,depth,opacity],z)=>{
 });
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-const storageKey='blacklace-port-editor-v5';
+const storageKey='blacklace-port-editor-v6';
 // Approved mobile montage coordinates, committed as the default preset.
-const approvedPreset=[{"x":-60,"y":554,"z":0,"w":100,"h":150},{"x":-54,"y":686,"z":1,"w":108,"h":190},{"x":-146,"y":590,"z":2,"w":108,"h":180},{"x":-65,"y":422,"z":5,"w":108,"h":135},{"x":-75,"y":253,"z":3,"w":108,"h":104},{"x":52,"y":247,"z":4,"w":108,"h":200},{"x":-186,"y":221,"z":6,"w":108,"h":104},{"x":54,"y":234,"z":7,"w":100,"h":100},{"x":46,"y":157,"z":8,"w":100,"h":100},{"x":-8,"y":98,"z":9,"w":100,"h":100},{"x":7,"y":28,"z":10,"w":100,"h":100}];
+const approvedPreset=[{"x":-60,"y":554,"z":0,"w":100,"h":150},{"x":-54,"y":686,"z":1,"w":108,"h":190},{"x":-147,"y":615,"z":2,"w":125,"h":200},{"x":-55,"y":424,"z":5,"w":108,"h":135},{"x":-47,"y":296,"z":3,"w":108,"h":130},{"x":-4,"y":226,"z":4,"w":125,"h":220},{"x":-186,"y":221,"z":6,"w":108,"h":104},{"x":54,"y":234,"z":7,"w":100,"h":100},{"x":46,"y":157,"z":8,"w":100,"h":100},{"x":-8,"y":98,"z":9,"w":100,"h":100},{"x":7,"y":-10,"z":10,"w":120,"h":110}];
 let offsets=approvedPreset.map(p=>({...p}));
 try{const saved=JSON.parse(localStorage.getItem(storageKey));if(Array.isArray(saved)&&saved.length===specs.length)offsets=saved.map((p,i)=>({x:Number(p.x)||0,y:Number(p.y)||0,z:clamp(Number.isFinite(Number(p.z))?Math.round(Number(p.z)):approvedPreset[i].z,0,10),w:clamp(Number(p.w)||approvedPreset[i].w,40,220),h:clamp(Number(p.h)||approvedPreset[i].h,40,220)}));}catch{}
 let editing=false,selected=3,editDrag=null,undoStack=[];
@@ -123,7 +123,7 @@ faceButton.onclick=async()=>{if(editing){status.textContent='Termine l’éditio
   if(thisSession!==session){created.close();throw new Error('Chargement annulé')}
   landmarker=created;
   active=true;neutral=null;last=0;faceButton.setAttribute('aria-pressed','true');faceButton.textContent='◎ Visage actif';status.textContent='Suivi actif. Bouge doucement la tête.';
-  const detect=now=>{if(!active)return;if(now-last>100&&video.readyState>=2){last=now;try{const face=landmarker.detectForVideo(video,now).faceLandmarks?.[0];if(face){const p=face[1]||face[4]||face[0];const left=face[234],right=face[454];const faceWidth=left&&right?Math.hypot(right.x-left.x,right.y-left.y):0;if(!neutral)neutral={x:p.x,y:p.y,width:faceWidth||.2};tx=clamp((neutral.x-p.x)*5,-1,1);ty=clamp((neutral.y-p.y)*5,-1,1);if(faceWidth>0)targetFaceZoom=clamp(1-((faceWidth/neutral.width)-1)*.42,.86,1.08)}else {targetFaceZoom=1;status.textContent='Visage hors champ : replace-toi face à l’écran.'}}catch(e){status.textContent='Erreur de détection : '+e.message}}faceFrame=requestAnimationFrame(detect)};
+  const detect=now=>{if(!active)return;if(now-last>100&&video.readyState>=2){last=now;try{const face=landmarker.detectForVideo(video,now).faceLandmarks?.[0];if(face){const p=face[1]||face[4]||face[0];const left=face[234],right=face[454];const faceWidth=left&&right?Math.hypot(right.x-left.x,right.y-left.y):0;if(!neutral)neutral={x:p.x,y:p.y,width:faceWidth||.2};tx=clamp((neutral.x-p.x)*5,-1,1);ty=clamp((neutral.y-p.y)*5,-1,1);if(faceWidth>0)targetFaceZoom=clamp(1+((faceWidth/neutral.width)-1)*.35,.97,1.12)}else {targetFaceZoom=1;status.textContent='Visage hors champ : replace-toi face à l’écran.'}}catch(e){status.textContent='Erreur de détection : '+e.message}}faceFrame=requestAnimationFrame(detect)};
   faceFrame=requestAnimationFrame(detect);
  }catch(e){stop();status.textContent='Diagnostic : '+(e.name==='NotAllowedError'?'permission caméra refusée (vérifie les autorisations du site)':e.name==='NotReadableError'?'caméra occupée ou inaccessible':e.message)+' — le tactile reste disponible.'}
  finally{faceButton.disabled=false}
