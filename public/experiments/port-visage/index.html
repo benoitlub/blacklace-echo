@@ -25,7 +25,7 @@ const layers=[
 ['05_sator_clairiere.png',.38,4],['06_village.png',.50,5],['07_porsa_rotas.png',.65,6],
 ['08a_eau_reflets.png',.72,7],['08b_eau_vagues.png',.78,8],['08c_eau_ecume.png',.85,9],['09_quai.png',1,10]
 ].map(([name,depth,z])=>{const e=document.createElement('div');e.className='layer';e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';e.style.zIndex=z;scene.append(e);return{e,depth}});
-let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,neutral=null,last=0,drag=null;
+let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
 function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth} of layers){const d=depth*amp;e.style.transform='translate3d('+(-x*d*36).toFixed(2)+'px,'+(-y*d*22).toFixed(2)+'px,0) scale('+(1.06+d*.11)+')'}frame=requestAnimationFrame(render)}
 render();
@@ -36,7 +36,7 @@ scene.addEventListener('pointermove',e=>{if(!drag||active)return;tx=clamp(drag.t
 scene.addEventListener('pointerup',()=>drag=null);
 scene.addEventListener('pointercancel',()=>drag=null);
 const faceButton=document.querySelector('#face');
-function stop(){active=false;cancelAnimationFrame(faceFrame);stream?.getTracks().forEach(t=>t.stop());stream=null;if(video){video.srcObject=null;video.remove()}video=null;neutral=null;landmarker?.close?.();landmarker=null;faceButton.textContent='◎ Activer visage';faceButton.setAttribute('aria-pressed','false');tx=0;ty=0}
+function stop(){session++;active=false;cancelAnimationFrame(faceFrame);stream?.getTracks().forEach(t=>t.stop());stream=null;if(video){video.srcObject=null;video.remove()}video=null;neutral=null;landmarker?.close?.();landmarker=null;faceButton.textContent='◎ Activer visage';faceButton.setAttribute('aria-pressed','false');tx=0;ty=0}
 document.querySelector('#stop').onclick=()=>{stop();status.textContent='Caméra arrêtée. Mode tactile disponible.'};
 faceButton.onclick=async()=>{
  if(active){stop();status.textContent='Suivi arrêté.';return}
@@ -45,14 +45,25 @@ faceButton.onclick=async()=>{
   if(!window.isSecureContext)throw new Error('Cette page doit être ouverte via HTTPS.');
   stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:'user',width:{ideal:320},height:{ideal:240}}});
   video=document.createElement('video');video.muted=true;video.playsInline=true;video.srcObject=stream;await video.play();
-  status.textContent='Chargement de MediaPipe…';
-  const mp=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm');
-  const files=await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');
-  landmarker=await mp.FaceLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',delegate:'CPU'},runningMode:'VIDEO',numFaces:1});
+  const thisSession=session;
+  const timed=(promise,seconds,step)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(step+' : délai dépassé ('+seconds+' s). Réseau/CDN à vérifier.')),seconds*1000))]);
+  status.textContent='MediaPipe 1/3 : téléchargement du module…';
+  // The published ESM bundle is a more predictable browser entry point than +esm rewriting.
+  const mp=await timed(import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs'),18,'Module MediaPipe');
+  if(thisSession!==session)throw new Error('Chargement annulé');
+  status.textContent='MediaPipe 2/3 : chargement WASM…';
+  const files=await timed(mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm'),18,'Moteur WASM');
+  if(thisSession!==session)throw new Error('Chargement annulé');
+  status.textContent='MediaPipe 3/3 : chargement du modèle facial…';
+  const model=await timed(fetch('https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task').then(async response=>{if(!response.ok)throw new Error('Modèle facial HTTP '+response.status);return new Uint8Array(await response.arrayBuffer())}),25,'Modèle facial');
+  if(thisSession!==session)throw new Error('Chargement annulé');
+  const created=await timed(mp.FaceLandmarker.createFromOptions(files,{baseOptions:{modelAssetBuffer:model,delegate:'CPU'},runningMode:'VIDEO',numFaces:1}),25,'Initialisation du détecteur');
+  if(thisSession!==session){created.close();throw new Error('Chargement annulé')}
+  landmarker=created;
   active=true;neutral=null;last=0;faceButton.setAttribute('aria-pressed','true');faceButton.textContent='◎ Visage actif';status.textContent='Suivi actif. Bouge doucement la tête.';
   const detect=now=>{if(!active)return;if(now-last>100&&video.readyState>=2){last=now;try{const face=landmarker.detectForVideo(video,now).faceLandmarks?.[0];if(face){const p=face[1]||face[4]||face[0];if(!neutral)neutral={x:p.x,y:p.y};tx=clamp((p.x-neutral.x)*5,-1,1);ty=clamp((p.y-neutral.y)*5,-1,1)}else status.textContent='Visage hors champ : replace-toi face à l’écran.'}catch(e){status.textContent='Erreur de détection : '+e.message}}faceFrame=requestAnimationFrame(detect)};
   faceFrame=requestAnimationFrame(detect);
- }catch(e){stop();status.textContent='Caméra indisponible : '+e.message+' — mode tactile conservé.'}
+ }catch(e){stop();status.textContent='Échec du suivi : '+e.message+' — mode tactile conservé. Recharge pour réessayer.'}
  finally{faceButton.disabled=false}
 };
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&active)stop()});
