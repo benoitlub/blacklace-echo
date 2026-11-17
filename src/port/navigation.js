@@ -43,7 +43,7 @@ document.querySelectorAll('.landmark').forEach(button=>button.addEventListener('
   if(getPhase()!=='explore')return;
   const destination=button.dataset.destination;
   document.querySelector('#travel-title').textContent=button.dataset.title;
-  if(['institute','rotas'].includes(button.dataset.place) && document.fullscreenElement===root){
+  if(['institute','rotas','max'].includes(button.dataset.place) && document.fullscreenElement===root){
     // Keep the same fullscreen document alive: navigation would end browser fullscreen.
     const portal=document.querySelector('#institute-portal');
     const frame=document.querySelector('#institute-frame');
@@ -74,7 +74,7 @@ immersiveFrame.addEventListener('load',()=>{
       if(path===base+'port/' || path===base+'port'){
         event.preventDefault();
         document.querySelector('#institute-return').click();
-      }else if(path===base+'rotas/' || path===base+'rotas' || path===base+'feuch-institute/' || path===base+'feuch-institute' || (path===base+'map' && url.searchParams.get('place')==='rotas')){
+      }else if(path===base+'rotas/' || path===base+'rotas' || path===base+'feuch-institute/' || path===base+'feuch-institute' || (path===base+'map' && ['rotas','max'].includes(url.searchParams.get('place')))){
         event.preventDefault();
         immersiveFrame.src=url.href;
       }

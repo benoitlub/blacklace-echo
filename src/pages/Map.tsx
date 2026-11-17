@@ -45,7 +45,7 @@ const ACTOR_COLORS: Record<string, string> = {
 const BlacklaceMap = () => {
   const [imgOk, setImgOk] = useState(true);
   const [active, setActive] = useState<string | null>(null);
-  const [view, setView] = useState<MapView>(() => new URLSearchParams(window.location.search).get("place") === "rotas" ? "rotas" : "map");
+  const [view, setView] = useState<MapView>(() => new URLSearchParams(window.location.search).get("place") === "max" ? "max" : new URLSearchParams(window.location.search).get("place") === "rotas" ? "rotas" : "map");
   const [weather, setWeather] = useState<Weather>("clear");
   const [time, setTime] = useState<Time>("day");
   const [worldSignals, setWorldSignals] = useState<ReturnType<typeof parsePublicSignals>>([]);
