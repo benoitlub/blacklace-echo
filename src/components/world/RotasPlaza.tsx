@@ -40,6 +40,13 @@ const SCENES: Record<SceneId, Scene> = {
   ] },
 };
 const SCENE_IDS = Object.keys(SCENES) as SceneId[];
+const portraitFor = (actor: string, name: string) => {
+  const identity = `${actor} ${name}`.toLowerCase();
+  if (identity.includes("natasha")) return "natasha.webp";
+  if (identity.includes("marty")) return "marty.webp";
+  if (identity.includes("marie-jeanne") || identity.includes("marie jeanne")) return "marie-jeanne.webp";
+  return null;
+};
 const RESIDENT_POSITIONS = [{ x: 48, y: 66 }, { x: 62, y: 63 }, { x: 35, y: 56 }, { x: 74, y: 59 }, { x: 44, y: 78 }, { x: 64, y: 77 }];
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 type Camera = { zoom: number; x: number; y: number };
@@ -61,6 +68,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
   const [depthReady, setDepthReady] = useState(false);
   const [foundMosaic, setFoundMosaic] = useState(false);
   const [dialogueLine, setDialogueLine] = useState(0);
+  const [portraitError, setPortraitError] = useState(false);
   const viewport = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLElement>(null);
   const back = useRef<HTMLAnchorElement>(null);
@@ -124,7 +132,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
 
   function go(id: SceneId) {
     if (id === sceneId) { reset(); return; }
-    setSceneId(id); setSelected(null); setSelectedActor(null); setShowResidents(false); setDialogueLine(0);
+    setSceneId(id); setSelected(null); setSelectedActor(null); setShowResidents(false); setDialogueLine(0); setPortraitError(false);
     setCamera({ zoom: 1, x: .5, y: .5 }); setImageError(false); setImageLoading(true);
     setDepthReady(false);
     resetLook();
@@ -215,8 +223,8 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
             {perspective && <img src={`${import.meta.env.BASE_URL}assets/rotas/square.webp`} alt="" draggable={false} className="rv-scene rv-near" />}
           </>}
           <div className="rv-sunlight" aria-hidden="true" />
-          {(sceneId === "square" || sceneId === "market") && <img className="rv-decor rv-decor-banner" src={`${import.meta.env.BASE_URL}assets/rotas/decor-eye-banner.svg`} alt="" aria-hidden="true" draggable={false} />}
-          {(sceneId === "tea" || sceneId === "shop") && <img className="rv-decor rv-decor-lantern" src={`${import.meta.env.BASE_URL}assets/rotas/decor-lantern.svg`} alt="" aria-hidden="true" draggable={false} />}
+          {(sceneId === "square" || sceneId === "market") && <img className="rv-decor rv-decor-banner" src={`${import.meta.env.BASE_URL}assets/rotas/Props/banniere-oeil.svg`} alt="" aria-hidden="true" draggable={false} />}
+          {(sceneId === "tea" || sceneId === "shop") && <img className="rv-decor rv-decor-lantern" src={`${import.meta.env.BASE_URL}assets/rotas/Props/lanterne.svg`} alt="" aria-hidden="true" draggable={false} />}
           {sceneId === "square" && <div className="rv-water" style={{ left: "51%", top: "61%" }} aria-hidden="true"><i /><i /><i /></div>}
           {scene.stops.map((stop) => <button key={stop.id} type="button" className={`rv-hotspot ${selected?.id === stop.id ? "is-selected" : ""}`}
             style={{ left: clamp(stop.x / 100 * width, -offsetX + 54, -offsetX + size.width - 54), top: clamp(stop.y / 100 * height, -offsetY + 125, -offsetY + size.height - 95) }} onClick={() => observe(stop)} aria-label={stop.label} title={stop.label}>
@@ -226,7 +234,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
             const pos = RESIDENT_POSITIONS[i % RESIDENT_POSITIONS.length];
             return <button key={person.actor} className="rv-resident" tabIndex={-1} type="button" aria-label={`Observer ${person.name}`} title={person.name}
               style={{ left: `${pos.x + Math.floor(i / RESIDENT_POSITIONS.length) * 2}%`, top: `${pos.y}%`, "--resident-color": person.color } as CSSProperties}
-              onClick={() => { setSelectedActor(person.actor); setDialogueLine(0); setSelected(null); setShowResidents(true); }}><span /><strong>{person.name}</strong></button>;
+              onClick={() => { setSelectedActor(person.actor); setDialogueLine(0); setPortraitError(false); setSelected(null); setShowResidents(true); }}><span /><strong>{person.name}</strong></button>;
           })}
         </div>}
       </div>
@@ -245,7 +253,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
       {(selected || showResidents) && <aside className="rv-note" aria-label={selected ? "Détail du lieu" : "Habitants de Rotas"}>
         <button className="rv-note-close" type="button" aria-label="Fermer le détail" onClick={() => { setSelected(null); setSelectedActor(null); setShowResidents(false); }}>×</button>
         {selected ? <><span className="rv-eyebrow">PRENDRE LE TEMPS D’OBSERVER</span><h2>{selected.label}</h2><p>{selected.description}</p>{sceneId === "square" && selected.id === "fountain" && <div className="rv-interaction"><p>{foundMosaic ? "Votre carnet conserve le relevé d’une mosaïque en spirale. Aucun objet n’a été retiré de la place." : "Un motif en spirale attire votre attention au bord du bassin."}</p><button type="button" onClick={() => setFoundMosaic(true)} disabled={foundMosaic}>{foundMosaic ? "Motif relevé ✓" : "Relever le motif dans le carnet"}</button></div>}</> : <>
-          <div className="rv-character-heading">{resident && (resident.actor === "marie-jeanne" ? <img className="rv-character-portrait" src={`${import.meta.env.BASE_URL}port/marie-jeanne.webp`} alt="Portrait de Marie Jeanne" /> : <div className="rv-character-portrait rv-character-placeholder" role="img" aria-label={`Portrait de ${resident.name} non disponible`}>{resident.name.slice(0, 1).toUpperCase()}</div>)}<div><span className="rv-eyebrow">PRÉSENCES SHERLOCK · PLACE DE ROTAS</span><h2>{resident?.name ?? "Les habitants"}</h2></div></div>
+          <div className="rv-character-heading">{resident && (portraitFor(resident.actor, resident.name) && !portraitError ? <img className="rv-character-portrait" src={`${import.meta.env.BASE_URL}${portraitFor(resident.actor, resident.name) === "marie-jeanne.webp" ? "port/marie-jeanne.webp" : `assets/rotas/Characters/${portraitFor(resident.actor, resident.name)}`}`} alt={`Portrait de ${resident.name}`} onError={() => setPortraitError(true)} /> : <div className="rv-character-portrait rv-character-placeholder" role="img" aria-label={`Portrait de ${resident.name} non disponible`}>{resident.name.slice(0, 1).toUpperCase()}</div>)}<div><span className="rv-eyebrow">PRÉSENCES SHERLOCK · PLACE DE ROTAS</span><h2>{resident?.name ?? "Les habitants"}</h2></div></div>
           {resident ? <><p className="rv-dialogue">{dialogueLine === 0 ? `Vous approchez de ${resident.name}. ${resident.activity ? `Cette personne semble occupée : ${resident.activity}.` : "Elle observe les alentours."}` : dialogueLine === 1 ? `« Bonjour. Je suis ${resident.name}. »` : resident.intention ? `« Pour le moment, je pense à ceci : ${resident.intention}. »` : "« Rotas change selon les gens qui la traversent. »"}</p><div className="rv-interaction"><button type="button" onClick={() => setDialogueLine(value => (value + 1) % 3)}>{dialogueLine === 0 ? "Saluer" : dialogueLine === 1 ? "Demander des nouvelles" : "Recommencer la conversation"}</button></div><p className="rv-dialogue-disclaimer">Dialogue local scénarisé ; les activités et intentions proviennent du signal Sherlock lorsqu’il est disponible.</p>{resident.lastEvent && <p>{resident.lastEvent}</p>}</> : <p>{residents.length ? "Choisissez un habitant pour lire son activité reçue de Sherlock." : "Aucune présence reçue pour Rotas actuellement."}</p>}
           <div className="rv-resident-list">{residents.map(person => <button key={person.actor} type="button" aria-pressed={person.actor === selectedActor} onClick={() => { setSelectedActor(person.actor); setDialogueLine(0); }}>{person.name}</button>)}</div>
         </>}
