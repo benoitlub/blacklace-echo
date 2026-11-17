@@ -61,6 +61,8 @@ function animate(now: number) {
   if (progress < 1) frame = requestAnimationFrame(animate); else reveal();
 }
 get('enter').onclick = () => {
+  // Fullscreen requires a user gesture; offer it as part of entering, without blocking arrival.
+  if (!document.fullscreenElement && root.requestFullscreen) void root.requestFullscreen().catch(() => {});
   if (phase !== 'quay') return;
   if (reduced.matches || !ready) { welcome(); return; }
   setPhase('crossing'); start = 0; frame = requestAnimationFrame(animate);
@@ -80,11 +82,24 @@ function parallax(x: number, y: number) {
   root.style.setProperty('--px', String(x)); root.style.setProperty('--py', String(y));
   if (ready && phase === 'quay') { camera.position.x = x * .25; camera.position.y = -y * .15; draw(); }
 }
+// Ambient drift keeps the harbour alive even before the visitor touches the screen.
+// Manual movement temporarily takes precedence. Reduced-motion preference is respected.
+let lastManualParallax = 0;
+let ambientFrame = 0;
+function ambientParallax(now: number) {
+  if (!reduced.matches && phase !== 'crossing' && document.visibilityState === 'visible' && now - lastManualParallax > 3500) {
+    parallax(Math.sin(now / 11000) * .22, Math.cos(now / 14000) * .12);
+  }
+  ambientFrame = requestAnimationFrame(ambientParallax);
+}
+ambientFrame = requestAnimationFrame(ambientParallax);
+window.addEventListener('pagehide', () => cancelAnimationFrame(ambientFrame));
 root.onpointerdown = e => {
   if ((e.target as Element).closest('a,button,summary')) return;
   pointer = { x: e.clientX, y: e.clientY, id: e.pointerId }; root.setPointerCapture(e.pointerId);
 };
 root.onpointermove = e => {
+  lastManualParallax = performance.now();
   if (e.pointerType === 'mouse') parallax(e.clientX / innerWidth * 2 - 1, e.clientY / innerHeight * 2 - 1);
   else if (pointer?.id === e.pointerId) parallax((pointer.x - e.clientX) / 150, (pointer.y - e.clientY) / 150);
 };
