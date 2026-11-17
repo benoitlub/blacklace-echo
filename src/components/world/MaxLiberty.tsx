@@ -17,6 +17,10 @@ export default function MaxLiberty({ onBack }: Props) {
   const [sound, setSound] = useState(false);
   const [tablet, setTablet] = useState(false);
   const [dialogueLine, setDialogueLine] = useState(0);
+  const [dialogueOpen, setDialogueOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [motion, setMotion] = useState({ x: 0, y: 0 });
+  const distortion = useRef<SVGFETurbulenceElement | null>(null);
   const [selected, setSelected] = useState(1);
   const [active, setActive] = useState<number | null>(null);
   const [scene, setScene] = useState<"bar" | "plage">("bar");
@@ -26,6 +30,7 @@ export default function MaxLiberty({ onBack }: Props) {
   const effectGain = useRef<GainNode | null>(null);
   const effectOsc = useRef<OscillatorNode | null>(null);
   const stopEffect = () => setActive(null);
+  const reduceMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
     if (active === null) return;
@@ -78,12 +83,32 @@ export default function MaxLiberty({ onBack }: Props) {
   }, [active, intensity, sound]);
 
   useEffect(() => () => { void audio.current?.close(); }, []);
+  useEffect(() => {
+    if (active === null || intensity === "off" || reduceMotion) return;
+    let frame = 0;
+    let raf = 0;
+    const animate = () => {
+      frame += 1;
+      const speed = active === 4 ? .12 : .055;
+      const freq = .008 + Math.sin(frame * speed) * .004;
+      distortion.current?.setAttribute("baseFrequency", String(Math.max(.002, freq)));
+      raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [active, intensity, reduceMotion]);
+  function moveScene(clientX: number, clientY: number) {
+    if (reduceMotion) return;
+    const x = (clientX / window.innerWidth - .5) * 2;
+    const y = (clientY / window.innerHeight - .5) * 2;
+    setMotion({ x, y });
+  }
   async function toggleSound() {
     if (sound) { setSound(false); await audio.current?.suspend(); return; }
     try { if (!audio.current) audio.current = new AudioContext(); await audio.current.resume(); setSound(true); }
     catch { setSound(false); }
   }
-  function sip(index: number) { setSelected(index); setActive(index); setDialogueLine(2); }
+  function sip(index: number) { setSelected(index); setActive(index); setDialogueLine(2); setTablet(false); setDialogueOpen(true); }
   const dialogue = [
     "Bienvenue au Max Liberty ! Installe-toi, la mer est à toi.",
     "Touche la tablette. Les verres vont apparaître sur le comptoir.",
@@ -97,19 +122,31 @@ export default function MaxLiberty({ onBack }: Props) {
 
   const effectClass = active === null || intensity === "off" ? "" : `max-perception--${drinks[active].vision} max-perception--${intensity}`;
   return <section className="max-visit" role="dialog" aria-modal="true" aria-label="Visite du Max Liberty">
-    <div className={`max-world ${effectClass}`} aria-hidden="true">
+    <svg className="max-svg-filters" aria-hidden="true" focusable="false" width="0" height="0">
+      <defs><filter id="max-liquid-distortion" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence ref={distortion} type="fractalNoise" baseFrequency="0.008" numOctaves="2" seed="4" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale={intensity === "soft" ? 7 : active === 4 ? 29 : 17} xChannelSelector="R" yChannelSelector="G"/>
+      </filter></defs>
+    </svg>
+    <div className={`max-world ${effectClass} ${active !== null && !reduceMotion && intensity !== "off" ? "max-world--warped" : ""}`}
+      aria-hidden="true" onPointerMove={event => moveScene(event.clientX,event.clientY)}>
+      <div className="max-depth max-depth--back" style={{ transform: `translate3d(${motion.x * -8}px,${motion.y * -5}px,0) scale(1.04)` }}>
       <div className="max-backdrop" />
       {!missing && <img key={scene} className="max-photo" src={asset(scene === "bar" ? "bar-interieur.webp" : "bar-plage.webp")} alt="" onError={() => setMissing(true)} />}
+      </div>
+      <div className="max-depth max-depth--front" style={{ transform: `translate3d(${motion.x * 13}px,${motion.y * 8}px,0) scale(1.07)` }}>
+        {!missing && <img className="max-photo" src={asset(scene === "bar" ? "bar-interieur.webp" : "bar-plage.webp")} alt="" />}
+      </div>
       <div className="max-vignette" />
       {active !== null && intensity !== "off" && <div className="max-visions" />}
     </div>
     <header className="max-header">
       <button onClick={onBack}>← HoloMap</button>
-      <div><small>BLACKLACE ISLAND · BAR DE PLAGE</small><h2>MAX LIBERTY</h2></div>
-      <button aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? "🔊 Son activé" : "🔇 Activer le son"}</button>
+      <div className="max-heading"><small>BLACKLACE ISLAND · BAR DE PLAGE</small><h2>MAX LIBERTY</h2></div>
+      <button className="max-sound-button" aria-label={sound ? "Couper le son" : "Activer le son"} aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? "🔊" : "🔇"}</button>
     </header>
     <div className="max-counter-stage">
-      <button className="max-tablet-hotspot" aria-expanded={tablet} onClick={() => { setTablet(value => !value); setDialogueLine(1); }}>
+      <button className="max-tablet-hotspot" aria-expanded={tablet} onClick={() => { setTablet(value => !value); setDialogueLine(1); setDialogueOpen(false); }}>
         <span aria-hidden="true">▤</span> {tablet ? "Fermer la tablette" : "✦ Tablette du comptoir"}
       </button>
       {tablet && <div className="max-hologram" aria-label="Cocktails holographiques">
@@ -126,21 +163,23 @@ export default function MaxLiberty({ onBack }: Props) {
       </div>}
     </div>
     <div className="max-bottom max-bottom--immersive">
-      <div className="max-host max-dialogue" aria-live="polite">
+      {dialogueOpen && <div className="max-host max-dialogue" aria-live="polite">
         <div className="max-dialogue-portrait" aria-hidden="true">🍹</div>
-        <div><strong>MAX · Barman du Max Liberty</strong><p>{dialogue[dialogueLine]}</p>
+        <div><strong>MAX · Barman du Max Liberty</strong><button className="max-dialogue-close" onClick={() => setDialogueOpen(false)} aria-label="Fermer le dialogue">✕</button><p>{dialogue[dialogueLine]}</p>
           <div className="max-dialogue-actions">
             {dialogueLine < 2 && <button onClick={() => setDialogueLine(value => value + 1)}>Continuer →</button>}
             <button onClick={() => { setTablet(true); setDialogueLine(1); }}>Voir les cocktails</button>
           </div>
         </div>
-      </div>
+      </div>}
       <div className="max-compact-tools">
-        <button onClick={() => { setScene(value => value === "bar" ? "plage" : "bar"); setMissing(false); }}>↔ {scene === "bar" ? "Plage" : "Comptoir"}</button>
+        <button onClick={() => { setDialogueOpen(true); setTablet(false); setDialogueLine(0); }}>💬 Max</button>
+        <button onClick={() => { setScene(value => value === "bar" ? "plage" : "bar"); setMissing(false); }}>↔ Vue</button>
         {active !== null && <button onClick={stopEffect}>✕ Stop effet</button>}
-        <label>Effets <select value={intensity} onChange={e => setIntensity(e.target.value as "normal" | "soft" | "off")}>
+        <button onClick={() => setSettingsOpen(value => !value)} aria-expanded={settingsOpen}>⚙</button>
+        {settingsOpen && <label>Effets <select value={intensity} onChange={e => setIntensity(e.target.value as "normal" | "soft" | "off")}>
           <option value="normal">Normaux</option><option value="soft">Doux</option><option value="off">Sans effets</option>
-        </select></label>
+        </select></label>}
       </div>
     </div>
   </section>;
