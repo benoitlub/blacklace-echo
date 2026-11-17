@@ -29,6 +29,7 @@ export default function MaxLiberty({ onBack }: Props) {
   const audio = useRef<AudioContext | null>(null);
   const effectGain = useRef<GainNode | null>(null);
   const effectOsc = useRef<OscillatorNode | null>(null);
+  const soundFilter = useRef<BiquadFilterNode | null>(null);
   const stopEffect = () => setActive(null);
   const reduceMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -42,6 +43,10 @@ export default function MaxLiberty({ onBack }: Props) {
     if (!sound || !audio.current) return;
     const ctx = audio.current;
     const sources: AudioBufferSourceNode[] = [];
+    const master = ctx.createBiquadFilter();
+    master.type = "lowpass"; master.frequency.value = 6000;
+    master.connect(ctx.destination);
+    soundFilter.current = master;
     const nodes: AudioNode[] = [];
     for (const [freq, volume] of [[240, .045], [780, .014], [1450, .008]] as const) {
       const buffer = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
@@ -52,19 +57,24 @@ export default function MaxLiberty({ onBack }: Props) {
       const filter = ctx.createBiquadFilter();
       filter.type = "lowpass"; filter.frequency.value = freq;
       const gain = ctx.createGain(); gain.gain.value = volume;
-      source.connect(filter).connect(gain).connect(ctx.destination);
+      source.connect(filter).connect(gain).connect(master);
       source.start(); sources.push(source); nodes.push(filter, gain);
     }
     return () => {
       sources.forEach(source => { source.stop(); source.disconnect(); });
       nodes.forEach(node => node.disconnect());
+      master.disconnect(); soundFilter.current = null;
 
     };
   }, [sound]);
 
   useEffect(() => {
     const ctx = audio.current;
-    if (!ctx || active === null || intensity === "off") return;
+    if (ctx && soundFilter.current) {
+      const hz = active === null || intensity === "off" ? 6000 : active === 4 ? 420 : active === 1 ? 950 : 1700;
+      soundFilter.current.frequency.setTargetAtTime(hz, ctx.currentTime, .4);
+    }
+    if (!ctx || active === null || intensity === "off" || !sound) return;
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
     oscillator.type = "sine";
@@ -121,7 +131,7 @@ export default function MaxLiberty({ onBack }: Props) {
   }, []);
 
   const effectClass = active === null || intensity === "off" ? "" : `max-perception--${drinks[active].vision} max-perception--${intensity}`;
-  return <section className="max-visit" role="dialog" aria-modal="true" aria-label="Visite du Max Liberty">
+  return <section className="max-visit" role="dialog" aria-modal="true" aria-label="Visite du Max Liberty" onPointerMove={event => { if (event.pointerType === "mouse") moveScene(event.clientX,event.clientY); }} onTouchMove={event => { const touch = event.touches[0]; if (touch) moveScene(touch.clientX,touch.clientY); }}>
     <svg className="max-svg-filters" aria-hidden="true" focusable="false" width="0" height="0">
       <defs><filter id="max-liquid-distortion" x="-10%" y="-10%" width="120%" height="120%">
         <feTurbulence ref={distortion} type="fractalNoise" baseFrequency="0.008" numOctaves="2" seed="4" result="noise"/>
