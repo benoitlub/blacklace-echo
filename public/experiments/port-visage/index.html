@@ -63,10 +63,11 @@ faceButton.onclick=async()=>{
   if(thisSession!==session)throw new Error('Demande annulée');
   status.textContent='MediaPipe 1/3 : téléchargement du module…';
   // The published ESM bundle is a more predictable browser entry point than +esm rewriting.
-  const mp=await timed(import('../../vendor/mediapipe/vision_bundle.mjs'),18,'Module MediaPipe');
+  const vendorBase=new URL('../../vendor/mediapipe/',window.location.href).href;
+  const mp=await timed(import(/* @vite-ignore */ vendorBase+'vision_bundle.mjs'),18,'Module MediaPipe');
   if(thisSession!==session)throw new Error('Chargement annulé');
   status.textContent='MediaPipe 2/3 : chargement WASM…';
-  const files=await timed(mp.FilesetResolver.forVisionTasks('../../vendor/mediapipe/wasm'),18,'Moteur WASM');
+  const files=await timed(mp.FilesetResolver.forVisionTasks(vendorBase+'wasm'),18,'Moteur WASM');
   if(thisSession!==session)throw new Error('Chargement annulé');
   status.textContent='MediaPipe 3/3 : chargement du modèle facial…';
   const model=await timed(fetch('https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task').then(async response=>{if(!response.ok)throw new Error('Modèle facial HTTP '+response.status);return new Uint8Array(await response.arrayBuffer())}),25,'Modèle facial');
