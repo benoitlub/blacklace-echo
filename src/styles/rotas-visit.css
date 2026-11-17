@@ -64,3 +64,5 @@ body.rotas-visiting .bl-build-marker,body.rotas-visiting .bl-build-footer{displa
 
 /* Small diegetic interactions, without covering the scenery. */
 .rv-interaction{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.rv-interaction button{font:12px system-ui,sans-serif;min-height:44px}.rv-dialogue{border-left:2px solid var(--rv-gold);padding-left:12px}.rv-dialogue-disclaimer{font-size:10px!important;opacity:.75}.rv-journal{font:11px system-ui,sans-serif;color:#fff5df;background:#112e2dc9;border:1px solid #dfc18c55;border-radius:8px;padding:12px;align-self:center}
+
+.rv-character-heading{display:flex;align-items:center;gap:14px;margin:4px 0 12px}.rv-character-heading>div:last-child{min-width:0}.rv-character-portrait{width:clamp(76px,17vw,124px);height:clamp(76px,17vw,124px);flex:none;object-fit:cover;object-position:50% 25%;border-radius:50%;border:2px solid #e4b96577;background:#283a45}.rv-character-placeholder{display:grid;place-items:center;font:700 36px Georgia,serif;color:#ffdc92}
