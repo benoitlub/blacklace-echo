@@ -61,15 +61,18 @@ async function layoutLayers(){
  }));
  function position(){
   const width=scene.clientWidth*1.04,scale=width/1188,height=scene.clientHeight;
-  const water=layers[7];
-  const waterTop=height*(2/3)-water.first*scale;
+  // The quay is the waterline reference: no water pixels above its highest
+  // visible point. Each water PNG has its own alpha margin, so align visible
+  // tops individually rather than aligning their transparent canvas origins.
+  const quay=layers[10];
+  const quayTop=height-(quay.last+1-quay.first)*scale;
   for(const layer of layers){
    const {e,z,bottom,first,last,imgHeight}=layer;
    const imageHeight=imgHeight*scale;
    e.style.height=imageHeight+'px';
    let top;
    if(z===0)top=0;
-   else if(z>=7&&z<=9)top=waterTop;
+   else if(z>=7&&z<=9)top=quayTop-first*scale;
    else top=height*bottom-(last+1)*scale;
    e.style.top=top+'px';
   }
@@ -80,7 +83,7 @@ async function layoutLayers(){
 layoutLayers();
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth} of layers){const d=depth*amp;e.style.transform='translate3d('+(-x*d*26).toFixed(2)+'px,'+(-y*d*12).toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth,z} of layers){const d=depth*amp;const dy=(z>=7&&z<=9)?0:-y*d*12;e.style.transform='translate3d('+(-x*d*26).toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
 render();
 document.querySelector('#amplitude').addEventListener('input',e=>{amp=Number(e.target.value)/100;document.querySelector('#value').textContent=e.target.value+' %'});
 document.querySelector('#center').onclick=()=>{neutral=null;tx=0;ty=0;status.textContent=active?'Recentrage : regarde au centre de l’écran.':'Perspective recentrée.'};
