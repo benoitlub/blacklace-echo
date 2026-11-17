@@ -57,3 +57,7 @@ body.rotas-visiting .bl-build-marker,body.rotas-visiting .bl-build-footer{displa
 .rv-note{bottom:calc(75px + env(safe-area-inset-bottom));left:max(12px,env(safe-area-inset-left));max-height:45dvh}
 @media(max-width:720px){.rv-back{font-size:0!important;width:44px}.rv-back::before{content:'←';font-size:20px}.rv-header h1{font-size:17px;max-width:195px}.rv-atmosphere{top:calc(100% + 8px);right:0}.rv-hotspot strong{font-size:10px}.rv-camera{top:auto}.rv-note{bottom:75px;max-height:42dvh}}
 @media(max-height:520px){.rv-header{padding:0}.rv-tools .rv-atmosphere{position:absolute;display:grid}.rv-note{bottom:65px}.rv-camera{top:auto;bottom:65px}}
+
+/* The depth plate is an auxiliary map, not a visible scene layer. Its onLoad
+   enables perspective, but painting it over square.webp obscures Rotas. */
+.rotas-visit .rv-depth-plate { display: none !important; }
