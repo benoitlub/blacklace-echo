@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BackgroundLayers } from "@/blacklace/Layers";
 import { feuchInstitutePath } from "@/blacklace/data";
 import RotasPlaza from "@/components/world/RotasPlaza";
+import MaxLiberty from "@/components/world/MaxLiberty";
 import "@/styles/rotas.css";
 import "@/styles/holomap-glass.css";
 import { ISLAND_LOCATIONS, ISLAND_LOCATION_BY_ID, islandRoute, type RoutePoint } from "@/blacklace/island-geography";
@@ -17,7 +18,7 @@ const HOLOWALL_LABELS = ["ROTAS", "SATOR", "FEUCH", "ALOISIA", "SIGNAL", "BRUME"
 
 type Weather = "clear" | "rain" | "storm" | "fog";
 type Time = "dawn" | "day" | "dusk" | "night";
-type MapView = "map" | "zooming-rotas" | "rotas";
+type MapView = "map" | "zooming-rotas" | "rotas" | "max";
 type SherlockPresence = { actor: string; place: PlaceId; cycle: number; moving: boolean; travelPoint?: RoutePoint; activity?: string; intention?: string; lastEvent?: string };
 const PLACE_IDS = new Set(ISLAND_LOCATIONS.map(location => location.id));
 const isPlaceId = (value: string): value is PlaceId => PLACE_IDS.has(value as PlaceId);
@@ -216,6 +217,7 @@ const BlacklaceMap = () => {
 
   function enterZone(id: string) {
     setSelectedActor(null);
+    if (id === "max") { setActive(null); setView("max"); return; }
     if (id === "rotas") {
       setActive(null);
       window.history.replaceState(window.history.state, "", `${window.location.pathname}?place=rotas`);
@@ -466,6 +468,7 @@ const BlacklaceMap = () => {
         </section>
       </main>
 
+      {view === "max" && <MaxLiberty onBack={backToMap} />}
       {(view === "zooming-rotas" || view === "rotas") && (
         <RotasPlaza
           entering={view === "zooming-rotas"}
