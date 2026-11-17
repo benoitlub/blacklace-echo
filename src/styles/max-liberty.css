@@ -5,3 +5,5 @@
 .max-depth-stage .max-depth-base{inset:0;width:100%;height:100%}
 .max-depth-layer{will-change:transform;transition:transform 160ms ease-out}
 @media(prefers-reduced-motion:reduce){.max-depth-layer{transform:none!important;will-change:auto}}
+
+.max-vignette{pointer-events:none}
