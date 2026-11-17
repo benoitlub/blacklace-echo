@@ -4,8 +4,8 @@
 <style>
 :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#08121e;color:#fff}*{box-sizing:border-box}
 body{margin:0}header{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;background:#0c1626}
-#scene{position:relative;width:100%;aspect-ratio:16 / 9;height:auto;overflow:hidden;background:#edac9b;touch-action:pan-y;isolation:isolate}
-.layer{position:absolute;left:-2%;width:104%;background-repeat:no-repeat;background-position:center center;background-size:100% 100%;transform-origin:center center;pointer-events:none;will-change:transform}
+#scene{position:relative;width:100%;aspect-ratio:1188 / 941;height:auto;overflow:hidden;background:#edac9b;touch-action:pan-y;isolation:isolate}
+.layer{position:absolute;inset:0;width:100%;height:100%;background-repeat:no-repeat;background-position:0 0;background-size:100% 100%;pointer-events:none;will-change:transform}
 #status{font-size:13px;min-height:2em;color:#b9d8e8}main{padding:12px 14px;display:grid;gap:12px}
 .controls{display:flex;gap:8px;flex-wrap:wrap}button{border:1px solid #7ca7c6;border-radius:12px;background:#17344c;color:white;padding:12px 15px;font:inherit}
 button[aria-pressed=true]{background:#146b6a;border-color:#7df7d8}
@@ -20,66 +20,34 @@ small{color:#9db5c6}#scene:after{content:"";position:absolute;inset:0;pointer-ev
 <small>Le suivi facial fonctionne uniquement après autorisation de la caméra, sur HTTPS. Traitement local dans le navigateur. Aucun enregistrement vidéo.</small></main>
 <script type="module">
 const scene=document.querySelector('#scene'),status=document.querySelector('#status');
-// Rebuilt stack, back to front. The Eye House (Feuch Institut) is
-// SECOND among the island layers, immediately after the volcano.
-// All source PNGs use one shared 1188x941 canvas; no individual rescaling.
+// Exact native 1188x941 registration. All layers share (0,0).
+// The responsive scene scales the ENTIRE coordinate system uniformly.
 const specs=[
- ['01_ciel.png',0,'sky',null],
- ['02_volcan.png',.05,'island',.685],
- ['03_foret.png',.10,'island',.695],
- ['06_village.png',.40,'island',.68],
- ['05_sator_clairiere.png',.28,'island',.66],
- ['04_feuch_institut.png',.20,'island',.65],
- ['07_porsa_rotas.png',.60,'island',.685],
- ['08a_eau_reflets.png',.65,'water',null],
- ['08b_eau_vagues.png',.65,'water',null],
- ['08c_eau_ecume.png',.65,'water',null],
- ['09_quai.png',1,'quay',1]
+ ['01_ciel.png',0,1],
+ ['02_volcan.png',.05,1],
+ ['03_foret.png',.10,1],
+ ['04_feuch_institut.png',.20,1],
+ ['05_sator_clairiere.png',.28,1],
+ ['06_village.png',.40,1],
+ ['07_porsa_rotas.png',.60,1],
+ ['08a_eau_reflets.png',.65,.4],
+ ['08b_eau_vagues.png',.72,.6],
+ ['08c_eau_ecume.png',.80,.8],
+ ['09_quai.png',1,1]
 ];
-const layers=specs.map(([name,depth,group,bottom],index)=>{
- const e=document.createElement('div');e.className='layer';
- e.style.zIndex=index;e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
+const layers=specs.map(([name,depth,opacity],z)=>{
+ const e=document.createElement('div');
+ e.className='layer';
+ e.style.zIndex=z;
+ e.style.opacity=opacity;
+ e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
+ // Preserve exact source coordinates, no per-layer geometry or alpha scans.
  scene.append(e);
- return {e,name,depth,group,bottom,first:0,last:940,imgWidth:1188,imgHeight:941};
+ return {e,name,depth};
 });
-async function layoutLayers(){
- await Promise.all(layers.map(async layer=>{
-  const img=new Image();img.src='../../assets/blacklace/'+layer.name;
-  try{
-   await img.decode();layer.imgWidth=img.naturalWidth;layer.imgHeight=img.naturalHeight;
-   const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
-   const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
-   const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
-   let first=canvas.height,last=-1;
-   for(let yy=0;yy<canvas.height;yy++){
-    for(let xx=0;xx<canvas.width;xx+=2){
-     if(pixels[(yy*canvas.width+xx)*4+3]>12){first=Math.min(first,yy);last=Math.max(last,yy);break}
-    }
-   }
-   if(last>=first){layer.first=first;layer.last=last}
-  }catch(error){status.textContent='Chargement image : '+layer.name}
- }));
- function position(){
-  // The eleven supplied PNGs are already registered on the SAME 1188x941
-  // transparent canvas. Keep their shared origin: no alpha-based offsets.
-  const scale=scene.clientWidth/1188;
-  const commonTop=(scene.clientHeight-941*scale)/2;
-  for(const layer of layers){
-   const {e,imgWidth,imgHeight}=layer;
-   e.style.width=(imgWidth*scale)+'px';
-   e.style.height=(imgHeight*scale)+'px';
-   e.style.left='50%';
-   e.style.marginLeft=(-(imgWidth*scale)/2)+'px';
-   e.style.top=commonTop+'px';
-  }
- }
- position();
- new ResizeObserver(position).observe(scene);
-}
-layoutLayers();
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth,group} of layers){const d=depth*amp;const dy=group==='water'?0:-y*d*12;e.style.transform='translate3d('+(-x*d*26).toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth} of layers){const d=depth*amp;e.style.transform='translate3d('+(-x*d*8).toFixed(2)+'px,0,0)'}frame=requestAnimationFrame(render)}
 render();
 document.querySelector('#amplitude').addEventListener('input',e=>{amp=Number(e.target.value)/100;document.querySelector('#value').textContent=e.target.value+' %'});
 document.querySelector('#center').onclick=()=>{neutral=null;tx=0;ty=0;status.textContent=active?'Recentrage : regarde au centre de l’écran.':'Perspective recentrée.'};
