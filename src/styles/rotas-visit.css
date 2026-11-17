@@ -61,3 +61,6 @@ body.rotas-visiting .bl-build-marker,body.rotas-visiting .bl-build-footer{displa
 /* The depth plate is an auxiliary map, not a visible scene layer. Its onLoad
    enables perspective, but painting it over square.webp obscures Rotas. */
 .rotas-visit .rv-depth-plate { display: none !important; }
+
+/* Small diegetic interactions, without covering the scenery. */
+.rv-interaction{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.rv-interaction button{font:12px system-ui,sans-serif;min-height:44px}.rv-dialogue{border-left:2px solid var(--rv-gold);padding-left:12px}.rv-dialogue-disclaimer{font-size:10px!important;opacity:.75}.rv-journal{font:11px system-ui,sans-serif;color:#fff5df;background:#112e2dc9;border:1px solid #dfc18c55;border-radius:8px;padding:12px;align-self:center}
