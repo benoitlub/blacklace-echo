@@ -47,12 +47,13 @@ const layers=specs.map(([name,depth,opacity],z)=>{
 });
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-const storageKey='blacklace-port-editor-v4';
+const storageKey='blacklace-port-editor-v5';
 // Approved mobile montage coordinates, committed as the default preset.
-const approvedPreset=[{"x":-54,"y":462,"z":0,"w":100,"h":100},{"x":-39,"y":489,"z":1,"w":108,"h":104},{"x":-104,"y":466,"z":2,"w":108,"h":104},{"x":-141,"y":396,"z":5,"w":108,"h":104},{"x":-93,"y":267,"z":3,"w":108,"h":104},{"x":-20,"y":208,"z":4,"w":108,"h":104},{"x":-201,"y":211,"z":6,"w":108,"h":104},{"x":54,"y":234,"z":7,"w":100,"h":100},{"x":46,"y":157,"z":8,"w":100,"h":100},{"x":-8,"y":98,"z":9,"w":100,"h":100},{"x":7,"y":28,"z":10,"w":100,"h":100}];
+const approvedPreset=[{"x":-60,"y":554,"z":0,"w":100,"h":150},{"x":-54,"y":686,"z":1,"w":108,"h":190},{"x":-146,"y":590,"z":2,"w":108,"h":180},{"x":-65,"y":422,"z":5,"w":108,"h":135},{"x":-75,"y":253,"z":3,"w":108,"h":104},{"x":52,"y":247,"z":4,"w":108,"h":200},{"x":-186,"y":221,"z":6,"w":108,"h":104},{"x":54,"y":234,"z":7,"w":100,"h":100},{"x":46,"y":157,"z":8,"w":100,"h":100},{"x":-8,"y":98,"z":9,"w":100,"h":100},{"x":7,"y":28,"z":10,"w":100,"h":100}];
 let offsets=approvedPreset.map(p=>({...p}));
 try{const saved=JSON.parse(localStorage.getItem(storageKey));if(Array.isArray(saved)&&saved.length===specs.length)offsets=saved.map((p,i)=>({x:Number(p.x)||0,y:Number(p.y)||0,z:clamp(Number.isFinite(Number(p.z))?Math.round(Number(p.z)):approvedPreset[i].z,0,10),w:clamp(Number(p.w)||approvedPreset[i].w,40,220),h:clamp(Number(p.h)||approvedPreset[i].h,40,220)}));}catch{}
 let editing=false,selected=3,editDrag=null,undoStack=[];
+let faceZoom=1,targetFaceZoom=1;
 const layerSelect=document.querySelector('#layerSelect'),editor=document.querySelector('#editor');
 layers.forEach(({name,z})=>{const option=document.createElement('option');option.value=z;option.textContent='z'+z+' · '+name;layerSelect.append(option)});
 layerSelect.value=String(selected);
@@ -60,7 +61,7 @@ const ox=document.querySelector('#offsetX'),oy=document.querySelector('#offsetY'
 function syncEdit(){ox.value=String(Math.round(offsets[selected].x));oy.value=String(Math.round(offsets[selected].y));oz.value=String(offsets[selected].z);ow.value=String(offsets[selected].w);oh.value=String(offsets[selected].h);}
 function snapshot(){undoStack.push(offsets.map(p=>({...p})));if(undoStack.length>50)undoStack.shift();}
 function persist(){try{localStorage.setItem(storageKey,JSON.stringify(offsets))}catch{}}
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;const scale=scene.clientWidth/1188,zoom=1.2,unit=scale*zoom,panY=-400*unit;for(const {e,depth,z} of layers){const d=depth*amp,p=offsets[z],sx=p.w/100,sy=p.h/100;e.style.zIndex=p.z;e.style.width=(1188*unit*sx)+'px';e.style.height=(941*unit*sy)+'px';const dx=(scene.clientWidth-1188*unit)/2+p.x*unit-(1188*unit*(sx-1))/2+(editing?0:-x*d*8);const dy=panY+p.y*unit-(941*unit*(sy-1))/2;e.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;faceZoom+=(targetFaceZoom-faceZoom)*.09;const scale=scene.clientWidth/1188,zoom=1.2,unit=scale*zoom,panY=-400*unit;const fz=editing?1:faceZoom,cx=scene.clientWidth/2,cy=scene.clientHeight/2;for(const {e,depth,z} of layers){const d=depth*amp,p=offsets[z],sx=p.w/100,sy=p.h/100;e.style.zIndex=p.z;e.style.width=(1188*unit*sx*fz)+'px';e.style.height=(941*unit*sy*fz)+'px';const dx=(scene.clientWidth-1188*unit)/2+p.x*unit-(1188*unit*(sx-1))/2+(editing?0:-x*d*8);const dy=panY+p.y*unit-(941*unit*(sy-1))/2;const zx=cx+(dx-cx)*fz,zy=cy+(dy-cy)*fz;e.style.transform='translate3d('+zx.toFixed(2)+'px,'+zy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
 document.querySelector('#editToggle').onclick=()=>{editing=!editing;scene.classList.toggle('editing',editing);editor.classList.toggle('open',editing);document.querySelector('#editToggle').setAttribute('aria-pressed',String(editing));document.querySelector('#editToggle').textContent=editing?'✓ Terminer l’édition':'✥ Éditer le décor';if(editing){stop();syncEdit();status.textContent='Édition : déplace le calque choisi au doigt.'}else{persist();status.textContent='Montage enregistré sur cet appareil. Mode parallaxe disponible.'}};
 layerSelect.onchange=v=>{selected=Number(v.target.value);syncEdit()};
 for(const [field,axis] of [[ox,'x'],[oy,'y']]){field.addEventListener('focus',snapshot);field.addEventListener('input',()=>{offsets[selected][axis]=Number(field.value)||0;persist()})}
@@ -76,13 +77,13 @@ scene.addEventListener('pointercancel',()=>{editDrag=null;persist()});
 syncEdit();
 render();
 document.querySelector('#amplitude').addEventListener('input',e=>{amp=Number(e.target.value)/100;document.querySelector('#value').textContent=e.target.value+' %'});
-document.querySelector('#center').onclick=()=>{neutral=null;tx=0;ty=0;status.textContent=active?'Recentrage : regarde au centre de l’écran.':'Perspective recentrée.'};
+document.querySelector('#center').onclick=()=>{neutral=null;tx=0;ty=0;targetFaceZoom=1;status.textContent=active?'Recentrage : regarde au centre de l’écran.':'Perspective recentrée.'};
 scene.addEventListener('pointerdown',e=>{if(active||editing)return;drag={x:e.clientX,y:e.clientY,tx,ty};scene.setPointerCapture(e.pointerId)});
 scene.addEventListener('pointermove',e=>{if(!drag||active||editing)return;tx=clamp(drag.tx+(e.clientX-drag.x)/90,-1,1);ty=clamp(drag.ty+(e.clientY-drag.y)/90,-1,1)});
 scene.addEventListener('pointerup',()=>drag=null);
 scene.addEventListener('pointercancel',()=>drag=null);
 const faceButton=document.querySelector('#face');
-function stop(){session++;active=false;cancelAnimationFrame(faceFrame);stream?.getTracks().forEach(t=>t.stop());stream=null;if(video){video.srcObject=null;video.remove()}video=null;neutral=null;landmarker?.close?.();landmarker=null;faceButton.textContent='◎ Activer visage';faceButton.setAttribute('aria-pressed','false');tx=0;ty=0}
+function stop(){session++;active=false;targetFaceZoom=1;cancelAnimationFrame(faceFrame);stream?.getTracks().forEach(t=>t.stop());stream=null;if(video){video.srcObject=null;video.remove()}video=null;neutral=null;landmarker?.close?.();landmarker=null;faceButton.textContent='◎ Activer visage';faceButton.setAttribute('aria-pressed','false');tx=0;ty=0}
 document.querySelector('#stop').onclick=()=>{stop();status.textContent='Caméra arrêtée. Mode tactile disponible.'};
 faceButton.onclick=async()=>{if(editing){status.textContent='Termine l’édition avant d’activer le suivi facial.';return}
  if(active){stop();status.textContent='Suivi arrêté.';return}
@@ -122,7 +123,7 @@ faceButton.onclick=async()=>{if(editing){status.textContent='Termine l’éditio
   if(thisSession!==session){created.close();throw new Error('Chargement annulé')}
   landmarker=created;
   active=true;neutral=null;last=0;faceButton.setAttribute('aria-pressed','true');faceButton.textContent='◎ Visage actif';status.textContent='Suivi actif. Bouge doucement la tête.';
-  const detect=now=>{if(!active)return;if(now-last>100&&video.readyState>=2){last=now;try{const face=landmarker.detectForVideo(video,now).faceLandmarks?.[0];if(face){const p=face[1]||face[4]||face[0];if(!neutral)neutral={x:p.x,y:p.y};tx=clamp((neutral.x-p.x)*5,-1,1);ty=clamp((neutral.y-p.y)*5,-1,1)}else status.textContent='Visage hors champ : replace-toi face à l’écran.'}catch(e){status.textContent='Erreur de détection : '+e.message}}faceFrame=requestAnimationFrame(detect)};
+  const detect=now=>{if(!active)return;if(now-last>100&&video.readyState>=2){last=now;try{const face=landmarker.detectForVideo(video,now).faceLandmarks?.[0];if(face){const p=face[1]||face[4]||face[0];const left=face[234],right=face[454];const faceWidth=left&&right?Math.hypot(right.x-left.x,right.y-left.y):0;if(!neutral)neutral={x:p.x,y:p.y,width:faceWidth||.2};tx=clamp((neutral.x-p.x)*5,-1,1);ty=clamp((neutral.y-p.y)*5,-1,1);if(faceWidth>0)targetFaceZoom=clamp(1+((faceWidth/neutral.width)-1)*.35,.97,1.10)}else {targetFaceZoom=1;status.textContent='Visage hors champ : replace-toi face à l’écran.'}}catch(e){status.textContent='Erreur de détection : '+e.message}}faceFrame=requestAnimationFrame(detect)};
   faceFrame=requestAnimationFrame(detect);
  }catch(e){stop();status.textContent='Diagnostic : '+(e.name==='NotAllowedError'?'permission caméra refusée (vérifie les autorisations du site)':e.name==='NotReadableError'?'caméra occupée ou inaccessible':e.message)+' — le tactile reste disponible.'}
  finally{faceButton.disabled=false}
