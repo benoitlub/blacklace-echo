@@ -6,7 +6,7 @@
 body{margin:0}header{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;background:#0c1626}
 #scene{position:relative;width:100%;aspect-ratio:1188 / 941;height:auto;overflow:hidden;background:#edac9b;touch-action:pan-y;isolation:isolate}
 .layer{position:absolute;inset:0;width:100%;height:100%;background-repeat:no-repeat;background-position:0 0;background-size:100% 100%;pointer-events:none;will-change:transform}
-#status{font-size:13px;min-height:2em;color:#b9d8e8}main{padding:12px 14px;display:grid;gap:12px}
+#editor{display:none;border:1px solid #426b85;border-radius:12px;padding:12px;background:#10283a}#editor.open{display:grid;gap:10px}#editor select,#editor input{font:inherit;color:white;background:#17344c;border:1px solid #7ca7c6;border-radius:8px;padding:8px;min-width:0}#editor .editrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#editor .editrow input{width:90px}#editor button{padding:8px 12px}#scene.editing{touch-action:none;cursor:grab}#scene.editing:active{cursor:grabbing}#status{font-size:13px;min-height:2em;color:#b9d8e8}main{padding:12px 14px;display:grid;gap:12px}
 .controls{display:flex;gap:8px;flex-wrap:wrap}button{border:1px solid #7ca7c6;border-radius:12px;background:#17344c;color:white;padding:12px 15px;font:inherit}
 button[aria-pressed=true]{background:#146b6a;border-color:#7df7d8}
 label{display:flex;align-items:center;gap:12px}input{flex:1}
@@ -14,8 +14,8 @@ small{color:#9db5c6}#scene:after{content:"";position:absolute;inset:0;pointer-ev
 </style></head><body>
 <header><strong>BLACKLACE · PORT 2,5D</strong><span>Test privé · caméra locale</span></header>
 <div id="scene" aria-label="Vue expérimentale du port de Blacklace Island"></div>
-<main><div class="controls"><button id="face" aria-pressed="false">◎ Activer visage</button><button id="center">Recentrer</button><button id="stop">Arrêter</button></div>
-<label>Amplitude <input id="amplitude" type="range" min="0" max="100" value="75"><output id="value">75 %</output></label>
+<main><div class="controls"><button id="editToggle" aria-pressed="false">✥ Éditer le décor</button><button id="face" aria-pressed="false">◎ Activer visage</button><button id="center">Recentrer</button><button id="stop">Arrêter</button></div>
+<section id="editor"><strong>Atelier du port · glisse le calque sélectionné au doigt</strong><select id="layerSelect" aria-label="Calque à déplacer"></select><div class="editrow"><label>X <input id="offsetX" type="number" step="1" value="0"></label><label>Y <input id="offsetY" type="number" step="1" value="0"></label></div><div class="editrow"><button id="undoEdit">↶ Annuler</button><button id="resetLayer">Remettre ce calque à zéro</button><button id="saveEdit">Enregistrer</button><button id="exportEdit">Copier les positions</button></div><small>Positions en pixels du canevas 1188 × 941. Enregistrement sur ce téléphone uniquement. Pour conserver le montage dans GitHub, copie les positions et envoie-les dans cette conversation.</small></section><label>Amplitude <input id="amplitude" type="range" min="0" max="100" value="75"><output id="value">75 %</output></label>
 <div id="status" role="status">Glisse le doigt pour tester. Active la caméra pour le suivi facial.</div>
 <small>Le suivi facial fonctionne uniquement après autorisation de la caméra, sur HTTPS. Traitement local dans le navigateur. Aucun enregistrement vidéo.</small></main>
 <script type="module">
@@ -43,22 +43,45 @@ const layers=specs.map(([name,depth,opacity],z)=>{
  e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
  // Preserve exact source coordinates, no per-layer geometry or alpha scans.
  scene.append(e);
- return {e,name,depth};
+ return {e,name,depth,z};
 });
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth} of layers){const d=depth*amp;e.style.transform='translate3d('+(-x*d*8).toFixed(2)+'px,0,0)'}frame=requestAnimationFrame(render)}
+const storageKey='blacklace-port-editor-v1';
+let offsets=Array.from({length:specs.length},()=>({x:0,y:0}));
+try{const saved=JSON.parse(localStorage.getItem(storageKey));if(Array.isArray(saved)&&saved.length===specs.length)offsets=saved.map(p=>({x:Number(p.x)||0,y:Number(p.y)||0}));}catch{}
+let editing=false,selected=3,editDrag=null,undoStack=[];
+const layerSelect=document.querySelector('#layerSelect'),editor=document.querySelector('#editor');
+layers.forEach(({name,z})=>{const option=document.createElement('option');option.value=z;option.textContent='z'+z+' · '+name;layerSelect.append(option)});
+layerSelect.value=String(selected);
+const ox=document.querySelector('#offsetX'),oy=document.querySelector('#offsetY');
+function syncEdit(){ox.value=String(Math.round(offsets[selected].x));oy.value=String(Math.round(offsets[selected].y));}
+function snapshot(){undoStack.push(offsets.map(p=>({...p})));if(undoStack.length>50)undoStack.shift();}
+function persist(){try{localStorage.setItem(storageKey,JSON.stringify(offsets))}catch{}}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;const scale=scene.clientWidth/1188;for(const {e,depth,z} of layers){const d=depth*amp;const p=offsets[z];const dx=p.x*scale+(editing?0:-x*d*8);const dy=p.y*scale;e.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
+document.querySelector('#editToggle').onclick=()=>{editing=!editing;scene.classList.toggle('editing',editing);editor.classList.toggle('open',editing);document.querySelector('#editToggle').setAttribute('aria-pressed',String(editing));document.querySelector('#editToggle').textContent=editing?'✓ Terminer l’édition':'✥ Éditer le décor';if(editing){stop();syncEdit();status.textContent='Édition : déplace le calque choisi au doigt.'}else{persist();status.textContent='Montage enregistré sur cet appareil. Mode parallaxe disponible.'}};
+layerSelect.onchange=v=>{selected=Number(v.target.value);syncEdit()};
+for(const [field,axis] of [[ox,'x'],[oy,'y']]){field.addEventListener('focus',snapshot);field.addEventListener('input',()=>{offsets[selected][axis]=Number(field.value)||0;persist()})}
+document.querySelector('#undoEdit').onclick=()=>{if(undoStack.length){offsets=undoStack.pop();syncEdit();persist()}};
+document.querySelector('#resetLayer').onclick=()=>{snapshot();offsets[selected]={x:0,y:0};syncEdit();persist()};
+document.querySelector('#saveEdit').onclick=()=>{persist();status.textContent='Positions sauvegardées dans ce navigateur.'};
+document.querySelector('#exportEdit').onclick=async()=>{const data=JSON.stringify(layers.map(({name,z})=>({name,...offsets[z]})),null,2);try{await navigator.clipboard.writeText(data);status.textContent='Positions copiées ! Colle-les dans notre conversation.'}catch{status.textContent=data}};
+scene.addEventListener('pointerdown',e=>{if(!editing)return;editDrag={id:e.pointerId,x:e.clientX,y:e.clientY,ox:offsets[selected].x,oy:offsets[selected].y};snapshot();scene.setPointerCapture(e.pointerId)});
+scene.addEventListener('pointermove',e=>{if(!editing||!editDrag||editDrag.id!==e.pointerId)return;const scale=scene.clientWidth/1188;offsets[selected].x=Math.round(editDrag.ox+(e.clientX-editDrag.x)/scale);offsets[selected].y=Math.round(editDrag.oy+(e.clientY-editDrag.y)/scale);syncEdit()});
+scene.addEventListener('pointerup',e=>{if(editing&&editDrag?.id===e.pointerId){editDrag=null;persist()}});
+scene.addEventListener('pointercancel',()=>{editDrag=null;persist()});
+syncEdit();
 render();
 document.querySelector('#amplitude').addEventListener('input',e=>{amp=Number(e.target.value)/100;document.querySelector('#value').textContent=e.target.value+' %'});
 document.querySelector('#center').onclick=()=>{neutral=null;tx=0;ty=0;status.textContent=active?'Recentrage : regarde au centre de l’écran.':'Perspective recentrée.'};
-scene.addEventListener('pointerdown',e=>{if(active)return;drag={x:e.clientX,y:e.clientY,tx,ty};scene.setPointerCapture(e.pointerId)});
-scene.addEventListener('pointermove',e=>{if(!drag||active)return;tx=clamp(drag.tx+(e.clientX-drag.x)/90,-1,1);ty=clamp(drag.ty+(e.clientY-drag.y)/90,-1,1)});
+scene.addEventListener('pointerdown',e=>{if(active||editing)return;drag={x:e.clientX,y:e.clientY,tx,ty};scene.setPointerCapture(e.pointerId)});
+scene.addEventListener('pointermove',e=>{if(!drag||active||editing)return;tx=clamp(drag.tx+(e.clientX-drag.x)/90,-1,1);ty=clamp(drag.ty+(e.clientY-drag.y)/90,-1,1)});
 scene.addEventListener('pointerup',()=>drag=null);
 scene.addEventListener('pointercancel',()=>drag=null);
 const faceButton=document.querySelector('#face');
 function stop(){session++;active=false;cancelAnimationFrame(faceFrame);stream?.getTracks().forEach(t=>t.stop());stream=null;if(video){video.srcObject=null;video.remove()}video=null;neutral=null;landmarker?.close?.();landmarker=null;faceButton.textContent='◎ Activer visage';faceButton.setAttribute('aria-pressed','false');tx=0;ty=0}
 document.querySelector('#stop').onclick=()=>{stop();status.textContent='Caméra arrêtée. Mode tactile disponible.'};
-faceButton.onclick=async()=>{
+faceButton.onclick=async()=>{if(editing){status.textContent='Termine l’édition avant d’activer le suivi facial.';return}
  if(active){stop();status.textContent='Suivi arrêté.';return}
  faceButton.disabled=true;
  const thisSession=session;
