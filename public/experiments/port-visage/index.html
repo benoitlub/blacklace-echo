@@ -38,7 +38,7 @@ const specs=[
 const layers=specs.map(([name,depth,opacity],z)=>{
  const e=document.createElement('div');
  e.className='layer';
- e.style.zIndex=({'04_feuch_institut.png':6,'05_sator_clairiere.png':3,'06_village.png':4,'07_porsa_rotas.png':5}[name] ?? z);
+ e.style.zIndex=({'04_feuch_institut.png':5,'05_sator_clairiere.png':3,'06_village.png':4,'07_porsa_rotas.png':6}[name] ?? z);
  e.style.opacity=opacity;
  e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
  // Preserve exact source coordinates, no per-layer geometry or alpha scans.
@@ -47,9 +47,9 @@ const layers=specs.map(([name,depth,opacity],z)=>{
 });
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-const storageKey='blacklace-port-editor-v2';
+const storageKey='blacklace-port-editor-v3';
 // Approved mobile montage coordinates, committed as the default preset.
-const approvedPreset=[{"x":0,"y":420},{"x":0,"y":435},{"x":0,"y":400},{"x":0,"y":377},{"x":0,"y":250},{"x":0,"y":220},{"x":0,"y":200},{"x":0,"y":300},{"x":0,"y":400},{"x":0,"y":80},{"x":0,"y":10}];
+const approvedPreset=[{"x":-71,"y":511},{"x":-45,"y":495},{"x":-70,"y":462},{"x":-64,"y":397},{"x":-70,"y":246},{"x":-20,"y":208},{"x":-30,"y":219},{"x":54,"y":234},{"x":51,"y":143},{"x":-4,"y":95},{"x":7,"y":28}];
 let offsets=approvedPreset.map(p=>({...p}));
 try{const saved=JSON.parse(localStorage.getItem(storageKey));if(Array.isArray(saved)&&saved.length===specs.length)offsets=saved.map(p=>({x:Number(p.x)||0,y:Number(p.y)||0}));}catch{}
 let editing=false,selected=3,editDrag=null,undoStack=[];
@@ -60,7 +60,7 @@ const ox=document.querySelector('#offsetX'),oy=document.querySelector('#offsetY'
 function syncEdit(){ox.value=String(Math.round(offsets[selected].x));oy.value=String(Math.round(offsets[selected].y));}
 function snapshot(){undoStack.push(offsets.map(p=>({...p})));if(undoStack.length>50)undoStack.shift();}
 function persist(){try{localStorage.setItem(storageKey,JSON.stringify(offsets))}catch{}}
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;const scale=scene.clientWidth/1188,zoom=1.2,unit=scale*zoom,panY=-400*unit;for(const {e,depth,z} of layers){const d=depth*amp;const p=offsets[z];e.style.width=(1188*unit)+'px';e.style.height=(941*unit)+'px';const dx=(scene.clientWidth-1188*unit)/2+p.x*unit+(editing?0:-x*d*8);const dy=panY+p.y*unit;e.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;const scale=scene.clientWidth/1188,zoom=1.2,unit=scale*zoom,panY=-400*unit;for(const {e,depth,z} of layers){const d=depth*amp;const p=offsets[z];const island=z>=1&&z<=6;const sx=island?1.08:1,sy=island?1.04:1;e.style.width=(1188*unit*sx)+'px';e.style.height=(941*unit*sy)+'px';const dx=(scene.clientWidth-1188*unit)/2+p.x*unit-(1188*unit*(sx-1))/2+(editing?0:-x*d*8);const dy=panY+p.y*unit-(941*unit*(sy-1))/2;e.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
 document.querySelector('#editToggle').onclick=()=>{editing=!editing;scene.classList.toggle('editing',editing);editor.classList.toggle('open',editing);document.querySelector('#editToggle').setAttribute('aria-pressed',String(editing));document.querySelector('#editToggle').textContent=editing?'✓ Terminer l’édition':'✥ Éditer le décor';if(editing){stop();syncEdit();status.textContent='Édition : déplace le calque choisi au doigt.'}else{persist();status.textContent='Montage enregistré sur cet appareil. Mode parallaxe disponible.'}};
 layerSelect.onchange=v=>{selected=Number(v.target.value);syncEdit()};
 for(const [field,axis] of [[ox,'x'],[oy,'y']]){field.addEventListener('focus',snapshot);field.addEventListener('input',()=>{offsets[selected][axis]=Number(field.value)||0;persist()})}
