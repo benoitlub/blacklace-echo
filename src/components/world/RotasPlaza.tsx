@@ -59,6 +59,8 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
   const [imageLoading, setImageLoading] = useState(true);
   const [depth, setDepth] = useState(true);
   const [depthReady, setDepthReady] = useState(false);
+  const [foundMosaic, setFoundMosaic] = useState(false);
+  const [dialogueLine, setDialogueLine] = useState(0);
   const viewport = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLElement>(null);
   const back = useRef<HTMLAnchorElement>(null);
@@ -122,7 +124,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
 
   function go(id: SceneId) {
     if (id === sceneId) { reset(); return; }
-    setSceneId(id); setSelected(null); setSelectedActor(null); setShowResidents(false);
+    setSceneId(id); setSelected(null); setSelectedActor(null); setShowResidents(false); setDialogueLine(0);
     setCamera({ zoom: 1, x: .5, y: .5 }); setImageError(false); setImageLoading(true);
     setDepthReady(false);
     resetLook();
@@ -222,7 +224,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
             const pos = RESIDENT_POSITIONS[i % RESIDENT_POSITIONS.length];
             return <button key={person.actor} className="rv-resident" tabIndex={-1} type="button" aria-label={`Observer ${person.name}`} title={person.name}
               style={{ left: `${pos.x + Math.floor(i / RESIDENT_POSITIONS.length) * 2}%`, top: `${pos.y}%`, "--resident-color": person.color } as CSSProperties}
-              onClick={() => { setSelectedActor(person.actor); setSelected(null); setShowResidents(true); }}><span /><strong>{person.name}</strong></button>;
+              onClick={() => { setSelectedActor(person.actor); setDialogueLine(0); setSelected(null); setShowResidents(true); }}><span /><strong>{person.name}</strong></button>;
           })}
         </div>}
       </div>
@@ -240,13 +242,13 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
       <div className="rv-camera" aria-label="Commandes de la vue"><button type="button" aria-label="Zoom avant" disabled={camera.zoom >= 2.5} onClick={() => zoom(.25)}>+</button><output aria-label="Niveau de zoom">{Math.round(camera.zoom * 100)} %</output><button type="button" aria-label="Zoom arrière" disabled={camera.zoom <= 1} onClick={() => zoom(-.25)}>−</button><button type="button" aria-label="Recentrer la vue" onClick={reset}>⌖</button></div>
       {(selected || showResidents) && <aside className="rv-note" aria-label={selected ? "Détail du lieu" : "Habitants de Rotas"}>
         <button className="rv-note-close" type="button" aria-label="Fermer le détail" onClick={() => { setSelected(null); setSelectedActor(null); setShowResidents(false); }}>×</button>
-        {selected ? <><span className="rv-eyebrow">PRENDRE LE TEMPS D’OBSERVER</span><h2>{selected.label}</h2><p>{selected.description}</p></> : <>
+        {selected ? <><span className="rv-eyebrow">PRENDRE LE TEMPS D’OBSERVER</span><h2>{selected.label}</h2><p>{selected.description}</p>{sceneId === "square" && selected.id === "fountain" && <div className="rv-interaction"><p>{foundMosaic ? "Votre carnet conserve le relevé d’une mosaïque en spirale. Aucun objet n’a été retiré de la place." : "Un motif en spirale attire votre attention au bord du bassin."}</p><button type="button" onClick={() => setFoundMosaic(true)} disabled={foundMosaic}>{foundMosaic ? "Motif relevé ✓" : "Relever le motif dans le carnet"}</button></div>}</> : <>
           <span className="rv-eyebrow">PRÉSENCES SHERLOCK · PLACE DE ROTAS</span><h2>{resident?.name ?? "Les habitants"}</h2>
-          {resident ? <><p>{resident.activity ? `Activité : ${resident.activity}` : "Aucune activité précisée dans le signal reçu."}</p>{resident.intention && <p>Intention : {resident.intention}</p>}{resident.lastEvent && <p>{resident.lastEvent}</p>}</> : <p>{residents.length ? "Choisissez un habitant pour lire son activité reçue de Sherlock." : "Aucune présence reçue pour Rotas actuellement."}</p>}
-          <div className="rv-resident-list">{residents.map(person => <button key={person.actor} type="button" aria-pressed={person.actor === selectedActor} onClick={() => setSelectedActor(person.actor)}>{person.name}</button>)}</div>
+          {resident ? <><p className="rv-dialogue">{dialogueLine === 0 ? `Vous approchez de ${resident.name}. ${resident.activity ? `Cette personne semble occupée : ${resident.activity}.` : "Elle observe les alentours."}` : dialogueLine === 1 ? `« Bonjour. Je suis ${resident.name}. »` : resident.intention ? `« Pour le moment, je pense à ceci : ${resident.intention}. »` : "« Rotas change selon les gens qui la traversent. »"}</p><div className="rv-interaction"><button type="button" onClick={() => setDialogueLine(value => (value + 1) % 3)}>{dialogueLine === 0 ? "Saluer" : dialogueLine === 1 ? "Demander des nouvelles" : "Recommencer la conversation"}</button></div><p className="rv-dialogue-disclaimer">Dialogue local scénarisé ; les activités et intentions proviennent du signal Sherlock lorsqu’il est disponible.</p>{resident.lastEvent && <p>{resident.lastEvent}</p>}</> : <p>{residents.length ? "Choisissez un habitant pour lire son activité reçue de Sherlock." : "Aucune présence reçue pour Rotas actuellement."}</p>}
+          <div className="rv-resident-list">{residents.map(person => <button key={person.actor} type="button" aria-pressed={person.actor === selectedActor} onClick={() => { setSelectedActor(person.actor); setDialogueLine(0); }}>{person.name}</button>)}</div>
         </>}
       </aside>}
-      <footer className="rv-footer">
+      <footer className="rv-footer">{foundMosaic && <span className="rv-journal" role="status">Carnet · 1 motif relevé</span>}
         <details className="rv-paths">
           <summary>⌁ Chemins</summary>
           <nav className="rv-stops" aria-label="Étapes de la promenade">{SCENE_IDS.map(id => <button key={id} type="button" aria-current={sceneId === id ? "location" : undefined} onClick={event => { go(id); event.currentTarget.closest("details")?.removeAttribute("open"); }}>{id === "square" ? "La place" : id === "tea" ? "Salon de thé" : id === "market" ? "Marché" : id === "stairs" ? "Escaliers" : id === "coast" ? "La côte" : "Boutiques"}</button>)}</nav>
