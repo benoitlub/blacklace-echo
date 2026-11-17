@@ -24,10 +24,10 @@ const layers=[
 ['01_ciel.png',0,0],['02_volcan.png',.07,1],['03_foret.png',.15,2],['04_feuch_institut.png',.30,3],
 ['05_sator_clairiere.png',.38,4],['06_village.png',.50,5],['07_porsa_rotas.png',.65,6],
 ['08a_eau_reflets.png',.72,7],['08b_eau_vagues.png',.78,8],['08c_eau_ecume.png',.85,9],['09_quai.png',1,10]
-].map(([name,depth,z])=>{const e=document.createElement('div');e.className='layer';e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';e.style.zIndex=z;scene.append(e);return{e,depth,z}});
+].map(([name,depth,z])=>{const e=document.createElement('div');e.className='layer';e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';e.style.zIndex=z===3?2: z===2?3:z;scene.append(e);return{e,depth,z}});
 // Vertical composition corrections (fraction of scene height): bring the Eye House down,
 // overlap the landscape bands, and preserve independent parallax depths.
-const verticalOffsets=[0,0,.014,.036,.016,-.018,-.036,-.048,-.052,-.055,-.055];
+const verticalOffsets=[0,0,.014,.105,.016,-.018,-.036,-.048,-.052,-.055,-.055];
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
 function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth,z} of layers){const d=depth*amp;const vertical=verticalOffsets[z]*scene.clientHeight;e.style.transform='translate3d('+(-x*d*36).toFixed(2)+'px,'+(vertical-y*d*22).toFixed(2)+'px,0) scale('+(1.06+d*.11)+')'}frame=requestAnimationFrame(render)}
