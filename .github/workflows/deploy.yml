@@ -25,7 +25,7 @@ jobs:
       - run: npm install
       - name: Bundle MediaPipe locally for isolated face tracking test
         run: |
-          npm install --no-save --ignore-scripts @mediapipe/tasks-vision@0.10.22
+          npm install --no-save --ignore-scripts @mediapipe/tasks-vision@latest
           mkdir -p public/vendor/mediapipe/wasm
           cp node_modules/@mediapipe/tasks-vision/vision_bundle.mjs public/vendor/mediapipe/
           cp node_modules/@mediapipe/tasks-vision/wasm/* public/vendor/mediapipe/wasm/
