@@ -215,6 +215,8 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
             {perspective && <img src={`${import.meta.env.BASE_URL}assets/rotas/square.webp`} alt="" draggable={false} className="rv-scene rv-near" />}
           </>}
           <div className="rv-sunlight" aria-hidden="true" />
+          {(sceneId === "square" || sceneId === "market") && <img className="rv-decor rv-decor-banner" src={`${import.meta.env.BASE_URL}assets/rotas/decor-eye-banner.svg`} alt="" aria-hidden="true" draggable={false} />}
+          {(sceneId === "tea" || sceneId === "shop") && <img className="rv-decor rv-decor-lantern" src={`${import.meta.env.BASE_URL}assets/rotas/decor-lantern.svg`} alt="" aria-hidden="true" draggable={false} />}
           {sceneId === "square" && <div className="rv-water" style={{ left: "51%", top: "61%" }} aria-hidden="true"><i /><i /><i /></div>}
           {scene.stops.map((stop) => <button key={stop.id} type="button" className={`rv-hotspot ${selected?.id === stop.id ? "is-selected" : ""}`}
             style={{ left: clamp(stop.x / 100 * width, -offsetX + 54, -offsetX + size.width - 54), top: clamp(stop.y / 100 * height, -offsetY + 125, -offsetY + size.height - 95) }} onClick={() => observe(stop)} aria-label={stop.label} title={stop.label}>
