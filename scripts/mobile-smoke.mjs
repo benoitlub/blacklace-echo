@@ -24,7 +24,7 @@ try {
       const visit = page.getByRole('dialog',{name:'La place de Rotas'});
       await visit.waitFor();
       await page.waitForFunction(()=>document.querySelector('.rv-scene')?.complete && document.querySelector('.rv-scene')?.naturalWidth > 0);
-      assert.equal(await page.locator('main.map-page').evaluate(el=>el.inert),true,'Background must be inert');
+      // Depth map must never be painted over the real plaza image.\n      await page.locator('.rv-depth-plate').waitFor({state:'attached'});\n      assert.equal(await page.locator('.rv-depth-plate').evaluate(el=>getComputedStyle(el).display),'none','Auxiliary depth map must not cover Rotas');\n      assert.equal(await page.locator('main.map-page').evaluate(el=>el.inert),true,'Background must be inert');
       assert.equal(await page.locator('.bl-build-marker').isVisible(),false,'Build marker must not cover the visit');
       assert.equal(await page.locator('.bl-build-footer').isVisible(),false,'Build footer must not cover the visit');
       await page.screenshot({path:`qa-output/rotas-${device.name}.png`});
