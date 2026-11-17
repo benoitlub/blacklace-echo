@@ -60,21 +60,17 @@ async function layoutLayers(){
   }catch(error){status.textContent='Chargement image : '+layer.name}
  }));
  function position(){
-  const height=scene.clientHeight;
+  // The eleven supplied PNGs are already registered on the SAME 1188x941
+  // transparent canvas. Keep their shared origin: no alpha-based offsets.
   const scale=scene.clientWidth/1188;
-  const quay=layers.find(l=>l.group==='quay');
-  const quayTop=height-(quay.last+1-quay.first)*scale;
+  const commonTop=(scene.clientHeight-941*scale)/2;
   for(const layer of layers){
-   const {e,group,bottom,first,last,imgHeight,imgWidth}=layer;
-   // Identical dimensions for all eleven layers; alpha only positions them.
+   const {e,imgWidth,imgHeight}=layer;
    e.style.width=(imgWidth*scale)+'px';
-   e.style.left='50%';e.style.marginLeft=(-(imgWidth*scale)/2)+'px';
    e.style.height=(imgHeight*scale)+'px';
-   let top;
-   if(group==='sky')top=0;
-   else if(group==='water')top=quayTop-first*scale;
-   else top=height*bottom-(last+1)*scale;
-   e.style.top=top+'px';
+   e.style.left='50%';
+   e.style.marginLeft=(-(imgWidth*scale)/2)+'px';
+   e.style.top=commonTop+'px';
   }
  }
  position();
