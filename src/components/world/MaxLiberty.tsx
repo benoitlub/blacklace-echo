@@ -15,6 +15,8 @@ const asset = (file: string) => `${import.meta.env.BASE_URL}assets/rotas/max-lib
 
 export default function MaxLiberty({ onBack }: Props) {
   const [sound, setSound] = useState(false);
+  const [tablet, setTablet] = useState(false);
+  const [dialogueLine, setDialogueLine] = useState(0);
   const [selected, setSelected] = useState(1);
   const [active, setActive] = useState<number | null>(null);
   const [scene, setScene] = useState<"bar" | "plage">("bar");
@@ -32,9 +34,8 @@ export default function MaxLiberty({ onBack }: Props) {
   }, [active]);
 
   useEffect(() => {
-    if (!sound) return;
-    const ctx = new AudioContext();
-    audio.current = ctx;
+    if (!sound || !audio.current) return;
+    const ctx = audio.current;
     const sources: AudioBufferSourceNode[] = [];
     const nodes: AudioNode[] = [];
     for (const [freq, volume] of [[240, .045], [780, .014], [1450, .008]] as const) {
@@ -52,8 +53,7 @@ export default function MaxLiberty({ onBack }: Props) {
     return () => {
       sources.forEach(source => { source.stop(); source.disconnect(); });
       nodes.forEach(node => node.disconnect());
-      void ctx.close();
-      audio.current = null;
+
     };
   }, [sound]);
 
@@ -77,6 +77,18 @@ export default function MaxLiberty({ onBack }: Props) {
     };
   }, [active, intensity, sound]);
 
+  useEffect(() => () => { void audio.current?.close(); }, []);
+  async function toggleSound() {
+    if (sound) { setSound(false); await audio.current?.suspend(); return; }
+    try { if (!audio.current) audio.current = new AudioContext(); await audio.current.resume(); setSound(true); }
+    catch { setSound(false); }
+  }
+  function sip(index: number) { setSelected(index); setActive(index); setDialogueLine(2); }
+  const dialogue = [
+    "Bienvenue au Max Liberty ! Installe-toi, la mer est à toi.",
+    "Touche la tablette. Les verres vont apparaître sur le comptoir.",
+    active === null ? "Choisis ton verre. Certaines recettes sont plus anciennes que les souvenirs." : drinks[active].clue,
+  ];
   useEffect(() => {
     const old = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -94,33 +106,41 @@ export default function MaxLiberty({ onBack }: Props) {
     <header className="max-header">
       <button onClick={onBack}>← HoloMap</button>
       <div><small>BLACKLACE ISLAND · BAR DE PLAGE</small><h2>MAX LIBERTY</h2></div>
-      <button aria-pressed={sound} onClick={() => setSound(value => !value)}>{sound ? "🔊 Son activé" : "🔇 Activer l’ambiance"}</button>
+      <button aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? "🔊 Son activé" : "🔇 Activer le son"}</button>
     </header>
-    <div className="max-bottom">
-      <div className="max-host">
-        <img src={asset("marty-au-bar.webp")} alt="Marty, visiteur au Max Liberty" onError={event => { event.currentTarget.style.display = "none"; }} />
-        <div><strong>Max vous accueille au comptoir</strong><p>« Ici, même les cocktails ont une autre perception du temps. »</p><small>Marty est un visiteur, pas le patron.</small></div>
-      </div>
-      <div className="max-menu">
-        <h3>🍹 La carte des perceptions</h3>
-        <p className="max-disclaimer">Dégustation virtuelle · effets fantastiques, sans consommation réelle</p>
-        <div className="max-drink-list">
-          {drinks.map((drink, i) => <button key={drink.name} className={selected === i ? "chosen" : ""} onClick={() => setSelected(i)} aria-pressed={selected === i}>
-            <strong>{drink.name}</strong><span>{drink.note}</span>
+    <div className="max-counter-stage">
+      <button className="max-tablet-hotspot" aria-expanded={tablet} onClick={() => { setTablet(value => !value); setDialogueLine(1); }}>
+        <span aria-hidden="true">▤</span> {tablet ? "Fermer la tablette" : "✦ Tablette du comptoir"}
+      </button>
+      {tablet && <div className="max-hologram" aria-label="Cocktails holographiques">
+        <div className="max-holo-track">
+          {drinks.map((drink,i) => <button key={drink.name} className={selected === i ? "max-holo-glass chosen" : "max-holo-glass"} aria-pressed={selected === i} onClick={() => setSelected(i)}>
+            <span className={`max-glass max-glass--${drink.vision}`} aria-hidden="true"><span className="max-glass-liquid" /></span>
+            <span className="max-glass-name">{drink.name}</span>
           </button>)}
         </div>
-        <p className="max-story">{drinks[selected].story}</p>
-        <div className="max-actions">
-          <button onClick={() => { setActive(selected); if (audio.current?.state === "suspended") void audio.current.resume(); }}>🍸 Boire virtuellement</button>
-          <button onClick={stopEffect} disabled={active === null}>✕ Arrêter l'effet</button>
+        <div className="max-holo-selection">
+          <strong>{drinks[selected].name}</strong><span>{drinks[selected].note}</span>
+          <button onClick={() => sip(selected)}>🍸 Boire</button>
         </div>
-        <label className="max-setting">Intensité visuelle et sonore
-          <select value={intensity} onChange={e => setIntensity(e.target.value as "normal" | "soft" | "off")}>
-            <option value="normal">Normale</option><option value="soft">Douce</option><option value="off">Sans effets</option>
-          </select>
-        </label>
-        {active !== null && <p className="max-effect" role="status">✦ {drinks[active].clue} <small>Retour automatique après 25 secondes.</small></p>}
-        <div className="max-actions"><button onClick={() => { setScene(value => value === "bar" ? "plage" : "bar"); setMissing(false); }}>↔ {scene === "bar" ? "Vue sur la plage" : "Retour au comptoir"}</button></div>
+      </div>}
+    </div>
+    <div className="max-bottom max-bottom--immersive">
+      <div className="max-host max-dialogue" aria-live="polite">
+        <div className="max-dialogue-portrait" aria-hidden="true">🍹</div>
+        <div><strong>MAX · Barman du Max Liberty</strong><p>{dialogue[dialogueLine]}</p>
+          <div className="max-dialogue-actions">
+            {dialogueLine < 2 && <button onClick={() => setDialogueLine(value => value + 1)}>Continuer →</button>}
+            <button onClick={() => { setTablet(true); setDialogueLine(1); }}>Voir les cocktails</button>
+          </div>
+        </div>
+      </div>
+      <div className="max-compact-tools">
+        <button onClick={() => { setScene(value => value === "bar" ? "plage" : "bar"); setMissing(false); }}>↔ {scene === "bar" ? "Plage" : "Comptoir"}</button>
+        {active !== null && <button onClick={stopEffect}>✕ Stop effet</button>}
+        <label>Effets <select value={intensity} onChange={e => setIntensity(e.target.value as "normal" | "soft" | "off")}>
+          <option value="normal">Normaux</option><option value="soft">Doux</option><option value="off">Sans effets</option>
+        </select></label>
       </div>
     </div>
   </section>;
