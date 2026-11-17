@@ -30,7 +30,7 @@ try {
       await page.screenshot({path:`qa-output/rotas-${device.name}.png`});
       const actions = page.locator('.rv-viewport');
       await actions.getByRole('button',{name:'Fontaine centrale'}).click();
-      assert.match(await page.locator('.rv-note').innerText(),/Fontaine centrale/);
+      assert.match(await page.locator('.rv-note').innerText(),/Fontaine centrale/);\n      await page.getByRole('button',{name:'Relever le motif dans le carnet'}).click();\n      assert.match(await page.locator('.rv-journal').innerText(),/1 motif relevé/);
       assert.match(await page.locator('.rv-camera output').innerText(),/165/);
       await page.getByRole('button',{name:'Fermer le détail',exact:true}).click();
       await page.getByRole('button',{name:'Recentrer la vue',exact:true}).click();
@@ -73,7 +73,7 @@ try {
       assert.equal(await page.getByRole('button',{name:'☀ Jour',exact:true}).getAttribute('aria-pressed'),'true');
       await page.getByRole('button',{name:/Habitants ·/}).click();
       await page.locator('.rv-note').waitFor();
-      assert.match(await page.locator('.rv-note').innerText(),/SHERLOCK/);
+      assert.match(await page.locator('.rv-note').innerText(),/SHERLOCK/);\n      assert.match(await page.locator('.rv-journal').innerText(),/1 motif relevé/);
       await page.keyboard.press('Escape');
       await page.screenshot({path:`qa-output/rotas-evening-${device.name}.png`});
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth + 1),'Horizontal page overflow');
