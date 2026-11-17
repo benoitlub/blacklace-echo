@@ -259,7 +259,7 @@ export default function RotasPlaza({ entering, onBack, residents = [] }: Props) 
           <div className="rv-resident-list">{residents.map(person => <button key={person.actor} type="button" aria-pressed={person.actor === selectedActor} onClick={() => { setSelectedActor(person.actor); setDialogueLine(0); }}>{person.name}</button>)}</div>
         </>}
       </aside>}
-      <footer className="rv-footer">{(foundMosaic || marketInspected) && <span className="rv-journal" role="status">Carnet · {Number(foundMosaic) + Number(marketInspected)} observation(s)</span>}
+      <footer className="rv-footer">{(foundMosaic || marketInspected) && <span className="rv-journal" role="status">Carnet · {foundMosaic ? "1 motif relevé" : "0 motif relevé"} · {marketInspected ? "1 croquis" : "0 croquis"}</span>}
         <details className="rv-paths">
           <summary>⌁ Chemins</summary>
           <nav className="rv-stops" aria-label="Étapes de la promenade">{SCENE_IDS.map(id => <button key={id} type="button" aria-current={sceneId === id ? "location" : undefined} onClick={event => { go(id); event.currentTarget.closest("details")?.removeAttribute("open"); }}>{id === "square" ? "La place" : id === "tea" ? "Salon de thé" : id === "market" ? "Marché" : id === "stairs" ? "Escaliers" : id === "coast" ? "La côte" : "Boutiques"}</button>)}</nav>
