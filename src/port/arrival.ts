@@ -12,6 +12,8 @@ let phase = 'quay', line = 0, frame = 0, start = 0, timer = 0;
 let renderer: THREE.WebGLRenderer | undefined;
 let scene: THREE.Scene, camera: THREE.PerspectiveCamera;
 let ready = false;
+let titleMaterials: THREE.MeshStandardMaterial[] = [];
+const baseFov = 48;
 const canvas = get('title-canvas') as HTMLCanvasElement;
 function draw() { if (renderer && ready) renderer.render(scene, camera); }
 function dispose() { cancelAnimationFrame(frame); renderer?.dispose(); renderer = undefined; canvas.hidden = true; }
@@ -46,6 +48,15 @@ function animate(now: number) {
   const t = progress * progress * (3 - 2 * progress);
   camera.position.z = 20 - 24 * t;
   camera.position.y = .12 * Math.sin(t * Math.PI);
+  // Marty's Phase Walk: a short optical shimmer at the instant the camera
+  // passes through the actual 3D title. No overlay that blocks interaction.
+  const threshold = Math.exp(-Math.pow((t - 20 / 24) / .095, 2));
+  camera.fov = baseFov + threshold * 3.2;
+  camera.updateProjectionMatrix();
+  for (const material of titleMaterials) {
+    material.emissive.setRGB(.07 * threshold, .38 * threshold, .55 * threshold);
+    material.emissiveIntensity = threshold * 1.15;
+  }
   draw();
   if (progress < 1) frame = requestAnimationFrame(animate); else reveal();
 }
@@ -95,6 +106,7 @@ async function init() {
     renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: devicePixelRatio < 2 });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     scene = new THREE.Scene();
+    titleMaterials = [];
     camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, .025, 100);
     camera.position.z = 20;
     scene.add(new THREE.HemisphereLight(0xffefd0, 0x26384a, 2.5));
@@ -106,7 +118,8 @@ async function init() {
     if (phase !== 'quay') { dispose(); return; }
     const geometry = new TextGeometry('BLACKLACE ISLAND', { font, size: 1, depth: .48, curveSegments: 5, bevelEnabled: true, bevelThickness: .025, bevelSize: .018, bevelSegments: 2 });
     geometry.center();
-    const mesh = new THREE.Mesh(geometry, [new THREE.MeshStandardMaterial({ color: 0xf2d298, metalness: .4, roughness: .42 }), new THREE.MeshStandardMaterial({ color: 0x80501d, metalness: .3, roughness: .55 })]);
+    titleMaterials = [new THREE.MeshStandardMaterial({ color: 0xf2d298, metalness: .4, roughness: .42 }), new THREE.MeshStandardMaterial({ color: 0x80501d, metalness: .3, roughness: .55 })];
+    const mesh = new THREE.Mesh(geometry, titleMaterials);
     scene.add(mesh);
     geometry.computeBoundingBox();
     const width = geometry.boundingBox!.max.x - geometry.boundingBox!.min.x;
