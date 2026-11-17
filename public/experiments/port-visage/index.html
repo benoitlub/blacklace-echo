@@ -4,7 +4,7 @@
 <style>
 :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#08121e;color:#fff}*{box-sizing:border-box}
 body{margin:0}header{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;background:#0c1626}
-#scene{position:relative;width:100%;aspect-ratio:1188 / 941;height:auto;overflow:hidden;background:#edac9b;touch-action:pan-y;isolation:isolate}
+#scene{position:relative;width:100%;aspect-ratio:16 / 9;height:auto;overflow:hidden;background:#edac9b;touch-action:pan-y;isolation:isolate}
 .layer{position:absolute;inset:0;width:100%;height:100%;background-repeat:no-repeat;background-position:0 0;background-size:100% 100%;pointer-events:none;will-change:transform}
 #editor{display:none;border:1px solid #426b85;border-radius:12px;padding:12px;background:#10283a}#editor.open{display:grid;gap:10px}#editor select,#editor input{font:inherit;color:white;background:#17344c;border:1px solid #7ca7c6;border-radius:8px;padding:8px;min-width:0}#editor .editrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#editor .editrow input{width:90px}#editor button{padding:8px 12px}#scene.editing{touch-action:none;cursor:grab}#scene.editing:active{cursor:grabbing}#status{font-size:13px;min-height:2em;color:#b9d8e8}main{padding:12px 14px;display:grid;gap:12px}
 .controls{display:flex;gap:8px;flex-wrap:wrap}button{border:1px solid #7ca7c6;border-radius:12px;background:#17344c;color:white;padding:12px 15px;font:inherit}
@@ -38,7 +38,7 @@ const specs=[
 const layers=specs.map(([name,depth,opacity],z)=>{
  const e=document.createElement('div');
  e.className='layer';
- e.style.zIndex=z;
+ e.style.zIndex=({'04_feuch_institut.png':6,'05_sator_clairiere.png':3,'06_village.png':4,'07_porsa_rotas.png':5}[name] ?? z);
  e.style.opacity=opacity;
  e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
  // Preserve exact source coordinates, no per-layer geometry or alpha scans.
@@ -47,8 +47,10 @@ const layers=specs.map(([name,depth,opacity],z)=>{
 });
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-const storageKey='blacklace-port-editor-v1';
-let offsets=Array.from({length:specs.length},()=>({x:0,y:0}));
+const storageKey='blacklace-port-editor-v2';
+// Approved mobile montage coordinates, committed as the default preset.
+const approvedPreset=[{"x":0,"y":420},{"x":0,"y":435},{"x":0,"y":400},{"x":0,"y":377},{"x":0,"y":250},{"x":0,"y":220},{"x":0,"y":200},{"x":0,"y":300},{"x":0,"y":400},{"x":0,"y":80},{"x":0,"y":10}];
+let offsets=approvedPreset.map(p=>({...p}));
 try{const saved=JSON.parse(localStorage.getItem(storageKey));if(Array.isArray(saved)&&saved.length===specs.length)offsets=saved.map(p=>({x:Number(p.x)||0,y:Number(p.y)||0}));}catch{}
 let editing=false,selected=3,editDrag=null,undoStack=[];
 const layerSelect=document.querySelector('#layerSelect'),editor=document.querySelector('#editor');
@@ -58,7 +60,7 @@ const ox=document.querySelector('#offsetX'),oy=document.querySelector('#offsetY'
 function syncEdit(){ox.value=String(Math.round(offsets[selected].x));oy.value=String(Math.round(offsets[selected].y));}
 function snapshot(){undoStack.push(offsets.map(p=>({...p})));if(undoStack.length>50)undoStack.shift();}
 function persist(){try{localStorage.setItem(storageKey,JSON.stringify(offsets))}catch{}}
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;const scale=scene.clientWidth/1188;for(const {e,depth,z} of layers){const d=depth*amp;const p=offsets[z];const dx=p.x*scale+(editing?0:-x*d*8);const dy=p.y*scale;e.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;const scale=scene.clientWidth/1188,zoom=1.2,unit=scale*zoom,panY=-400*unit;for(const {e,depth,z} of layers){const d=depth*amp;const p=offsets[z];e.style.width=(1188*unit)+'px';e.style.height=(941*unit)+'px';const dx=(scene.clientWidth-1188*unit)/2+p.x*unit+(editing?0:-x*d*8);const dy=panY+p.y*unit;e.style.transform='translate3d('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
 document.querySelector('#editToggle').onclick=()=>{editing=!editing;scene.classList.toggle('editing',editing);editor.classList.toggle('open',editing);document.querySelector('#editToggle').setAttribute('aria-pressed',String(editing));document.querySelector('#editToggle').textContent=editing?'✓ Terminer l’édition':'✥ Éditer le décor';if(editing){stop();syncEdit();status.textContent='Édition : déplace le calque choisi au doigt.'}else{persist();status.textContent='Montage enregistré sur cet appareil. Mode parallaxe disponible.'}};
 layerSelect.onchange=v=>{selected=Number(v.target.value);syncEdit()};
 for(const [field,axis] of [[ox,'x'],[oy,'y']]){field.addEventListener('focus',snapshot);field.addEventListener('input',()=>{offsets[selected][axis]=Number(field.value)||0;persist()})}
@@ -67,7 +69,7 @@ document.querySelector('#resetLayer').onclick=()=>{snapshot();offsets[selected]=
 document.querySelector('#saveEdit').onclick=()=>{persist();status.textContent='Positions sauvegardées dans ce navigateur.'};
 document.querySelector('#exportEdit').onclick=async()=>{const data=JSON.stringify(layers.map(({name,z})=>({name,...offsets[z]})),null,2);try{await navigator.clipboard.writeText(data);status.textContent='Positions copiées ! Colle-les dans notre conversation.'}catch{status.textContent=data}};
 scene.addEventListener('pointerdown',e=>{if(!editing)return;editDrag={id:e.pointerId,x:e.clientX,y:e.clientY,ox:offsets[selected].x,oy:offsets[selected].y};snapshot();scene.setPointerCapture(e.pointerId)});
-scene.addEventListener('pointermove',e=>{if(!editing||!editDrag||editDrag.id!==e.pointerId)return;const scale=scene.clientWidth/1188;offsets[selected].x=Math.round(editDrag.ox+(e.clientX-editDrag.x)/scale);offsets[selected].y=Math.round(editDrag.oy+(e.clientY-editDrag.y)/scale);syncEdit()});
+scene.addEventListener('pointermove',e=>{if(!editing||!editDrag||editDrag.id!==e.pointerId)return;const scale=scene.clientWidth/1188*1.2;offsets[selected].x=Math.round(editDrag.ox+(e.clientX-editDrag.x)/scale);offsets[selected].y=Math.round(editDrag.oy+(e.clientY-editDrag.y)/scale);syncEdit()});
 scene.addEventListener('pointerup',e=>{if(editing&&editDrag?.id===e.pointerId){editDrag=null;persist()}});
 scene.addEventListener('pointercancel',()=>{editDrag=null;persist()});
 syncEdit();
