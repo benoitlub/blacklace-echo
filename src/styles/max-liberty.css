@@ -30,3 +30,53 @@
 @keyframes max-holo-rise{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:700px){.max-bottom--immersive{position:absolute;display:flex;flex-direction:column-reverse;align-items:stretch;bottom:0;margin:0 8px 8px;padding:0;gap:6px}.max-dialogue{padding:8px;font-size:.83rem}.max-dialogue-portrait{width:42px;min-width:42px;height:54px;font-size:1.4rem}.max-compact-tools{align-self:flex-end;font-size:.8rem;padding:6px}.max-counter-stage{bottom:35%;width:96vw}.max-holo-glass{flex-basis:92px;padding:7px 3px}.max-glass{width:32px;height:43px}.max-hologram{padding:6px}.max-header{position:relative}.max-header button{padding:7px 10px}}
 @media(prefers-reduced-motion:reduce){.max-hologram{animation:none}}
+
+
+/* Cinematic depth and real SVG displacement (not merely hue changes). */
+.max-svg-filters{position:absolute;pointer-events:none}
+.max-world{position:fixed;inset:0}
+.max-depth{position:absolute;inset:-3%;will-change:transform;transition:transform .18s ease-out}
+.max-depth .max-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.max-depth--back{z-index:0}
+.max-depth--front{z-index:1;clip-path:polygon(0 73%,100% 70%,100% 100%,0 100%);opacity:.96}
+.max-world--warped .max-depth--back{filter:url(#max-liquid-distortion)}
+.max-world--warped .max-depth--front{filter:url(#max-liquid-distortion)}
+.max-world .max-vignette{z-index:2;background:linear-gradient(180deg,#071014a6 0%,transparent 18%,transparent 72%,#07101485 100%)}
+.max-heading{flex:1;min-width:0}
+.max-sound-button{min-width:44px;min-height:44px}
+.max-dialogue-close{float:right;margin-left:8px;border:0;background:transparent;color:white;cursor:pointer}
+.max-bottom--immersive{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.max-bottom--immersive .max-dialogue{flex:0 1 440px}
+.max-compact-tools{margin-left:auto}
+.max-counter-stage{bottom:20%;width:min(540px,90vw)}
+.max-hologram{max-height:44vh;overflow:auto;background:#092638b8;backdrop-filter:blur(4px)}
+@media(max-width:700px){
+ .max-visit{overflow:hidden}
+ .max-header{display:flex;flex-wrap:nowrap;align-items:flex-start;padding:10px;gap:6px}
+ .max-header button{padding:8px 10px;font-size:.8rem;flex-shrink:0}
+ .max-heading small{display:none}
+ .max-heading h2{font-size:clamp(.9rem,4vw,1.3rem);letter-spacing:.05em;white-space:nowrap}
+ .max-counter-stage{bottom:17%;width:92vw;gap:5px}
+ .max-tablet-hotspot{font-size:.85rem;padding:8px 12px}
+ .max-hologram{max-height:40vh;padding:6px}
+ .max-holo-track{max-height:110px;gap:5px}
+ .max-holo-glass{flex-basis:78px;padding:5px 2px}
+ .max-glass{width:28px;height:37px}
+ .max-glass-name{font-size:.62rem}
+ .max-holo-selection{font-size:.72rem;gap:6px}
+ .max-holo-selection span{display:none}
+ .max-bottom--immersive{position:absolute;left:8px;right:8px;bottom:8px;margin:0;padding:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+ .max-bottom--immersive .max-dialogue{flex:none;align-self:stretch;max-width:none;max-height:25vh;overflow:auto;padding:9px}
+ .max-dialogue-portrait{display:none}
+ .max-dialogue p{font-size:.8rem;margin:5px 0}
+ .max-dialogue-actions button{padding:6px;font-size:.75rem}
+ .max-compact-tools{margin:0;padding:5px;gap:4px;background:#071a23bd}
+ .max-compact-tools button{padding:7px;font-size:.75rem}
+ .max-compact-tools label{font-size:.75rem}
+ .max-compact-tools select{max-width:96px}
+}
+@media(prefers-reduced-motion:reduce){
+ .max-depth{transition:none!important;transform:none!important}
+ .max-world--warped .max-depth{filter:none!important}
+ .max-visions{display:none!important}
+}
