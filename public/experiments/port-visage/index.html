@@ -38,6 +38,7 @@ const specs=[
 const layers=specs.map(([name,depth,z,top,bottom])=>{
  const e=document.createElement('div');e.className='layer';
  e.style.zIndex=z;e.style.top=(top*100)+'%';e.style.height=((bottom-top)*100)+'%';
+ if(z===0){e.style.backgroundPosition='center top';e.style.backgroundSize='cover'}
  scene.append(e);
  const img=new Image();img.src='../../assets/blacklace/'+name;
  img.onload=()=>{
@@ -52,6 +53,7 @@ const layers=specs.map(([name,depth,z,top,bottom])=>{
     }
    }
    if(last<first)return;
+   if(z===0){e.style.backgroundImage='url("'+img.src+'")';return}
    const cropped=document.createElement('canvas');cropped.width=canvas.width;cropped.height=last-first+1;
    cropped.getContext('2d').drawImage(canvas,0,first,canvas.width,cropped.height,0,0,canvas.width,cropped.height);
    e.style.backgroundImage='url("'+cropped.toDataURL('image/png')+'")';
