@@ -7,7 +7,7 @@ const drinks = [
   { name: "Moscow Vium", note: "Citron vert, menthe et moscovium imaginaire microdosé", effect: "Les couleurs prennent une longueur d'avance." },
   { name: "Marée Quantique", note: "Fruits tropicaux et écume phosphorescente", effect: "Le ressac paraît répondre à vos pensées." },
 ];
-const asset = (file: string) => `${import.meta.env.BASE_URL}assets/max-liberty/${file}`;
+const asset = (file: string) => `${import.meta.env.BASE_URL}assets/rotas/max-liberty/${file}`;
 
 export default function MaxLiberty({ onBack }: Props) {
   const [sound, setSound] = useState(false);
