@@ -36,17 +36,20 @@ const layerSpecs=[
  ['08c_eau_ecume.png',.65,9],
  ['09_quai.png',1,10]
 ];
+// Bring upper landscape bands down toward the fixed foreground quay.
+// Water planes share an identical position, scale and tracking displacement.
+const bandDrop=[0,.115,.09,.075,.065,.05,.03,.015,.015,.015,0];
 const layers=layerSpecs.map(([name,depth,z])=>{
  const e=document.createElement('div');
  e.className='layer';
  e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
  e.style.zIndex=z;
  scene.append(e);
- return {e,depth};
+ return {e,depth,drop:bandDrop[z],water:z>=7&&z<=9};
 });
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth} of layers){const d=depth*amp;e.style.transform='translate3d('+(-x*d*36).toFixed(2)+'px,'+(-y*d*22).toFixed(2)+'px,0) scale('+(1.06+d*.11)+')'}frame=requestAnimationFrame(render)}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth,drop,water} of layers){const d=depth*amp;const scale=water?1.075:1.075;e.style.transform='translate3d('+(-x*d*36).toFixed(2)+'px,'+(drop*scene.clientHeight-y*d*22).toFixed(2)+'px,0) scale('+scale+')'}frame=requestAnimationFrame(render)}
 render();
 document.querySelector('#amplitude').addEventListener('input',e=>{amp=Number(e.target.value)/100;document.querySelector('#value').textContent=e.target.value+' %'});
 document.querySelector('#center').onclick=()=>{neutral=null;tx=0;ty=0;status.textContent=active?'Recentrage : regarde au centre de l’écran.':'Perspective recentrée.'};
