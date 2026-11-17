@@ -20,27 +20,27 @@ small{color:#9db5c6}#scene:after{content:"";position:absolute;inset:0;pointer-ev
 <small>Le suivi facial fonctionne uniquement après autorisation de la caméra, sur HTTPS. Traitement local dans le navigateur. Aucun enregistrement vidéo.</small></main>
 <script type="module">
 const scene=document.querySelector('#scene'),status=document.querySelector('#status');
-// Position-only montage: never crop, resize or stretch individual PNGs.
-// Every source is 1188x941; its transparent pixels remain in their native geometry.
-// Alpha bounds are used ONLY to calculate the Y translation.
+// Rebuilt stack, back to front. The Eye House (Feuch Institut) is
+// SECOND among the island layers, immediately after the volcano.
+// All source PNGs use one shared 1188x941 canvas; no individual rescaling.
 const specs=[
- ['01_ciel.png',0,0,null],
- ['02_volcan.png',.05,1,.685],
- ['03_foret.png',.10,2,.695],
- ['04_feuch_institut.png',.20,3,.65],
- ['05_sator_clairiere.png',.28,4,.66],
- ['06_village.png',.40,5,.68],
- ['07_porsa_rotas.png',.60,6,.685],
- ['08a_eau_reflets.png',.65,7,null],
- ['08b_eau_vagues.png',.65,8,null],
- ['08c_eau_ecume.png',.65,9,null],
- ['09_quai.png',1,10,1]
+ ['01_ciel.png',0,'sky',null],
+ ['02_volcan.png',.05,'island',.685],
+ ['04_feuch_institut.png',.20,'island',.65],
+ ['03_foret.png',.10,'island',.695],
+ ['05_sator_clairiere.png',.28,'island',.66],
+ ['06_village.png',.40,'island',.68],
+ ['07_porsa_rotas.png',.60,'island',.685],
+ ['08a_eau_reflets.png',.65,'water',null],
+ ['08b_eau_vagues.png',.65,'water',null],
+ ['08c_eau_ecume.png',.65,'water',null],
+ ['09_quai.png',1,'quay',1]
 ];
-const layers=specs.map(([name,depth,z,bottom])=>{
- const e=document.createElement('div');e.className='layer';e.style.zIndex=z;
- e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
+const layers=specs.map(([name,depth,group,bottom],index)=>{
+ const e=document.createElement('div');e.className='layer';
+ e.style.zIndex=index;e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
  scene.append(e);
- return {e,name,depth,z,bottom,first:0,last:940,imgWidth:1188,imgHeight:941};
+ return {e,name,depth,group,bottom,first:0,last:940,imgWidth:1188,imgHeight:941};
 });
 async function layoutLayers(){
  await Promise.all(layers.map(async layer=>{
@@ -60,27 +60,20 @@ async function layoutLayers(){
   }catch(error){status.textContent='Chargement image : '+layer.name}
  }));
  function position(){
-  const width=scene.clientWidth*1.04,scale=width/1188,height=scene.clientHeight;
-  // Island layers 01-07 use the original 1188x941 canvas fitted by HEIGHT,
-  // without compression. Water and quay retain their validated width-fit geometry.
-  const islandScale=height/941;
-  // The quay is the waterline reference: no water pixels above its highest
-  // visible point. Each water PNG has its own alpha margin, so align visible
-  // tops individually rather than aligning their transparent canvas origins.
-  const quay=layers[10];
+  const height=scene.clientHeight;
+  const scale=scene.clientWidth/1188;
+  const quay=layers.find(l=>l.group==='quay');
   const quayTop=height-(quay.last+1-quay.first)*scale;
   for(const layer of layers){
-   const {e,z,bottom,first,last,imgHeight,imgWidth}=layer;
-   const s=z>=1&&z<=6?islandScale:scale;
-   e.style.width=(imgWidth*s)+'px';
-   e.style.left='50%';
-   e.style.marginLeft=(-(imgWidth*s)/2)+'px';
-   const imageHeight=imgHeight*s;
-   e.style.height=imageHeight+'px';
+   const {e,group,bottom,first,last,imgHeight,imgWidth}=layer;
+   // Identical dimensions for all eleven layers; alpha only positions them.
+   e.style.width=(imgWidth*scale)+'px';
+   e.style.left='50%';e.style.marginLeft=(-(imgWidth*scale)/2)+'px';
+   e.style.height=(imgHeight*scale)+'px';
    let top;
-   if(z===0)top=0;
-   else if(z>=7&&z<=9)top=quayTop-first*scale;
-   else top=height*bottom-(last+1)*s;
+   if(group==='sky')top=0;
+   else if(group==='water')top=quayTop-first*scale;
+   else top=height*bottom-(last+1)*scale;
    e.style.top=top+'px';
   }
  }
@@ -90,7 +83,7 @@ async function layoutLayers(){
 layoutLayers();
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth,z} of layers){const d=depth*amp;const dy=(z>=7&&z<=9)?0:-y*d*12;e.style.transform='translate3d('+(-x*d*26).toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth,group} of layers){const d=depth*amp;const dy=group==='water'?0:-y*d*12;e.style.transform='translate3d('+(-x*d*26).toFixed(2)+'px,'+dy.toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
 render();
 document.querySelector('#amplitude').addEventListener('input',e=>{amp=Number(e.target.value)/100;document.querySelector('#value').textContent=e.target.value+' %'});
 document.querySelector('#center').onclick=()=>{neutral=null;tx=0;ty=0;status.textContent=active?'Recentrage : regarde au centre de l’écran.':'Perspective recentrée.'};
