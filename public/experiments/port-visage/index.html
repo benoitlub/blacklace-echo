@@ -73,7 +73,7 @@ async function layoutLayers(){
    let top;
    if(z===0)top=0;
    else if(z>=7&&z<=9)top=quayTop-first*scale;
-   else top=height*bottom-(last+1)*scale;
+   else top=height*(bottom+(z>=3&&z<=6?.09:0))-(last+1)*scale;
    e.style.top=top+'px';
   }
  }
