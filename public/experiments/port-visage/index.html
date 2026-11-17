@@ -5,7 +5,7 @@
 :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#08121e;color:#fff}*{box-sizing:border-box}
 body{margin:0}header{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;background:#0c1626}
 #scene{position:relative;width:100%;aspect-ratio:16 / 9;height:auto;overflow:hidden;background:#edac9b;touch-action:pan-y;isolation:isolate}
-.layer{position:absolute;inset:0;background-repeat:no-repeat;background-position:center center;background-size:100% 100%;transform-origin:center center;pointer-events:none;will-change:transform}
+.layer{position:absolute;left:-2%;width:104%;background-repeat:no-repeat;background-position:center center;background-size:100% 100%;transform-origin:center center;pointer-events:none;will-change:transform}
 #status{font-size:13px;min-height:2em;color:#b9d8e8}main{padding:12px 14px;display:grid;gap:12px}
 .controls{display:flex;gap:8px;flex-wrap:wrap}button{border:1px solid #7ca7c6;border-radius:12px;background:#17344c;color:white;padding:12px 15px;font:inherit}
 button[aria-pressed=true]{background:#146b6a;border-color:#7df7d8}
@@ -20,38 +20,49 @@ small{color:#9db5c6}#scene:after{content:"";position:absolute;inset:0;pointer-ev
 <small>Le suivi facial fonctionne uniquement après autorisation de la caméra, sur HTTPS. Traitement local dans le navigateur. Aucun enregistrement vidéo.</small></main>
 <script type="module">
 const scene=document.querySelector('#scene'),status=document.querySelector('#status');
-// All eleven PNGs share the same 1188 x 941 transparent canvas.
-// Their artwork is already aligned in source coordinates: never stagger the layers.
-// Keep separate parallax depths, but water textures share one geometric plane.
-const layerSpecs=[
- ['01_ciel.png',0,0],
- ['02_volcan.png',.05,1],
- ['03_foret.png',.10,2],
- ['04_feuch_institut.png',.20,3],
- ['05_sator_clairiere.png',.28,4],
- ['06_village.png',.40,5],
- ['07_porsa_rotas.png',.60,6],
- ['08a_eau_reflets.png',.65,7],
- ['08b_eau_vagues.png',.65,8],
- ['08c_eau_ecume.png',.65,9],
- ['09_quai.png',1,10]
+// Source PNGs contain large transparent margins. Crop only empty alpha rows,
+// then place each visible strip in a measured 16:9 composition. Keep source files untouched.
+const specs=[
+ ['01_ciel.png',0,0,0,0,1],
+ ['02_volcan.png',.05,1,.16,.40],
+ ['03_foret.png',.10,2,.33,.53],
+ ['04_feuch_institut.png',.20,3,.45,.67],
+ ['05_sator_clairiere.png',.28,4,.51,.66],
+ ['06_village.png',.40,5,.52,.68],
+ ['07_porsa_rotas.png',.60,6,.57,.68],
+ ['08a_eau_reflets.png',.65,7,2/3,1],
+ ['08b_eau_vagues.png',.65,8,2/3,1],
+ ['08c_eau_ecume.png',.65,9,2/3,1],
+ ['09_quai.png',1,10,2/3,1]
 ];
-// Bring upper landscape bands down toward the fixed foreground quay.
-// Water planes share an identical position, scale and tracking displacement.
-const bandDrop=[0,0,0,0,0,0,0,0,0,0,0];
-// Compress the complete composition vertically into the 16:9 viewport.
-const compositionHeightScale=.72;
-const layers=layerSpecs.map(([name,depth,z])=>{
- const e=document.createElement('div');
- e.className='layer';
- e.style.backgroundImage='url("../../assets/blacklace/'+name+'")';
- e.style.zIndex=z;
+const layers=specs.map(([name,depth,z,top,bottom])=>{
+ const e=document.createElement('div');e.className='layer';
+ e.style.zIndex=z;e.style.top=(top*100)+'%';e.style.height=((bottom-top)*100)+'%';
  scene.append(e);
- return {e,depth,drop:bandDrop[z],water:z>=7};
+ const img=new Image();img.src='../../assets/blacklace/'+name;
+ img.onload=()=>{
+  try{
+   const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+   const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
+   const {data}=ctx.getImageData(0,0,canvas.width,canvas.height);
+   let first=canvas.height,last=-1;
+   for(let y=0;y<canvas.height;y++){
+    for(let x=0;x<canvas.width;x+=2){
+     if(data[(y*canvas.width+x)*4+3]>12){first=Math.min(first,y);last=Math.max(last,y);break}
+    }
+   }
+   if(last<first)return;
+   const cropped=document.createElement('canvas');cropped.width=canvas.width;cropped.height=last-first+1;
+   cropped.getContext('2d').drawImage(canvas,0,first,canvas.width,cropped.height,0,0,canvas.width,cropped.height);
+   e.style.backgroundImage='url("'+cropped.toDataURL('image/png')+'")';
+  }catch(error){e.style.backgroundImage='url("'+img.src+'")'}
+ };
+ img.onerror=()=>{status.textContent='Image introuvable : '+name};
+ return {e,depth};
 });
 let x=0,y=0,tx=0,ty=0,amp=.75,active=false,stream=null,video=null,landmarker=null,frame=0,faceFrame=0,neutral=null,last=0,drag=null,session=0;
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth,drop,water} of layers){const d=depth*amp;const scale=1.075;e.style.transform='translate3d('+(-x*d*36).toFixed(2)+'px,'+(-y*d*22).toFixed(2)+'px,0) scaleX('+scale+') scaleY('+compositionHeightScale+')'}frame=requestAnimationFrame(render)}
+function render(){x+=(tx-x)*.16;y+=(ty-y)*.16;for(const {e,depth} of layers){const d=depth*amp;e.style.transform='translate3d('+(-x*d*26).toFixed(2)+'px,'+(-y*d*12).toFixed(2)+'px,0)'}frame=requestAnimationFrame(render)}
 render();
 document.querySelector('#amplitude').addEventListener('input',e=>{amp=Number(e.target.value)/100;document.querySelector('#value').textContent=e.target.value+' %'});
 document.querySelector('#center').onclick=()=>{neutral=null;tx=0;ty=0;status.textContent=active?'Recentrage : regarde au centre de l’écran.':'Perspective recentrée.'};
