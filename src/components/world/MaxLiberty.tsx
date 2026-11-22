@@ -17,6 +17,8 @@ export default function MaxLiberty({ onBack }: Props) {
   const [sound, setSound] = useState(false);
   const [tablet, setTablet] = useState(false);
   const [dialogueLine, setDialogueLine] = useState(0);
+  const [dialogueOpen, setDialogueOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [selected, setSelected] = useState(1);
   const [active, setActive] = useState<number | null>(null);
   const [scene, setScene] = useState<"bar" | "plage">("bar");
@@ -83,7 +85,7 @@ export default function MaxLiberty({ onBack }: Props) {
     try { if (!audio.current) audio.current = new AudioContext(); await audio.current.resume(); setSound(true); }
     catch { setSound(false); }
   }
-  function sip(index: number) { setSelected(index); setActive(index); setDialogueLine(2); }
+  function sip(index: number) { setSelected(index); setActive(index); setTablet(false); setDialogueOpen(true); setDialogueLine(2); }
   const dialogue = [
     "Bienvenue au Max Liberty ! Installe-toi, la mer est à toi.",
     "Touche la tablette. Les verres vont apparaître sur le comptoir.",
@@ -105,11 +107,11 @@ export default function MaxLiberty({ onBack }: Props) {
     </div>
     <header className="max-header">
       <button onClick={onBack}>← HoloMap</button>
-      <div><small>BLACKLACE ISLAND · BAR DE PLAGE</small><h2>MAX LIBERTY</h2></div>
-      <button aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? "🔊 Son activé" : "🔇 Activer le son"}</button>
+      <div className="max-heading"><small>BLACKLACE ISLAND · BAR DE PLAGE</small><h2>MAX LIBERTY</h2></div>
+      <button className="max-sound-button" aria-label={sound ? "Couper le son" : "Activer le son"} aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? "🔊" : "🔇"}</button>
     </header>
     <div className="max-counter-stage">
-      <button className="max-tablet-hotspot" aria-expanded={tablet} onClick={() => { setTablet(value => !value); setDialogueLine(1); }}>
+      <button className="max-tablet-hotspot" aria-expanded={tablet} onClick={() => { setTablet(value => !value); setDialogueLine(1); setDialogueOpen(false); }}>
         <span aria-hidden="true">▤</span> {tablet ? "Fermer la tablette" : "✦ Tablette du comptoir"}
       </button>
       {tablet && <div className="max-hologram" aria-label="Cocktails holographiques">
@@ -126,21 +128,23 @@ export default function MaxLiberty({ onBack }: Props) {
       </div>}
     </div>
     <div className="max-bottom max-bottom--immersive">
-      <div className="max-host max-dialogue" aria-live="polite">
+      {dialogueOpen && <div className="max-host max-dialogue" aria-live="polite">
         <div className="max-dialogue-portrait" aria-hidden="true">🍹</div>
-        <div><strong>MAX · Barman du Max Liberty</strong><p>{dialogue[dialogueLine]}</p>
+        <div><strong>MAX · Barman du Max Liberty</strong><button className="max-dialogue-close" onClick={() => setDialogueOpen(false)} aria-label="Fermer le dialogue">✕</button><p>{dialogue[dialogueLine]}</p>
           <div className="max-dialogue-actions">
             {dialogueLine < 2 && <button onClick={() => setDialogueLine(value => value + 1)}>Continuer →</button>}
             <button onClick={() => { setTablet(true); setDialogueLine(1); }}>Voir les cocktails</button>
           </div>
         </div>
-      </div>
+      </div>}
       <div className="max-compact-tools">
-        <button onClick={() => { setScene(value => value === "bar" ? "plage" : "bar"); setMissing(false); }}>↔ {scene === "bar" ? "Plage" : "Comptoir"}</button>
+        <button onClick={() => { setDialogueOpen(true); setTablet(false); setDialogueLine(0); }}>💬 Max</button>
+        <button onClick={() => { setScene(value => value === "bar" ? "plage" : "bar"); setMissing(false); }}>↔ Vue</button>
         {active !== null && <button onClick={stopEffect}>✕ Stop effet</button>}
-        <label>Effets <select value={intensity} onChange={e => setIntensity(e.target.value as "normal" | "soft" | "off")}>
+        <button onClick={() => setSettingsOpen(value => !value)} aria-expanded={settingsOpen}>⚙</button>
+        {settingsOpen && <label>Effets <select value={intensity} onChange={e => setIntensity(e.target.value as "normal" | "soft" | "off")}>
           <option value="normal">Normaux</option><option value="soft">Doux</option><option value="off">Sans effets</option>
-        </select></label>
+        </select></label>}
       </div>
     </div>
   </section>;
