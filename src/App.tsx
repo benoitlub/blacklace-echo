@@ -13,6 +13,7 @@ import Map from "./pages/Map.tsx";
 import Aloisia from "./pages/Aloisia.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import WorldDirectory from "./pages/WorldDirectory.tsx";
+import RotasLivingStreet from "./pages/RotasLivingStreet.tsx";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/map" element={<Map />} />
           <Route path="/aloisia" element={<Aloisia />} />
           <Route path="/atlas" element={<WorldDirectory />} />
+          <Route path="/rotas-live" element={<RotasLivingStreet />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
