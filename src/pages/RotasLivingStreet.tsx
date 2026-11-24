@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { NatashaConversation } from "@/components/world/NatashaConversation";
 
 type Person = { group: THREE.Group; baseX: number; baseZ: number; phase: number };
 
@@ -105,6 +106,7 @@ export default function RotasLivingStreet() {
   const mount = useRef<HTMLDivElement>(null);
   const movement = useRef({ x: 0, y: 0 });
   const focusNatasha = useRef(false);
+  const focusBeforeConversation = useRef(false);
   const [closeUp, setCloseUp] = useState(false);
   const [tiltEnabled, setTiltEnabled] = useState(false);
   const [notice, setNotice] = useState("Glisse le doigt pour regarder derrière Marty.");
@@ -257,6 +259,12 @@ export default function RotasLivingStreet() {
     } catch { setNotice("Capteurs indisponibles : utilise le glissement du doigt."); }
   };
 
+  const setConversationOpen = (open: boolean) => {
+    if (open) focusBeforeConversation.current = focusNatasha.current;
+    focusNatasha.current = open || focusBeforeConversation.current;
+    setCloseUp(focusNatasha.current);
+  };
+
   return <main style={{ minHeight: "100dvh", background: "#101923", color: "#f9e9d9", fontFamily: "system-ui, sans-serif", display: "flex", flexDirection: "column" }}>
     <header style={{ padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
       <div><strong>BLACKLACE ISLAND · ROTAS</strong><div style={{ fontSize: 12, opacity: 0.7 }}>Prototype 3D — rue de Rotas</div></div>
@@ -273,6 +281,7 @@ export default function RotasLivingStreet() {
         }}
         style={{ padding: "10px 15px", borderRadius: 12, background: "#263746", color: "#f9e9d9", border: 0 }}
       >{closeUp ? "Revenir à la rue" : "Voir Natasha de près"}</button>}
+      {natashaStatus === "ready" && <NatashaConversation onOpenChange={setConversationOpen} />}
       <span role="status" style={{ fontSize: 14 }}>
         {natashaStatus === "ready" ? "Natasha est devant le salon de thé."
           : natashaStatus === "failed" ? "Natasha n’a pas pu être chargée."
