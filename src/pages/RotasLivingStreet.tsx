@@ -104,6 +104,8 @@ function disposeStreetMeshes(root: THREE.Object3D) {
 export default function RotasLivingStreet() {
   const mount = useRef<HTMLDivElement>(null);
   const movement = useRef({ x: 0, y: 0 });
+  const focusNatasha = useRef(false);
+  const [closeUp, setCloseUp] = useState(false);
   const [tiltEnabled, setTiltEnabled] = useState(false);
   const [notice, setNotice] = useState("Glisse le doigt pour regarder derrière Marty.");
   const [revealed, setRevealed] = useState(false);
@@ -198,18 +200,24 @@ export default function RotasLivingStreet() {
     renderer.domElement.addEventListener("pointercancel", pointerUp);
     const clock = new THREE.Clock();
     let frame = 0; let lastReveal = false;
+    const lookAt = new THREE.Vector3(0, 1.55, -3);
+    const streetTarget = lookAt.clone();
+    const avatarTarget = new THREE.Vector3(2.05, 0.92, -3.1);
     const render = () => {
       frame = requestAnimationFrame(render);
       const t = clock.getElapsedTime();
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, movement.current.x * 2.2, 0.065);
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, 2.4 + movement.current.y, 0.065);
-      camera.lookAt(0, 1.55, -3);
+      const focused = focusNatasha.current;
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, focused ? 1.25 : movement.current.x * 2.2, 0.065);
+      camera.position.y = THREE.MathUtils.lerp(camera.position.y, focused ? 1.22 : 2.4 + movement.current.y, 0.065);
+      camera.position.z = THREE.MathUtils.lerp(camera.position.z, focused ? -0.35 : 8.8, 0.065);
+      lookAt.lerp(focused ? avatarTarget : streetTarget, 0.065);
+      camera.lookAt(lookAt);
       characters.forEach((p, i) => {
         p.group.rotation.y = i === 0 ? Math.sin(t * 0.6 + p.phase) * 0.15 : 0;
         p.group.position.y = Math.sin(t * 2 + p.phase) * 0.025;
         if (i > 0) p.group.position.z = p.baseZ - (Math.sin(t * 0.3) + 1) * 0.55;
       });
-      const visible = Math.abs(camera.position.x) > 1.25;
+      const visible = !focused && Math.abs(camera.position.x) > 1.25;
       if (visible !== lastReveal) { lastReveal = visible; setRevealed(visible); }
       renderer.render(scene, camera);
     };
@@ -256,6 +264,13 @@ export default function RotasLivingStreet() {
     <footer style={{ padding: "12px 18px", display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
       <button onClick={enableTilt} disabled={tiltEnabled} style={{ padding: "10px 15px", borderRadius: 12, background: "#f4b76d", color: "#15151a", border: 0, fontWeight: 700 }}>{tiltEnabled ? "Capteurs activés" : "Activer l'inclinaison"}</button>
       <span role="status" style={{ fontSize: 14 }}>{revealed ? "👀 Tu as changé de perspective ! Cherche la boutique Pro.Hibited." : notice}</span>
+      {natashaStatus === "ready" && <button
+        onClick={() => {
+          focusNatasha.current = !focusNatasha.current;
+          setCloseUp(focusNatasha.current);
+        }}
+        style={{ padding: "10px 15px", borderRadius: 12, background: "#263746", color: "#f9e9d9", border: 0 }}
+      >{closeUp ? "Revenir à la rue" : "Voir Natasha de près"}</button>}
       <span role="status" style={{ fontSize: 14 }}>
         {natashaStatus === "ready" ? "Natasha est devant le salon de thé."
           : natashaStatus === "failed" ? "Natasha n’a pas pu être chargée."
