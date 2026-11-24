@@ -205,12 +205,14 @@ export default function RotasLivingStreet() {
     const avatarTarget = new THREE.Vector3(2.05, 0.92, -3.1);
     const render = () => {
       frame = requestAnimationFrame(render);
-      const t = clock.getElapsedTime();
+      const delta = clock.getDelta();
+      const t = clock.elapsedTime;
       const focused = focusNatasha.current;
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, focused ? 1.25 : movement.current.x * 2.2, 0.065);
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, focused ? 1.22 : 2.4 + movement.current.y, 0.065);
-      camera.position.z = THREE.MathUtils.lerp(camera.position.z, focused ? -0.35 : 8.8, 0.065);
-      lookAt.lerp(focused ? avatarTarget : streetTarget, 0.065);
+      const ease = 1 - Math.exp(-8 * delta);
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, focused ? 1.25 : movement.current.x * 2.2, ease);
+      camera.position.y = THREE.MathUtils.lerp(camera.position.y, focused ? 1.22 : 2.4 + movement.current.y, ease);
+      camera.position.z = THREE.MathUtils.lerp(camera.position.z, focused ? -0.35 : 8.8, ease);
+      lookAt.lerp(focused ? avatarTarget : streetTarget, ease);
       camera.lookAt(lookAt);
       characters.forEach((p, i) => {
         p.group.rotation.y = i === 0 ? Math.sin(t * 0.6 + p.phase) * 0.15 : 0;
