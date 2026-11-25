@@ -1,0 +1,51 @@
+.natasha-loft {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: #191610;
+  color: #f8e9d4;
+}
+.natasha-loft-header,
+.natasha-loft-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .8rem clamp(1rem, 4vw, 3rem);
+}
+.natasha-loft-header { justify-content: space-between; flex-wrap: wrap; }
+.natasha-loft-header h1 { font-size: clamp(1.2rem, 3vw, 1.9rem); font-weight: 650; }
+.natasha-loft-header a { color: #f1c38e; font-size: .875rem; padding-block: .4rem; }
+.natasha-loft-controls { justify-content: center; flex-wrap: wrap; }
+.natasha-loft-controls p { font-size: .875rem; }
+.natasha-loft-view {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 65svh;
+  background: #735745;
+  touch-action: pan-y;
+}
+.natasha-loft-room,
+.natasha-loft-avatar {
+  position: absolute;
+  pointer-events: none;
+  transition: transform 180ms ease-out;
+}
+.natasha-loft-room {
+  inset: -12px;
+  width: calc(100% + 24px);
+  height: calc(100% + 24px);
+  max-width: none;
+  object-fit: cover;
+  object-position: 52% 60%;
+  transform: translate(calc(var(--loft-x, 0) * -6px), calc(var(--loft-y, 0) * -4px));
+}
+.natasha-loft-avatar {
+  inset: 0;
+  transform: translate(calc(var(--loft-x, 0) * 9px), calc(var(--loft-y, 0) * 6px));
+}
+.natasha-loft-avatar canvas { display: block; width: 100%; height: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .natasha-loft-room,
+  .natasha-loft-avatar { transform: none; transition: none; }
+}
