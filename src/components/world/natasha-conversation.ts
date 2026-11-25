@@ -9,7 +9,7 @@ export function replyAsNatasha(message: string): string {
     return "Je fais des streams de nuit depuis Rotas. J’y parle de l’île et j’y signale les glitches. Je fais aussi des podcasts.";
   }
   if (/\b(rotas|village|marche|salon|the|boutique\w*|ile)\b/.test(text)) {
-    return "Tu es à Rotas. On est devant le salon de thé. Tu peux aussi faire un tour au marché ou passer voir les boutiques.";
+    return "Tu es à Rotas. Bienvenue chez moi. Le salon de thé est dans le village. Tu peux aussi faire un tour au marché ou passer voir les boutiques.";
   }
   if (/\b(bonjour|salut|coucou|bonsoir)\b/.test(text)) return NATASHA_GREETING;
   return "Je n’ai pas de réponse à ça dans cette démo. Demande-moi plutôt ce que je fais à Rotas, ce que je diffuse ou ce que j’appelle un glitch.";

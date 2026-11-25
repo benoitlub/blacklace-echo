@@ -22,7 +22,7 @@ export const worldLocations: WorldLocation[] = [
   {id:"seawall",name:"Digue · route côtière",residents:["marty"],detail:"Peintures de Marty."},
   {id:"institute",name:"Feuch Institute",residents:[],detail:"Projets, inventions et soutien.",existingRoute:"/map"},
   {id:"nikolas-lab",name:"Feuch Lab · Nikolas",residents:["nikolas"],detail:"Créations de Nikolas ; distinct du portail web."},
-  {id:"natasha-loft",name:"Loft et studio de Natasha",residents:["natasha"],detail:"Podcast, YouTube et transmissions."},
+  {id:"natasha-loft",name:"Loft et studio de Natasha",residents:["natasha"],detail:"Podcast, YouTube et transmissions.",existingRoute:"/natasha-loft"},
   {id:"slobodane-garden",name:"Jardin de Slobodane",residents:["slobodane"],detail:"Jardin de l'île."},
   {id:"feuch-cave",name:"Grotte du Feuch",residents:["feuch"],detail:"Zone du Feuch."},
   {id:"reboot",name:"Cascade Reboot",residents:["fee-belette"],detail:"Cascade de la Fée Belette.",existingRoute:"/map"},
