@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -13,6 +13,7 @@ import Map from "./pages/Map.tsx";
 import Aloisia from "./pages/Aloisia.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import WorldDirectory from "./pages/WorldDirectory.tsx";
+import NatashaLoft from "./pages/NatashaLoft.tsx";
 import RotasLivingStreet from "./pages/RotasLivingStreet.tsx";
 
 const queryClient = new QueryClient();
@@ -22,20 +23,29 @@ function IslandEntrance() {
   return <main style={{ minHeight: "100dvh", display: "grid", placeItems: "center", background: "#07131f", color: "#ffeccc" }}><a href={`${import.meta.env.BASE_URL}port/`}>Entrer sur Blacklace Island →</a></main>;
 }
 
+function WorldSignal() {
+  const { pathname } = useLocation();
+  if (pathname === "/natasha-loft") return null;
+  return <>
+    <div className="bl-build-marker">BLACKLACE ISLAND // SHERLOCK WORLD SIGNAL</div>
+    <div className="bl-build-footer">MONDE VIVANT // ÉVÉNEMENTS VÉRIFIÉS PAR SHERLOCK</div>
+  </>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter basename="/blacklace-echo">
-        <div className="bl-build-marker">BLACKLACE ISLAND // SHERLOCK WORLD SIGNAL</div>
-        <div className="bl-build-footer">MONDE VIVANT // ÉVÉNEMENTS VÉRIFIÉS PAR SHERLOCK</div>
+        <WorldSignal />
         <Routes>
           <Route path="/" element={<IslandEntrance />} />
           <Route path="/control" element={<Index />} />
           <Route path="/map" element={<Map />} />
           <Route path="/aloisia" element={<Aloisia />} />
           <Route path="/atlas" element={<WorldDirectory />} />
+          <Route path="/natasha-loft" element={<NatashaLoft />} />
           <Route path="/rotas-live" element={<RotasLivingStreet />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

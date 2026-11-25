@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { NatashaConversation } from "@/components/world/NatashaConversation";
 
 type Person = { group: THREE.Group; baseX: number; baseZ: number; phase: number };
 
@@ -36,82 +34,12 @@ function sign(text: string, color: string) {
   const group = new THREE.Group(); group.add(mesh); return group;
 }
 
-function poseNatasha(model: THREE.Group) {
-  const bone = (name: string) => {
-    const node = model.getObjectByName(name);
-    if (!(node instanceof THREE.Bone)) throw new Error(`Articulation Natasha manquante : ${name}`);
-    return node;
-  };
-
-  // Keep the leg rig in its reference pose so the feet stay planted.
-  bone("Spine").rotateZ(-0.055);
-  bone("Spine1").rotateY(0.075);
-  bone("Head").rotateY(-0.16);
-  bone("Head").rotateZ(0.035);
-
-  // Aim each upper arm and forearm in world space, then apply the
-  // correction in its parent's frame to preserve the rig's wrist twist.
-  function aim(joint: THREE.Bone, child: THREE.Bone, direction: THREE.Vector3) {
-    const origin = joint.getWorldPosition(new THREE.Vector3());
-    const current = child.getWorldPosition(new THREE.Vector3()).sub(origin).normalize();
-    const correction = new THREE.Quaternion().setFromUnitVectors(current, direction.normalize());
-    const parent = joint.parent!.getWorldQuaternion(new THREE.Quaternion());
-    joint.quaternion.premultiply(parent.clone().invert().multiply(correction).multiply(parent));
-  }
-
-  aim(bone("LeftArm"), bone("LeftForeArm"), new THREE.Vector3(0.2, -1, -0.08));
-  aim(bone("LeftForeArm"), bone("LeftHand"), new THREE.Vector3(0.02, -1, 0.16));
-  aim(bone("RightArm"), bone("RightForeArm"), new THREE.Vector3(-0.23, -1, -0.02));
-  aim(bone("RightForeArm"), bone("RightHand"), new THREE.Vector3(-0.06, -1, 0.22));
-
-  // Compute bounds after skinning so the shoes sit on the street plane.
-  model.updateMatrixWorld(true);
-  const bounds = new THREE.Box3().setFromObject(model, true);
-  const height = bounds.max.y - bounds.min.y;
-  if (!Number.isFinite(height) || height <= 0) throw new Error("Dimensions de Natasha invalides.");
-  const scale = 1.72 / height;
-  model.scale.multiplyScalar(scale);
-  model.position.set(2.05, -bounds.min.y * scale, -3.1);
-  model.rotation.y = -0.28;
-}
-
-function disposeStreetMeshes(root: THREE.Object3D) {
-  const geometries = new Set<THREE.BufferGeometry>();
-  const materials = new Set<THREE.Material>();
-  const textures = new Set<THREE.Texture>();
-  const skeletons = new Set<THREE.Skeleton>();
-  const images = new Set<ImageBitmap>();
-  root.traverse((object) => {
-    if (!(object instanceof THREE.Mesh)) return;
-    if (object instanceof THREE.SkinnedMesh) skeletons.add(object.skeleton);
-    geometries.add(object.geometry);
-    for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
-      materials.add(material);
-      for (const value of Object.values(material)) {
-        if (value instanceof THREE.Texture) textures.add(value);
-      }
-    }
-  });
-  skeletons.forEach((skeleton) => skeleton.dispose());
-  geometries.forEach((geometry) => geometry.dispose());
-  materials.forEach((material) => material.dispose());
-  for (const texture of textures) {
-    if (typeof ImageBitmap !== "undefined" && texture.image instanceof ImageBitmap) images.add(texture.image);
-    texture.dispose();
-  }
-  images.forEach((image) => image.close());
-}
-
 export default function RotasLivingStreet() {
   const mount = useRef<HTMLDivElement>(null);
   const movement = useRef({ x: 0, y: 0 });
-  const focusNatasha = useRef(false);
-  const focusBeforeConversation = useRef(false);
-  const [closeUp, setCloseUp] = useState(false);
   const [tiltEnabled, setTiltEnabled] = useState(false);
   const [notice, setNotice] = useState("Glisse le doigt pour regarder derrière Marty.");
   const [revealed, setRevealed] = useState(false);
-  const [natashaStatus, setNatashaStatus] = useState<"loading" | "ready" | "failed">("loading");
 
   useEffect(() => {
     const host = mount.current;
@@ -150,36 +78,11 @@ export default function RotasLivingStreet() {
     tea.position.set(3.24, 2.75, -5); tea.rotation.y = -Math.PI / 2; scene.add(tea);
     const characters: Person[] = [
       { group: makePerson(0x2d4969, -1.55, 4.2, 1.18), baseX: -1.55, baseZ: 4.2, phase: 0 },
+      { group: makePerson(0x8c315d, 0.05, 3.45, 1.06), baseX: 0.05, baseZ: 3.45, phase: 1 },
       { group: makePerson(0x385d53, 0.4, -2.5, 0.85), baseX: 0.4, baseZ: -2.5, phase: 2 },
       { group: makePerson(0xb76b5d, 1.25, -3.3, 0.85), baseX: 1.25, baseZ: -3.3, phase: 3 },
     ];
     characters.forEach(p => scene.add(p.group));
-
-    const avatarRequest = new AbortController();
-    let avatar: THREE.Group | undefined;
-    const loadNatasha = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.BASE_URL}avatars/natasha.glb`, {
-          signal: avatarRequest.signal,
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const bytes = await response.arrayBuffer();
-        avatarRequest.signal.throwIfAborted();
-        const { scene: model } = await new GLTFLoader().parseAsync(bytes, "");
-        if (avatarRequest.signal.aborted) {
-          disposeStreetMeshes(model);
-          return;
-        }
-        avatar = model;
-        poseNatasha(model);
-        scene.add(model);
-        setNatashaStatus("ready");
-      } catch {
-        if (avatar) disposeStreetMeshes(avatar);
-        if (!avatarRequest.signal.aborted) setNatashaStatus("failed");
-      }
-    };
-    void loadNatasha();
     let width = 1; let height = 1;
     const resize = () => {
       width = Math.max(1, host.clientWidth); height = Math.max(1, host.clientHeight);
@@ -202,26 +105,18 @@ export default function RotasLivingStreet() {
     renderer.domElement.addEventListener("pointercancel", pointerUp);
     const clock = new THREE.Clock();
     let frame = 0; let lastReveal = false;
-    const lookAt = new THREE.Vector3(0, 1.55, -3);
-    const streetTarget = lookAt.clone();
-    const avatarTarget = new THREE.Vector3(2.05, 0.92, -3.1);
     const render = () => {
       frame = requestAnimationFrame(render);
-      const delta = clock.getDelta();
-      const t = clock.elapsedTime;
-      const focused = focusNatasha.current;
-      const ease = 1 - Math.exp(-8 * delta);
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, focused ? 1.25 : movement.current.x * 2.2, ease);
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, focused ? 1.22 : 2.4 + movement.current.y, ease);
-      camera.position.z = THREE.MathUtils.lerp(camera.position.z, focused ? -0.35 : 8.8, ease);
-      lookAt.lerp(focused ? avatarTarget : streetTarget, ease);
-      camera.lookAt(lookAt);
+      const t = clock.getElapsedTime();
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, movement.current.x * 2.2, 0.065);
+      camera.position.y = THREE.MathUtils.lerp(camera.position.y, 2.4 + movement.current.y, 0.065);
+      camera.lookAt(0, 1.55, -3);
       characters.forEach((p, i) => {
-        p.group.rotation.y = i === 0 ? Math.sin(t * 0.6 + p.phase) * 0.15 : 0;
+        p.group.rotation.y = i < 2 ? Math.sin(t * 0.6 + p.phase) * 0.15 : 0;
         p.group.position.y = Math.sin(t * 2 + p.phase) * 0.025;
-        if (i > 0) p.group.position.z = p.baseZ - (Math.sin(t * 0.3) + 1) * 0.55;
+        if (i >= 2) p.group.position.z = p.baseZ - (Math.sin(t * 0.3) + 1) * 0.55;
       });
-      const visible = !focused && Math.abs(camera.position.x) > 1.25;
+      const visible = Math.abs(camera.position.x) > 1.25;
       if (visible !== lastReveal) { lastReveal = visible; setRevealed(visible); }
       renderer.render(scene, camera);
     };
@@ -232,8 +127,13 @@ export default function RotasLivingStreet() {
       renderer.domElement.removeEventListener("pointermove", pointerMove);
       renderer.domElement.removeEventListener("pointerup", pointerUp);
       renderer.domElement.removeEventListener("pointercancel", pointerUp);
-      avatarRequest.abort();
-      disposeStreetMeshes(scene);
+      scene.traverse(object => {
+        if (object instanceof THREE.Mesh) {
+          object.geometry.dispose();
+          const materials = Array.isArray(object.material) ? object.material : [object.material];
+          materials.forEach(material => { if (material instanceof THREE.Material) material.dispose(); });
+        }
+      });
       renderer.dispose(); host.removeChild(renderer.domElement);
     };
   }, []);
@@ -259,34 +159,15 @@ export default function RotasLivingStreet() {
     } catch { setNotice("Capteurs indisponibles : utilise le glissement du doigt."); }
   };
 
-  const setConversationOpen = (open: boolean) => {
-    if (open) focusBeforeConversation.current = focusNatasha.current;
-    focusNatasha.current = open || focusBeforeConversation.current;
-    setCloseUp(focusNatasha.current);
-  };
-
   return <main style={{ minHeight: "100dvh", background: "#101923", color: "#f9e9d9", fontFamily: "system-ui, sans-serif", display: "flex", flexDirection: "column" }}>
     <header style={{ padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-      <div><strong>BLACKLACE ISLAND · ROTAS</strong><div style={{ fontSize: 12, opacity: 0.7 }}>Prototype 3D — rue de Rotas</div></div>
+      <div><strong>BLACKLACE ISLAND · ROTAS</strong><div style={{ fontSize: 12, opacity: 0.7 }}>Prototype 3D — personnages temporaires</div></div>
       <a href={`${import.meta.env.BASE_URL}port/`} style={{ color: "#ffcc9b" }}>← Retour au port</a>
     </header>
     <div ref={mount} aria-label="Scène 3D interactive dans une rue de Rotas" style={{ flex: 1, minHeight: "65dvh", position: "relative" }} />
     <footer style={{ padding: "12px 18px", display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
       <button onClick={enableTilt} disabled={tiltEnabled} style={{ padding: "10px 15px", borderRadius: 12, background: "#f4b76d", color: "#15151a", border: 0, fontWeight: 700 }}>{tiltEnabled ? "Capteurs activés" : "Activer l'inclinaison"}</button>
       <span role="status" style={{ fontSize: 14 }}>{revealed ? "👀 Tu as changé de perspective ! Cherche la boutique Pro.Hibited." : notice}</span>
-      {natashaStatus === "ready" && <button
-        onClick={() => {
-          focusNatasha.current = !focusNatasha.current;
-          setCloseUp(focusNatasha.current);
-        }}
-        style={{ padding: "10px 15px", borderRadius: 12, background: "#263746", color: "#f9e9d9", border: 0 }}
-      >{closeUp ? "Revenir à la rue" : "Voir Natasha de près"}</button>}
-      {natashaStatus === "ready" && <NatashaConversation onOpenChange={setConversationOpen} />}
-      <span role="status" style={{ fontSize: 14 }}>
-        {natashaStatus === "ready" ? "Natasha est devant le salon de thé."
-          : natashaStatus === "failed" ? "Natasha n’a pas pu être chargée."
-          : "Chargement de Natasha…"}
-      </span>
     </footer>
   </main>;
 }

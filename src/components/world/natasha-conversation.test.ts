@@ -3,7 +3,7 @@ import { replyAsNatasha } from "./natasha-conversation";
 
 describe("Natasha's local conversation", () => {
   it.each([
-    ["Tu connais le salon de THÉ ?", "devant le salon de thé"],
+    ["Tu connais le salon de THÉ ?", "Le salon de thé est dans le village"],
     ["Tu fais des podcasts ?", "streams de nuit"],
     ["Tu as vu des anomalies temporelles ?", "souvenirs qui refont surface"],
   ])("recognizes the topic in %s", (question, phrase) => {
